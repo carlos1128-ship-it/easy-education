@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { readApiJson } from "@/lib/client-response";
 import { getPublicEnvErrorMessage } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
 
@@ -84,7 +85,10 @@ export function SignUpForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = (await response.json()) as SignUpResponse;
+      const data = await readApiJson<SignUpResponse>(
+        response,
+        "Falha desconhecida ao criar conta.",
+      );
 
       if (!response.ok) {
         const message = [data.error, data.debugMessage ? `Detalhe tecnico: ${data.debugMessage}` : null]
@@ -245,7 +249,10 @@ export function LoginForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     });
-    const profileData = (await profileResponse.json()) as ProfileResponse;
+    const profileData = await readApiJson<ProfileResponse>(
+      profileResponse,
+      "Login feito, mas nao foi possivel preparar seu perfil.",
+    );
 
     if (!profileResponse.ok) {
       const message = profileData.error ?? "Login feito, mas nao foi possivel preparar seu perfil.";

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { readApiJson } from "@/lib/client-response";
 
 type GeneratorProps = {
   goal: string;
@@ -45,7 +46,10 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
         method,
       }),
     });
-    const data = (await response.json()) as { error?: string };
+    const data = await readApiJson<{ error?: string }>(
+      response,
+      "Nao foi possivel gerar o plano.",
+    );
     setLoading(false);
 
     if (!response.ok) {

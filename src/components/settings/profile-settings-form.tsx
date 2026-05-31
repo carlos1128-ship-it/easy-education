@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { readApiJson } from "@/lib/client-response";
 
 type ProfileSettingsFormProps = {
   name: string;
@@ -31,7 +32,10 @@ export function ProfileSettingsForm({ name, studyGoal, dailyMinutes, studyMethod
         studyMethod: String(formData.get("studyMethod") ?? ""),
       }),
     });
-    const data = (await response.json()) as { error?: string };
+    const data = await readApiJson<{ error?: string }>(
+      response,
+      "Nao foi possivel salvar.",
+    );
     setLoading(false);
 
     if (!response.ok) {

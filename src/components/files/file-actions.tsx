@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { HelpCircle, Layers, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { readApiJson } from "@/lib/client-response";
 
 export function FileActions({ fileId, fileName, processed }: { fileId: string; fileName: string; processed: boolean }) {
   const router = useRouter();
@@ -33,7 +34,10 @@ export function FileActions({ fileId, fileName, processed }: { fileId: string; f
         ? { fileId, subject: fileName, difficulty: "medio", questionCount: 10, model: "ENEM" }
         : { fileId, title: `Flashcards - ${fileName}`, subject: fileName, count: 12 }),
     });
-    const data = (await response.json()) as { quizId?: string; deckId?: string; error?: string };
+    const data = await readApiJson<{ quizId?: string; deckId?: string; error?: string }>(
+      response,
+      "Nao foi possivel gerar.",
+    );
     setLoading(null);
 
     if (!response.ok) {

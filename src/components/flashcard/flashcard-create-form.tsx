@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { readApiJson } from "@/lib/client-response";
 
 type FileOption = {
   id: string;
@@ -35,7 +36,10 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
         count: Number(formData.get("count") ?? 12),
       }),
     });
-    const data = (await response.json()) as { deckId?: string; error?: string };
+    const data = await readApiJson<{ deckId?: string; error?: string }>(
+      response,
+      "Nao foi possivel criar o deck.",
+    );
     setLoading(false);
 
     if (!response.ok || !data.deckId) {

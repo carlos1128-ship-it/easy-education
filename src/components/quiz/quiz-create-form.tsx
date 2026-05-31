@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { readApiJson } from "@/lib/client-response";
 
 type FileOption = {
   id: string;
@@ -37,7 +38,10 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
         model: "ENEM",
       }),
     });
-    const data = (await response.json()) as { quizId?: string; error?: string };
+    const data = await readApiJson<{ quizId?: string; error?: string }>(
+      response,
+      "Nao foi possivel gerar o quiz.",
+    );
     setLoading(false);
 
     if (!response.ok || !data.quizId) {

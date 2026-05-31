@@ -6,6 +6,7 @@ import { ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { readApiJson } from "@/lib/client-response";
 
 export function SimuladoCreateForm() {
   const router = useRouter();
@@ -27,7 +28,10 @@ export function SimuladoCreateForm() {
         model: "ENEM",
       }),
     });
-    const data = (await response.json()) as { quizId?: string; error?: string };
+    const data = await readApiJson<{ quizId?: string; error?: string }>(
+      response,
+      "Nao foi possivel gerar o simulado.",
+    );
     setLoading(false);
 
     if (!response.ok || !data.quizId) {

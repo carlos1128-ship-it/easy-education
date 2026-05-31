@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { readApiJson } from "@/lib/client-response";
 
 export function EssayCorrectionForm() {
   const router = useRouter();
@@ -31,7 +32,10 @@ export function EssayCorrectionForm() {
         content,
       }),
     });
-    const data = (await response.json()) as { error?: string };
+    const data = await readApiJson<{ error?: string }>(
+      response,
+      "Nao foi possivel corrigir a redacao.",
+    );
     setLoading(false);
 
     if (!response.ok) {
