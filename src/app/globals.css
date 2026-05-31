@@ -1,0 +1,157 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-heading: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+:root {
+  --blue-primary: #4F46E5;
+  --blue-dark: #4338CA;
+  --blue-light: #6366F1;
+  --blue-50: #EEF2FF;
+  --blue-100: #E0E7FF;
+  --black: #0F172A;
+  --surface-dark: #111827;
+  --surface-card: #1E2433;
+  --white: #FFFFFF;
+  --gray-muted: #64748B;
+  --gray-subtle: #334155;
+  --bg-light: #F6F8FC;
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+
+  --background: #F6F8FC;
+  --foreground: #0F172A;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #4F46E5;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EEF2FF;
+  --secondary-foreground: #4F46E5;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #E0E7FF;
+  --accent-foreground: #4F46E5;
+  --destructive: #EF4444;
+  --border: #E2E8F0;
+  --input: #CBD5E1;
+  --ring: #6366F1;
+  --chart-1: #4F46E5;
+  --chart-2: #22C55E;
+  --chart-3: #F59E0B;
+  --chart-4: #EF4444;
+  --chart-5: #64748B;
+  --radius: 0.625rem;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #4F46E5;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EEF2FF;
+  --sidebar-accent-foreground: #4F46E5;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #6366F1;
+}
+
+.dark {
+  --background: #0A0F1C;
+  --foreground: #FFFFFF;
+  --card: #111827;
+  --card-foreground: #FFFFFF;
+  --popover: #111827;
+  --popover-foreground: #FFFFFF;
+  --primary: #3B6FE8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1E2433;
+  --secondary-foreground: #DBEAFE;
+  --muted: #1E2433;
+  --muted-foreground: #94A3B8;
+  --accent: #1E2433;
+  --accent-foreground: #FFFFFF;
+  --destructive: #EF4444;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3B6FE8;
+  --chart-1: #3B6FE8;
+  --chart-2: #22C55E;
+  --chart-3: #F59E0B;
+  --chart-4: #EF4444;
+  --chart-5: #94A3B8;
+  --sidebar: #111827;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #3B6FE8;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1E2433;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #334155;
+  --sidebar-ring: #3B6FE8;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}

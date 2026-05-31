@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Profile {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  name            String
+  email           String
+  studyGoal       String   @default("ENEM") @map("study_goal")
+  targetDate      DateTime? @map("target_date")
+  dailyMinutes    Int      @default(60) @map("daily_minutes")
+  level           String   @default("beginner")
+  studyMethod     String   @default("pomodoro") @map("study_method")
+  onboardingDone  Boolean  @default(false) @map("onboarding_done")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  studyPlans     StudyPlan[]
+  uploadedFiles  UploadedFile[]
+  quizzes        Quiz[]
+  flashcardDecks FlashcardDeck[]
+  essays         Essay[]
+  chatMessages   ChatMessage[]
+  studySessions  StudySession[]
+
+  @@map("profiles")
+}
+
+model StudyPlan {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  title        String
+  goal         String
+  startDate    DateTime @map("start_date")
+  endDate      DateTime @map("end_date")
+  dailyMinutes Int      @map("daily_minutes")
+  status       String   @default("active")
+  planData     Json     @map("plan_data")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  profile  Profile @relation(fields: [userId], references: [userId])
+  subjects StudyPlanSubject[]
+
+  @@map("study_plans")
+}
+
+model StudyPlanSubject {
+  id          String @id @default(uuid())
+  planId      String @map("plan_id")
+  name        String
+  priority    String @default("medium")
+  weeklyHours Int    @map("weekly_hours")
+  color       String @default("#1B4FD8")
+  difficulty  Int    @default(3)
+
+  plan StudyPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@map("study_plan_subjects")
+}
+
+model StudySession {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  subject         String
+  durationMinutes Int      @map("duration_minutes")
+  date            DateTime @default(now())
+  method          String   @default("free")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId])
+
+  @@map("study_sessions")
+}
+
+model UploadedFile {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  type        String
+  sizeBytes   Int      @map("size_bytes")
+  storagePath String   @map("storage_path")
+  processed   Boolean  @default(false)
+  textContent String?  @map("text_content") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId])
+  quizzes Quiz[]
+
+  @@map("uploaded_files")
+}
+
+model Quiz {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  fileId        String?  @map("file_id")
+  title         String
+  subject       String
+  difficulty    String   @default("medium")
+  questionCount Int      @map("question_count")
+  score         Float?
+  completedAt   DateTime? @map("completed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  profile   Profile      @relation(fields: [userId], references: [userId])
+  file      UploadedFile? @relation(fields: [fileId], references: [id])
+  questions QuizQuestion[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String  @id @default(uuid())
+  quizId        String  @map("quiz_id")
+  question      String  @db.Text
+  options       Json
+  correctAnswer String  @map("correct_answer")
+  explanation   String  @db.Text
+  userAnswer    String? @map("user_answer")
+  isCorrect     Boolean? @map("is_correct")
+  order         Int     @default(0)
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_questions")
+}
+
+model FlashcardDeck {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  subject   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile    Profile     @relation(fields: [userId], references: [userId])
+  flashcards Flashcard[]
+
+  @@map("flashcard_decks")
+}
+
+model Flashcard {
+  id          String    @id @default(uuid())
+  deckId      String    @map("deck_id")
+  front       String    @db.Text
+  back        String    @db.Text
+  easeFactor  Float     @default(2.5) @map("ease_factor")
+  interval    Int       @default(1)
+  repetitions Int       @default(0)
+  nextReview  DateTime  @default(now()) @map("next_review")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  deck FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@map("flashcards")
+}
+
+model Essay {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  content   String   @db.Text
+  model     String   @default("ENEM")
+  score     Float?
+  feedback  Json?
+  theme     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId])
+
+  @@map("essays")
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  role      String
+  content   String   @db.Text
+  fileId    String?  @map("file_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId])
+
+  @@map("chat_messages")
+}
