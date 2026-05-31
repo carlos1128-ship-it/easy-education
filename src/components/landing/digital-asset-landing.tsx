@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   BookOpen,
   Calendar,
@@ -96,9 +96,9 @@ export default function LandingPage() {
             </div>
 
             <div className="hidden md:flex items-center">
-              <Button variant="outline" className="font-heading font-semibold text-[var(--color-easy-primary)] border-[var(--color-easy-primary)] hover:bg-[var(--color-easy-primary)] hover:text-white transition-all rounded-full px-6">
+              <a href="/login" className={buttonVariants({ variant: "outline", className: "font-heading font-semibold text-[var(--color-easy-primary)] border-[var(--color-easy-primary)] hover:bg-[var(--color-easy-primary)] hover:text-white transition-all rounded-full px-6" })}>
                 Entrar
-              </Button>
+              </a>
             </div>
 
             <div className="md:hidden flex items-center">
@@ -118,9 +118,9 @@ export default function LandingPage() {
             <a href="#planos" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">Planos</a>
             <a href="#faq" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">FAQ</a>
             <div className="mt-4 pt-4 border-t border-[var(--color-easy-border)]">
-              <Button className="w-full font-heading font-semibold bg-[var(--color-easy-primary)] text-white hover:opacity-90 rounded-full">
+              <a href="/login" className={buttonVariants({ className: "w-full font-heading font-semibold bg-[var(--color-easy-primary)] text-white hover:opacity-90 rounded-full" })}>
                 Entrar
-              </Button>
+              </a>
             </div>
           </div>
         )}
@@ -146,9 +146,9 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <Button className="font-heading font-semibold bg-[var(--color-easy-primary)] text-white hover:opacity-90 transition-all rounded-full px-8 py-6 text-lg shadow-[0_8px_20px_-8px_var(--color-easy-primary)] hover:-translate-y-1">
+                <a href="/cadastro" className={buttonVariants({ className: "font-heading font-semibold bg-[var(--color-easy-primary)] text-white hover:opacity-90 transition-all rounded-full px-8 py-6 text-lg shadow-[0_8px_20px_-8px_var(--color-easy-primary)] hover:-translate-y-1" })}>
                   ComeÃ§ar
-                </Button>
+                </a>
               </div>
 
               <div className="mt-8 flex items-center gap-4">
@@ -461,9 +461,9 @@ export default function LandingPage() {
                 )}
               </div>
 
-              <Button className="w-full font-heading font-semibold bg-white text-[var(--color-easy-primary)] border-2 border-[var(--color-easy-primary)] hover:bg-[var(--color-easy-primary)] hover:text-white transition-all rounded-xl py-6 mb-8 mt-4">
+              <a href="/cadastro" className={buttonVariants({ className: "w-full font-heading font-semibold bg-white text-[var(--color-easy-primary)] border-2 border-[var(--color-easy-primary)] hover:bg-[var(--color-easy-primary)] hover:text-white transition-all rounded-xl py-6 mb-8 mt-4" })}>
                 ComeÃ§ar
-              </Button>
+              </a>
 
               <ul className="space-y-3 flex-1">
                 {[
@@ -512,9 +512,9 @@ export default function LandingPage() {
                 )}
               </div>
 
-              <Button className="w-full font-heading font-semibold bg-white text-[var(--color-easy-primary)] hover:bg-slate-50 transition-all rounded-xl py-6 mb-8 mt-4">
+              <a href="/cadastro" className={buttonVariants({ className: "w-full font-heading font-semibold bg-white text-[var(--color-easy-primary)] hover:bg-slate-50 transition-all rounded-xl py-6 mb-8 mt-4" })}>
                 ComeÃ§ar
-              </Button>
+              </a>
 
               <ul className="space-y-3 flex-1">
                 {[
@@ -597,9 +597,9 @@ export default function LandingPage() {
           <p className="text-xl text-white/90 mb-10">
             A Easy Education ajuda vocÃª a manter o foco e evoluir todos os dias.
           </p>
-          <Button className="font-heading font-bold bg-white text-[var(--color-easy-primary)] hover:bg-slate-50 rounded-full px-10 py-7 text-xl shadow-xl hover:-translate-y-1 transition-all">
+          <a href="/cadastro" className={buttonVariants({ className: "font-heading font-bold bg-white text-[var(--color-easy-primary)] hover:bg-slate-50 rounded-full px-10 py-7 text-xl shadow-xl hover:-translate-y-1 transition-all" })}>
             ComeÃ§ar
-          </Button>
+          </a>
         </div>
       </section>
 
