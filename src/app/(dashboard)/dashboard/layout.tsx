@@ -1,5 +1,5 @@
 import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
+import { MobileBottomNav, Sidebar } from "@/components/layout/sidebar";
 import { RealtimeRefresh } from "@/components/realtime/realtime-refresh";
 import { ensureProfileForUser } from "@/lib/profile";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
@@ -8,18 +8,19 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUserOrRedirect();
-  await ensureProfileForUser(user);
+  const profile = await ensureProfileForUser(user);
 
   return (
-    <div className="flex h-[100dvh] overflow-hidden bg-[#F6F8FC] text-[#0F172A]">
+    <div className="flex h-[100dvh] overflow-hidden bg-background text-foreground">
       <RealtimeRefresh userId={user.id} />
-      <div className="hidden md:block">
-        <Sidebar />
+      <div className="hidden lg:block">
+        <Sidebar profileName={profile.name} studyGoal={profile.studyGoal} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+        <Header profileName={profile.name} studyGoal={profile.studyGoal} />
+        <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8 md:pb-32 lg:pb-8">{children}</main>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }

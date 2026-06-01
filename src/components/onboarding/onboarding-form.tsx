@@ -3,19 +3,19 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarCheck, Check, Clock, Layers, Target } from "lucide-react";
+import { SubjectChecklist } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
+import { DEFAULT_SELECTED_SUBJECTS } from "@/lib/subjects";
 
-const subjects = ["Matematica", "Portugues", "Ciencias da Natureza", "Ciencias Humanas", "Redacao", "Ingles"];
 const levels = ["Iniciante", "Intermediario", "Avancado"];
-const methods = ["Pomodoro", "Revisao espacada", "Active Recall", "Blocos de estudo"];
+const methods = ["Pomodoro", "Revisão espacada", "Active Recall", "Blocos de estudo"];
 
 export function OnboardingForm() {
   const router = useRouter();
@@ -24,11 +24,7 @@ export function OnboardingForm() {
   const [targetDate, setTargetDate] = useState("");
   const [level, setLevel] = useState("Iniciante");
   const [dailyMinutes, setDailyMinutes] = useState(120);
-  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, number>>({
-    Matematica: 3,
-    Portugues: 2,
-    Redacao: 4,
-  });
+  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, number>>(DEFAULT_SELECTED_SUBJECTS);
   const [method, setMethod] = useState("Pomodoro");
   const progress = ((step + 1) / 4) * 100;
   const StepIcon = [Target, Clock, Layers, CalendarCheck][step];
@@ -53,19 +49,7 @@ export function OnboardingForm() {
     });
 
     if (!response.ok) {
-      toast.error("Nao foi possivel salvar seu onboarding.");
-      return;
-    }
-
-    const planResponse = await fetch("/api/study-plan/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ goal, targetDate, dailyHours: dailyMinutes / 60, subjects: subjectPayload, method }),
-    });
-
-    if (!planResponse.ok) {
-      toast.error("Perfil salvo. Gere o plano pela pagina Plano de Estudo.");
-      router.push("/dashboard/plano");
+      toast.error("Não foi possível salvar seu onboarding.");
       return;
     }
 
@@ -108,7 +92,7 @@ export function OnboardingForm() {
       {step === 1 ? (
         <div className="space-y-6">
           <div>
-            <Label>Como voce se considera?</Label>
+            <Label>Como você se considera?</Label>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {levels.map((item) => (
                 <button
@@ -134,44 +118,7 @@ export function OnboardingForm() {
       ) : null}
 
       {step === 2 ? (
-        <div className="space-y-4">
-          {subjects.map((subject) => {
-            const checked = subject in selectedSubjects;
-            return (
-              <div key={subject} className="rounded-lg border border-slate-200 p-4">
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={(value) => {
-                      setSelectedSubjects((current) => {
-                        const next = { ...current };
-                        if (value) next[subject] = 3;
-                        else delete next[subject];
-                        return next;
-                      });
-                    }}
-                  />
-                  <Label>{subject}</Label>
-                </div>
-                {checked ? (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-xs text-slate-500">Dificuldade {selectedSubjects[subject]}</p>
-                    <Slider
-                      min={1}
-                      max={5}
-                      step={1}
-                      value={[selectedSubjects[subject]]}
-                      onValueChange={(nextValue) => {
-                        const value = Array.isArray(nextValue) ? nextValue[0] : nextValue;
-                        setSelectedSubjects((current) => ({ ...current, [subject]: value }));
-                      }}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
+        <SubjectChecklist value={selectedSubjects} onChange={setSelectedSubjects} />
       ) : null}
 
       {step === 3 ? (

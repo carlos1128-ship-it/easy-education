@@ -1,13 +1,15 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
+import { SubjectChecklist } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { readApiJson } from "@/lib/client-response";
+import { DEFAULT_SELECTED_SUBJECTS } from "@/lib/subjects";
 
 type GeneratorProps = {
   goal: string;
@@ -19,18 +21,17 @@ type GeneratorProps = {
 export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: GeneratorProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [selectedSubjects, setSelectedSubjects] = useState<Record<string, number>>(DEFAULT_SELECTED_SUBJECTS);
+  const subjects = useMemo(
+    () => Object.entries(selectedSubjects).map(([name, difficulty]) => ({ name, difficulty })),
+    [selectedSubjects],
+  );
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const subjects = String(formData.get("subjects") ?? "")
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .map((name) => ({ name, difficulty: 3 }));
-
     if (!subjects.length) {
-      toast.error("Informe pelo menos uma materia.");
+      toast.error("Selecione pelo menos uma matéria.");
       return;
     }
 
@@ -48,12 +49,12 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
     });
     const data = await readApiJson<{ error?: string }>(
       response,
-      "Nao foi possivel gerar o plano.",
+      "Não foi possível gerar o plano.",
     );
     setLoading(false);
 
     if (!response.ok) {
-      toast.error(data.error ?? "Nao foi possivel gerar o plano.");
+      toast.error(data.error ?? "Não foi possível gerar o plano.");
       return;
     }
 
@@ -75,9 +76,9 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
         <Label htmlFor="plan-hours">Horas/dia</Label>
         <Input id="plan-hours" name="dailyHours" type="number" min={1} max={8} defaultValue={Math.max(1, Math.round(dailyMinutes / 60))} />
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="plan-subjects">Materias</Label>
-        <Input id="plan-subjects" name="subjects" placeholder="Matematica, Biologia" />
+      <div className="space-y-1.5 md:col-span-4">
+        <Label>Matérias</Label>
+        <SubjectChecklist value={selectedSubjects} onChange={setSelectedSubjects} />
       </div>
       <Button type="submit" disabled={loading} className="gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA] md:col-span-4">
         <Sparkles className="size-4" />

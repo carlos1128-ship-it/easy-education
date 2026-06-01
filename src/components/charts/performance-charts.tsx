@@ -1,10 +1,12 @@
 "use client";
 
-import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { getSubjectColor } from "@/lib/subjects";
 
 type WeeklyPoint = { week: string; hours: number };
 type SubjectPoint = { subject: string; score: number };
 type EssayPoint = { date: string; score: number };
+type EvolutionPoint = { label: string } & Record<string, string | number | null>;
 
 export function WeeklyHoursChart({ data }: { data: WeeklyPoint[] }) {
   return (
@@ -28,8 +30,28 @@ export function SubjectBarChart({ data }: { data: SubjectPoint[] }) {
         <XAxis type="number" domain={[0, 100]} hide />
         <YAxis type="category" dataKey="subject" tickLine={false} axisLine={false} width={90} />
         <Tooltip />
-        <Bar dataKey="score" radius={[0, 8, 8, 0]} fill="#4F46E5" />
+        <Bar dataKey="score" radius={[0, 8, 8, 0]}>
+          {data.map((entry) => (
+            <Cell key={entry.subject} fill={getSubjectColor(entry.subject)} />
+          ))}
+        </Bar>
       </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function SubjectEvolutionChart({ data, subjects }: { data: EvolutionPoint[]; subjects: string[] }) {
+  return (
+    <ResponsiveContainer width="100%" height={260}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} />
+        <YAxis domain={[0, 100]} tickLine={false} axisLine={false} />
+        <Tooltip />
+        {subjects.map((subject) => (
+          <Line key={subject} type="monotone" dataKey={subject} stroke={getSubjectColor(subject)} strokeWidth={3} connectNulls dot={false} />
+        ))}
+      </LineChart>
     </ResponsiveContainer>
   );
 }

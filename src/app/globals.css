@@ -97,37 +97,37 @@
 }
 
 .dark {
-  --background: #0A0F1C;
-  --foreground: #FFFFFF;
-  --card: #111827;
-  --card-foreground: #FFFFFF;
-  --popover: #111827;
-  --popover-foreground: #FFFFFF;
-  --primary: #3B6FE8;
+  --background: #070A13;
+  --foreground: #F1F5F9;
+  --card: #0D1117;
+  --card-foreground: #F1F5F9;
+  --popover: #0D1117;
+  --popover-foreground: #F1F5F9;
+  --primary: #6366F1;
   --primary-foreground: #FFFFFF;
-  --secondary: #1E2433;
-  --secondary-foreground: #DBEAFE;
-  --muted: #1E2433;
+  --secondary: #131D35;
+  --secondary-foreground: #C7D2FE;
+  --muted: #131D35;
   --muted-foreground: #94A3B8;
-  --accent: #1E2433;
-  --accent-foreground: #FFFFFF;
+  --accent: #131D35;
+  --accent-foreground: #C7D2FE;
   --destructive: #EF4444;
-  --border: #334155;
-  --input: #334155;
-  --ring: #3B6FE8;
-  --chart-1: #3B6FE8;
+  --border: #1A2744;
+  --input: #1A2744;
+  --ring: #6366F1;
+  --chart-1: #6366F1;
   --chart-2: #22C55E;
   --chart-3: #F59E0B;
   --chart-4: #EF4444;
   --chart-5: #94A3B8;
-  --sidebar: #111827;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #3B6FE8;
+  --sidebar: #0D1117;
+  --sidebar-foreground: #F1F5F9;
+  --sidebar-primary: #6366F1;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1E2433;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #334155;
-  --sidebar-ring: #3B6FE8;
+  --sidebar-accent: #131D35;
+  --sidebar-accent-foreground: #C7D2FE;
+  --sidebar-border: #1A2744;
+  --sidebar-ring: #6366F1;
 }
 
 @layer base {
@@ -153,6 +153,29 @@
   h6 {
     font-weight: 700;
     letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .dark .bg-white { background-color: #0D1117 !important; }
+  .dark .bg-\[\#F6F8FC\] { background-color: #070A13 !important; }
+  .dark .bg-\[\#F8FAFC\],
+  .dark .bg-\[\#F1F5F9\] { background-color: #131D35 !important; }
+  .dark .bg-\[\#EEF2FF\],
+  .dark .bg-\[\#E0E7FF\] { background-color: rgba(99, 102, 241, 0.15) !important; }
+  .dark .text-\[\#0F172A\] { color: #F1F5F9 !important; }
+  .dark .text-\[\#64748B\],
+  .dark .text-\[\#94A3B8\] { color: #94A3B8 !important; }
+  .dark .border-\[\#E2E8F0\],
+  .dark .border-\[\#F1F5F9\],
+  .dark .border-\[\#CBD5E1\] { border-color: #1A2744 !important; }
+  .dark .shadow-sm,
+  .dark .shadow-\[0_4px_20px_rgba\(15\,23\,42\,0\.06\)\] {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+  .dark input,
+  .dark textarea {
+    color: #F1F5F9;
   }
 }
 

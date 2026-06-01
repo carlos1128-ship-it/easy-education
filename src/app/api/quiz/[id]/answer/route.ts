@@ -15,6 +15,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const question = quiz.questions.find((item) => item.id === body.questionId);
   if (!question) return NextResponse.json({ error: "Questao nao encontrada." }, { status: 404 });
+  if (question.userAnswer !== null) {
+    return NextResponse.json({ error: "Resposta ja confirmada." }, { status: 409 });
+  }
 
   await prisma.quizQuestion.update({
     where: { id: body.questionId },

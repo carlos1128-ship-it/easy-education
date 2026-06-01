@@ -21,7 +21,7 @@ export default async function FlashcardsPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
         <p className="text-sm font-semibold text-[#4F46E5]">Flashcards</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Decks de revisao</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Decks de revisão</h1>
       </div>
 
       <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />

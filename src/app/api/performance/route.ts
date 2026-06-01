@@ -9,8 +9,8 @@ export async function GET() {
   const prisma = getPrisma();
   const [sessions, quizzes, essays, flashcards] = await Promise.all([
     prisma.studySession.findMany({ where: { userId: user.id } }),
-    prisma.quiz.findMany({ where: { userId: user.id } }),
-    prisma.essay.findMany({ where: { userId: user.id }, orderBy: { createdAt: "asc" } }),
+    prisma.quiz.findMany({ where: { userId: user.id, score: { not: null } } }),
+    prisma.essay.findMany({ where: { userId: user.id, score: { not: null } }, orderBy: { createdAt: "asc" } }),
     prisma.flashcard.findMany({ where: { deck: { userId: user.id } } }),
   ]);
 

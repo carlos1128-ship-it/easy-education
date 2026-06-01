@@ -19,7 +19,7 @@ export function StudySessionButton({ subject, durationMinutes, method, notes }: 
     });
     setLoading(false);
     if (!response.ok) {
-      toast.error("Nao foi possivel registrar o estudo.");
+      toast.error("Não foi possível registrar o estudo.");
       return;
     }
     toast.success("Estudo registrado no dashboard.");

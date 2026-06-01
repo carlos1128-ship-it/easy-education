@@ -27,7 +27,7 @@ export function FlashcardReview({ cards }: { cards: Flashcard[] }) {
     });
 
     if (!response.ok) {
-      toast.error("Nao foi possivel salvar a revisao.");
+      toast.error("Não foi possível salvar a revisão.");
       return;
     }
 
@@ -51,7 +51,7 @@ export function FlashcardReview({ cards }: { cards: Flashcard[] }) {
   if (done) {
     return (
       <div className="mx-auto max-w-2xl rounded-[20px] border border-[#E2E8F0] bg-white p-8 text-center shadow-sm">
-        <h2 className="text-2xl font-bold text-[#0F172A]">Revisao concluida</h2>
+        <h2 className="text-2xl font-bold text-[#0F172A]">Revisão concluída</h2>
         <p className="mt-2 text-sm text-[#64748B]">{cards.length} cards reagendados por repeticao espacada.</p>
         <Link href="/dashboard/flashcards" className="mt-5 inline-flex h-9 items-center rounded-xl bg-[#4F46E5] px-4 text-sm font-medium text-white hover:bg-[#4338CA]">
           Ver decks

@@ -34,30 +34,30 @@ export function EssayCorrectionForm() {
     });
     const data = await readApiJson<{ error?: string }>(
       response,
-      "Nao foi possivel corrigir a redacao.",
+      "Não foi possível corrigir a redacao.",
     );
     setLoading(false);
 
     if (!response.ok) {
-      toast.error(data.error ?? "Nao foi possivel corrigir a redacao.");
+      toast.error(data.error ?? "Não foi possível corrigir a redacao.");
       return;
     }
 
-    toast.success("Redacao corrigida e salva.");
+    toast.success("Redação corrigida e salva.");
     setContent("");
     router.refresh();
   }
 
   return (
     <form onSubmit={submit} className="mt-6 grid gap-4">
-      <Input name="title" required placeholder="Titulo da redacao" />
+      <Input name="title" required placeholder="Título da redação" />
       <Input name="theme" required placeholder="Tema" />
-      <Textarea value={content} onChange={(event) => setContent(event.target.value)} className="min-h-80 resize-none rounded-xl" placeholder="Digite sua redacao aqui..." />
+      <Textarea value={content} onChange={(event) => setContent(event.target.value)} className="min-h-80 resize-none rounded-xl" placeholder="Digite sua redação aqui..." />
       <div className="flex flex-col justify-between gap-3 text-sm text-[#64748B] sm:flex-row sm:items-center">
         <span>{stats}</span>
         <Button type="submit" disabled={loading || content.length < 300} className="gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]">
           <PenTool className="size-4" />
-          {loading ? "Corrigindo..." : "Enviar para correcao"}
+          {loading ? "Corrigindo..." : "Enviar para correção"}
         </Button>
       </div>
     </form>

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
+import { SubjectSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [fileId, setFileId] = useState("none");
+  const [subject, setSubject] = useState("Biologia");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,7 +32,7 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title: String(formData.get("title") ?? ""),
-        subject: String(formData.get("subject") ?? ""),
+        subject,
         topic: String(formData.get("topic") ?? "").trim() || undefined,
         fileId: fileId !== "none" ? fileId : undefined,
         count: Number(formData.get("count") ?? 12),
@@ -38,12 +40,12 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
     });
     const data = await readApiJson<{ deckId?: string; error?: string }>(
       response,
-      "Nao foi possivel criar o deck.",
+      "Não foi possível criar o deck.",
     );
     setLoading(false);
 
     if (!response.ok || !data.deckId) {
-      toast.error(data.error ?? "Nao foi possivel criar o deck.");
+      toast.error(data.error ?? "Não foi possível criar o deck.");
       return;
     }
 
@@ -61,11 +63,11 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="deck-title">Titulo</Label>
-          <Input id="deck-title" name="title" required placeholder="Revisao de Biologia" />
+          <Input id="deck-title" name="title" required placeholder="Revisão de Biologia" />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="deck-subject">Materia</Label>
-          <Input id="deck-subject" name="subject" required placeholder="Biologia" />
+          <Label>Matéria</Label>
+          <SubjectSelect value={subject} onChange={setSubject} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="deck-topic">Tema</Label>

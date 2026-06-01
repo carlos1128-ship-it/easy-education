@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
+import { SubjectSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   const [loading, setLoading] = useState(false);
   const [difficulty, setDifficulty] = useState("medio");
   const [fileId, setFileId] = useState("none");
+  const [subject, setSubject] = useState("Matematica");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,7 +34,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
       body: JSON.stringify({
         topic: String(formData.get("topic") ?? "").trim() || undefined,
         fileId: fileId !== "none" ? fileId : undefined,
-        subject: String(formData.get("subject") ?? "Geral"),
+        subject,
         difficulty,
         questionCount: Number(formData.get("questionCount") ?? 10),
         model: "ENEM",
@@ -40,12 +42,12 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
     });
     const data = await readApiJson<{ quizId?: string; error?: string }>(
       response,
-      "Nao foi possivel gerar o quiz.",
+      "Não foi possível gerar o quiz.",
     );
     setLoading(false);
 
     if (!response.ok || !data.quizId) {
-      toast.error(data.error ?? "Nao foi possivel gerar o quiz.");
+      toast.error(data.error ?? "Não foi possível gerar o quiz.");
       return;
     }
 
@@ -62,8 +64,8 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="quiz-subject">Materia</Label>
-          <Input id="quiz-subject" name="subject" required placeholder="Matematica, Biologia..." />
+          <Label>Matéria</Label>
+          <SubjectSelect value={subject} onChange={setSubject} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="quiz-topic">Tema</Label>
@@ -98,7 +100,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="question-count">Questoes</Label>
+            <Label htmlFor="question-count">Questões</Label>
             <Input id="question-count" name="questionCount" type="number" min={5} max={20} defaultValue={10} />
           </div>
         </div>

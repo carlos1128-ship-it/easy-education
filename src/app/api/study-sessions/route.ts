@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 
 const schema = z.object({
   subject: z.string().min(2),
@@ -25,6 +26,8 @@ export async function POST(request: Request) {
       notes: payload.notes,
     },
   });
+
+  await ensureWeeklySimuladoForUser(user.id).catch(() => null);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/plano");

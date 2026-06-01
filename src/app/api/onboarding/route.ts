@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { createStudyPlanForUser } from "@/lib/study-plan-generation";
 import { onboardingSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -34,8 +35,23 @@ export async function POST(request: Request) {
     },
   });
 
+  const existingPlan = await prisma.studyPlan.findFirst({
+    where: { userId: user.id, status: "active" },
+    select: { id: true },
+  });
+
+  const planResult = existingPlan
+    ? null
+    : await createStudyPlanForUser(user.id, {
+        goal: payload.goal,
+        targetDate: payload.targetDate,
+        dailyHours: payload.dailyMinutes / 60,
+        subjects: payload.subjects,
+        method: payload.studyMethod,
+      });
+
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/plano");
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, planId: planResult?.record.id ?? existingPlan?.id ?? null });
 }

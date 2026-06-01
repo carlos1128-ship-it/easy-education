@@ -9,7 +9,7 @@ export default async function QuizzesPage() {
   const user = await getCurrentUserOrRedirect();
   const prisma = getPrisma();
   const [quizzes, files] = await Promise.all([
-    prisma.quiz.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
+    prisma.quiz.findMany({ where: { userId: user.id, difficulty: { not: "simulado" } }, orderBy: { createdAt: "desc" } }),
     prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
   ]);
 
@@ -23,7 +23,7 @@ export default async function QuizzesPage() {
       <QuizCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
 
       {quizzes.length === 0 ? (
-        <EmptyState icon={HelpCircle} title="Voce ainda nao gerou nenhum quiz." description="Use a IA acima para criar questoes e salvar seu progresso." />
+        <EmptyState icon={HelpCircle} title="Você ainda não gerou nenhum quiz." description="Use a IA acima para criar questões e salvar seu progresso." />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {quizzes.map((quiz) => (
@@ -35,10 +35,10 @@ export default async function QuizzesPage() {
               <HelpCircle className="size-6 text-[#4F46E5]" />
               <h2 className="mt-4 font-bold text-[#0F172A]">{quiz.title}</h2>
               <p className="mt-1 text-sm text-[#64748B]">
-                {quiz.subject} · {quiz.questionCount} questoes
+                {quiz.subject} · {quiz.questionCount} questões
               </p>
               <p className="mt-4 text-sm text-[#64748B]">
-                {quiz.score === null ? "Nao realizado" : `Score ${Math.round(quiz.score)}%`}
+                {quiz.score === null ? "Não realizado" : `Score ${Math.round(quiz.score)}%`}
               </p>
             </Link>
           ))}

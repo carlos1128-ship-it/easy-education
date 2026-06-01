@@ -36,12 +36,12 @@ export function FileActions({ fileId, fileName, processed }: { fileId: string; f
     });
     const data = await readApiJson<{ quizId?: string; deckId?: string; error?: string }>(
       response,
-      "Nao foi possivel gerar.",
+      "Não foi possível gerar.",
     );
     setLoading(null);
 
     if (!response.ok) {
-      toast.error(data.error ?? "Nao foi possivel gerar.");
+      toast.error(data.error ?? "Não foi possível gerar.");
       return;
     }
 

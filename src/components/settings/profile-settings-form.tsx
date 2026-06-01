@@ -34,16 +34,16 @@ export function ProfileSettingsForm({ name, studyGoal, dailyMinutes, studyMethod
     });
     const data = await readApiJson<{ error?: string }>(
       response,
-      "Nao foi possivel salvar.",
+      "Não foi possível salvar.",
     );
     setLoading(false);
 
     if (!response.ok) {
-      toast.error(data.error ?? "Nao foi possivel salvar.");
+      toast.error(data.error ?? "Não foi possível salvar.");
       return;
     }
 
-    toast.success("Preferencias salvas.");
+    toast.success("Preferências salvas.");
     router.refresh();
   }
 

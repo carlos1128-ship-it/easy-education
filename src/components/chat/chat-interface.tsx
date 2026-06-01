@@ -30,7 +30,7 @@ export function ChatInterface() {
         body: JSON.stringify({ messages: nextMessages }),
       });
 
-      if (!response.body) throw new Error("Resposta indisponivel.");
+      if (!response.body) throw new Error("Resposta indisponível.");
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistant = "";
@@ -73,7 +73,7 @@ export function ChatInterface() {
           <Link href="/dashboard/arquivos" className="inline-flex size-8 items-center justify-center rounded-lg border border-input text-[#0F172A] hover:bg-[#F8FAFC]" aria-label="Enviar arquivo">
             <Paperclip className="size-4" />
           </Link>
-          <Textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder="Pergunte sobre uma materia, peça resumo ou gere questoes..." className="min-h-12 resize-none" />
+          <Textarea value={input} onChange={(event) => setInput(event.target.value)} placeholder="Pergunte sobre uma matéria, peça resumo ou gere questões..." className="min-h-12 resize-none" />
           <Button size="icon" className="bg-[#4F46E5] text-white hover:bg-[#4338CA]" onClick={() => sendMessage()} aria-label="Enviar mensagem"><Send className="size-4" /></Button>
         </div>
       </div>

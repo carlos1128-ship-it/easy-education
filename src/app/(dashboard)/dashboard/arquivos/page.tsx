@@ -43,7 +43,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
           ))}
         </div>
       ) : (
-        <EmptyState icon={FileText} title="Nenhum arquivo enviado." description="Envie materiais reais para gerar quizzes e flashcards com base no seu conteudo." />
+        <EmptyState icon={FileText} title="Nenhum arquivo enviado." description="Envie materiais reais para gerar quizzes e flashcards com base no seu conteúdo." />
       )}
     </div>
   );

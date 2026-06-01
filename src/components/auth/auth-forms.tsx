@@ -59,7 +59,7 @@ export function SignUpForm() {
 
     const envError = getPublicEnvErrorMessage();
     if (envError) {
-      setStatus({ type: "error", title: "Autenticacao nao configurada", message: envError });
+      setStatus({ type: "error", title: "Autenticação não configurada", message: envError });
       return;
     }
 
@@ -96,7 +96,7 @@ export function SignUpForm() {
           .join("\n\n");
         setStatus({
           type: "error",
-          title: response.status === 429 ? "Muitas tentativas" : "Cadastro nao concluido",
+          title: response.status === 429 ? "Muitas tentativas" : "Cadastro não concluído",
           message: message || "Falha desconhecida ao criar conta.",
         });
         toast.error(data.error ?? "Falha desconhecida ao criar conta.");
@@ -117,7 +117,7 @@ export function SignUpForm() {
       router.push(data.redirectTo ?? "/onboarding");
       router.refresh();
     } catch {
-      const message = "Nao foi possivel falar com o servidor de autenticacao.";
+      const message = "Não foi possível falar com o servidor de autenticação.";
       setStatus({ type: "error", title: "Erro de rede", message });
       toast.error(message);
     } finally {
@@ -128,7 +128,7 @@ export function SignUpForm() {
   async function handleGoogle() {
     const envError = getPublicEnvErrorMessage();
     if (envError) {
-      setStatus({ type: "error", title: "Autenticacao nao configurada", message: envError });
+      setStatus({ type: "error", title: "Autenticação não configurada", message: envError });
       return;
     }
 
@@ -211,7 +211,7 @@ export function LoginForm() {
     initialMessage
       ? {
           type: params.get("auth_error") ? "error" : "success",
-          title: params.get("auth_error") ? "Autenticacao incompleta" : "Aviso",
+          title: params.get("auth_error") ? "Autenticação incompleta" : "Aviso",
           message: initialMessage,
         }
       : null,
@@ -223,7 +223,7 @@ export function LoginForm() {
 
     const envError = getPublicEnvErrorMessage();
     if (envError) {
-      setStatus({ type: "error", title: "Autenticacao nao configurada", message: envError });
+      setStatus({ type: "error", title: "Autenticação não configurada", message: envError });
       return;
     }
 
@@ -239,7 +239,7 @@ export function LoginForm() {
       const message = error.message.includes("Invalid")
         ? "E-mail ou senha invalidos."
         : error.message;
-      setStatus({ type: "error", title: "Login nao concluido", message });
+      setStatus({ type: "error", title: "Login não concluído", message });
       toast.error(message);
       setLoading(false);
       return;
@@ -251,11 +251,11 @@ export function LoginForm() {
     });
     const profileData = await readApiJson<ProfileResponse>(
       profileResponse,
-      "Login feito, mas nao foi possivel preparar seu perfil.",
+      "Login feito, mas não foi possivel preparar seu perfil.",
     );
 
     if (!profileResponse.ok) {
-      const message = profileData.error ?? "Login feito, mas nao foi possivel preparar seu perfil.";
+      const message = profileData.error ?? "Login feito, mas não foi possivel preparar seu perfil.";
       setStatus({ type: "error", title: "Perfil indisponivel", message });
       toast.error(message);
       setLoading(false);
@@ -270,7 +270,7 @@ export function LoginForm() {
   async function handleReset() {
     const envError = getPublicEnvErrorMessage();
     if (envError) {
-      setStatus({ type: "error", title: "Autenticacao nao configurada", message: envError });
+      setStatus({ type: "error", title: "Autenticação não configurada", message: envError });
       return;
     }
 
@@ -295,7 +295,7 @@ export function LoginForm() {
   async function handleGoogle() {
     const envError = getPublicEnvErrorMessage();
     if (envError) {
-      setStatus({ type: "error", title: "Autenticacao nao configurada", message: envError });
+      setStatus({ type: "error", title: "Autenticação não configurada", message: envError });
       return;
     }
 
@@ -339,7 +339,7 @@ export function LoginForm() {
         Esqueci minha senha
       </button>
       <p className="text-center text-sm text-slate-500">
-        Ainda nao tenho conta{" "}
+        Ainda não tenho conta{" "}
         <Link className="text-[#1B4FD8]" href="/cadastro">
           Cadastro
         </Link>

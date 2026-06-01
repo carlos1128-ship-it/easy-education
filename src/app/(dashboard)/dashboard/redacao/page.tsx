@@ -4,7 +4,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
 
-export default async function RedacaoPage() {
+export default async function RedaçãoPage() {
   const user = await getCurrentUserOrRedirect();
   const essays = await getPrisma().essay.findMany({
     where: { userId: user.id },
@@ -16,8 +16,8 @@ export default async function RedacaoPage() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[1fr_360px]">
       <section className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold text-[#4F46E5]">Redacao</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Enviar para correcao</h1>
+        <p className="text-sm font-semibold text-[#4F46E5]">Redação</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Enviar para correção</h1>
         <EssayCorrectionForm />
       </section>
 
@@ -34,7 +34,7 @@ export default async function RedacaoPage() {
             </p>
           </div>
         ) : (
-          <EmptyState icon={FileEdit} title="Sua primeira redacao esta te esperando." description="Envie um texto e receba nota por criterio." />
+          <EmptyState icon={FileEdit} title="Sua primeira redacao esta te esperando." description="Envie um texto e receba nota por critério." />
         )}
         <div className="rounded-[20px] border border-[#E2E8F0] bg-white p-5 shadow-sm">
           <h2 className="font-bold text-[#0F172A]">Historico</h2>

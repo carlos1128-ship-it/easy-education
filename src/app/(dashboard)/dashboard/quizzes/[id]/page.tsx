@@ -19,7 +19,7 @@ export default async function QuizDetailPage({ params }: { params: Promise<{ id:
         <p className="text-sm font-semibold text-[#4F46E5]">{quiz.subject}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">{quiz.title}</h1>
       </div>
-      <QuizRunner quizId={quiz.id} questions={quiz.questions} />
+      <QuizRunner quizId={quiz.id} questions={quiz.questions} mode={quiz.difficulty === "simulado" ? "simulado" : "quiz"} />
     </div>
   );
 }

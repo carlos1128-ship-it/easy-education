@@ -4,7 +4,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
+import { getSubjectColor } from "@/lib/subjects";
 
 function startOfToday() {
   const date = new Date();
@@ -33,6 +35,7 @@ export default async function DashboardPage() {
   const user = await getCurrentUserOrRedirect();
   const prisma = getPrisma();
   const weekStart = startOfWindow(6);
+  await ensureWeeklySimuladoForUser(user.id);
 
   const [profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks] = await Promise.all([
     prisma.profile.findUnique({ where: { userId: user.id } }),
@@ -56,6 +59,8 @@ export default async function DashboardPage() {
   const todayBlocks = getTodayPlanBlocks(plan);
   const goalMinutes = profile?.dailyMinutes ?? 60;
   const dailyProgress = Math.min(100, Math.round((totalMinutes / Math.max(goalMinutes, 1)) * 100));
+  const weeklyGoalMinutes = goalMinutes * 7;
+  const weeklyProgress = Math.min(100, Math.round((totalMinutes / Math.max(weeklyGoalMinutes, 1)) * 100));
 
   const performance = Object.values(
     completedQuizzes.reduce<Record<string, { subject: string; total: number; count: number }>>((acc, quiz) => {
@@ -67,15 +72,22 @@ export default async function DashboardPage() {
   ).map((item) => ({ subject: item.subject, score: Math.round(item.total / item.count) }));
 
   const activity = [
-    ...quizzes.slice(0, 2).map((quiz) => ({ title: quiz.title, sub: `${quiz.questionCount} questoes · ${shortDate(quiz.createdAt)}`, href: `/dashboard/quizzes/${quiz.id}`, badge: quiz.score === null ? "Pendente" : `${Math.round(quiz.score)}%` })),
-    ...essays.slice(0, 1).map((essay) => ({ title: essay.title, sub: `${essay.theme ?? "Redacao"} · ${shortDate(essay.createdAt)}`, href: "/dashboard/redacao", badge: essay.score === null ? "Corrigindo" : `${Math.round(essay.score)} pts` })),
+    ...quizzes.slice(0, 2).map((quiz) => ({
+      title: quiz.title,
+      sub: `${quiz.questionCount} questões · ${shortDate(quiz.createdAt)}`,
+      href: quiz.difficulty === "simulado" ? `/dashboard/simulados/${quiz.id}` : `/dashboard/quizzes/${quiz.id}`,
+      badge: quiz.score === null ? "Pendente" : `${Math.round(quiz.score)}%`,
+    })),
+    ...essays.slice(0, 1).map((essay) => ({ title: essay.title, sub: `${essay.theme ?? "Redação"} · ${shortDate(essay.createdAt)}`, href: "/dashboard/redacao", badge: essay.score === null ? "Corrigindo" : `${Math.round(essay.score)} pts` })),
     ...files.slice(0, 1).map((file) => ({ title: file.name, sub: file.processed ? "Processado" : "Aguardando processamento", href: "/dashboard/arquivos", badge: file.processed ? "Pronto" : "Pendente" })),
     ...decks.slice(0, 1).map((deck) => ({ title: deck.title, sub: deck.subject, href: `/dashboard/flashcards/${deck.id}`, badge: "Deck" })),
   ].slice(0, 4);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <section className="relative overflow-hidden rounded-[20px] border border-[#E2E8F0] bg-gradient-to-r from-[#EEF2FF] to-white p-8 shadow-sm">
+      <section className="relative overflow-hidden rounded-[20px] border border-[#E2E8F0] bg-gradient-to-r from-[#EEF2FF] to-white p-8 shadow-sm dark:border-[#1A2744] dark:from-[#0F1629] dark:via-[#131D35] dark:to-[#0D1117]">
+        <div className="pointer-events-none absolute right-0 top-0 hidden h-80 w-80 translate-x-1/3 -translate-y-1/2 rounded-full bg-[#06B6D4]/10 blur-3xl dark:block" />
+        <div className="pointer-events-none absolute bottom-0 left-1/3 hidden h-64 w-64 translate-y-1/2 rounded-full bg-[#6366F1]/10 blur-3xl dark:block" />
         <div className="relative z-10 flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex-1">
             <p className="mb-1 text-sm font-medium text-[#64748B]">Ola, {profile?.name ?? user.email}</p>
@@ -83,29 +95,36 @@ export default async function DashboardPage() {
               {profile?.studyGoal ? `Foco em ${profile.studyGoal}` : "Seu painel de estudos"}
             </h1>
             <p className="mb-6 max-w-xl text-base text-[#64748B]">
-              Seu painel acompanha progresso real, geracoes da IA e revisoes feitas na plataforma.
+              Seu painel acompanha progresso real, gerações da IA e revisões feitas na plataforma.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/dashboard/plano" className="rounded-xl bg-[#4F46E5] px-6 py-2.5 font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#4338CA]">
-                Comecar estudo de hoje
+              <Link href="/dashboard/plano" className="rounded-xl bg-[#4F46E5] px-6 py-2.5 font-semibold text-white shadow-sm shadow-[#4F46E5]/20 transition-all hover:-translate-y-0.5 hover:bg-[#4338CA]">
+                Começar estudo de hoje
               </Link>
-              <Link href="/dashboard/chat" className="rounded-xl border-2 border-[#4F46E5]/20 px-6 py-2.5 font-semibold text-[#4F46E5] transition-all hover:bg-[#EEF2FF]">
+              <Link href="/dashboard/chat" className="rounded-xl border-2 border-[#4F46E5]/20 px-6 py-2.5 font-semibold text-[#4F46E5] transition-all hover:bg-[#EEF2FF] dark:border-[#6366F1]/35 dark:text-[#C7D2FE] dark:hover:bg-[#6366F1]/15">
                 Perguntar a IA
               </Link>
             </div>
           </div>
-          <div className="flex min-w-[200px] items-center gap-5 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
-            <div className="relative flex h-16 w-16 items-center justify-center">
-              <svg className="h-16 w-16 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F1F5F9" strokeWidth="3.5" />
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#4F46E5" strokeDasharray={`${dailyProgress}, 100`} strokeLinecap="round" strokeWidth="3.5" />
-              </svg>
-              <span className="absolute text-sm font-bold text-[#0F172A]">{dailyProgress}%</span>
-            </div>
-            <div>
-              <p className="font-bold text-[#0F172A]">Meta diaria</p>
-              <p className="text-sm text-[#64748B]">{formatMinutes(totalMinutes)} / {formatMinutes(goalMinutes)}</p>
-            </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              { label: "Meta diária", progress: dailyProgress, done: totalMinutes, goal: goalMinutes, color: "#4F46E5" },
+              { label: "Meta semanal", progress: weeklyProgress, done: totalMinutes, goal: weeklyGoalMinutes, color: "#06B6D4" },
+            ].map((item) => (
+              <div key={item.label} className="flex min-w-[200px] items-center gap-5 rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+                <div className="relative flex h-16 w-16 items-center justify-center">
+                  <svg className="h-16 w-16 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#F1F5F9" strokeWidth="3.5" />
+                    <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke={item.color} strokeDasharray={`${item.progress}, 100`} strokeLinecap="round" strokeWidth="3.5" />
+                  </svg>
+                  <span className="absolute text-sm font-bold text-[#0F172A]">{item.progress}%</span>
+                </div>
+                <div>
+                  <p className="font-bold text-[#0F172A]">{item.label}</p>
+                  <p className="text-sm text-[#64748B]">{formatMinutes(item.done)} / {formatMinutes(item.goal)}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -114,8 +133,8 @@ export default async function DashboardPage() {
         {[
           { label: "Horas esta semana", value: formatMinutes(totalMinutes), icon: Clock, color: "#4F46E5" },
           { label: "Acerto nos quizzes", value: `${quizAverage}%`, icon: Target, color: "#8B5CF6" },
-          { label: "Media em redacoes", value: lastEssay?.score ? `${Math.round(lastEssay.score)} pts` : "0 pts", icon: FileText, color: "#06B6D4" },
-          { label: "Sequencia", value: `${streak} dias`, icon: Flame, color: "#F97316" },
+          { label: "Média em redações", value: lastEssay?.score ? `${Math.round(lastEssay.score)} pts` : "0 pts", icon: FileText, color: "#06B6D4" },
+          { label: "Sequência", value: `${streak} dias`, icon: Flame, color: "#F97316" },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[10px]" style={{ backgroundColor: `${color}18`, color }}>
@@ -155,7 +174,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="p-5">
-                <EmptyState icon={Sparkles} title="Nenhum plano gerado ainda." description="Gere um plano semanal com IA para ativar as tarefas de hoje na pagina Plano." />
+                <EmptyState icon={Sparkles} title="Nenhum plano gerado ainda." description="Gere um plano semanal com IA para ativar as tarefas de hoje na página Plano." />
               </div>
             )}
           </div>
@@ -175,7 +194,7 @@ export default async function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#64748B]">Suas atividades aparecem aqui assim que voce gerar quizzes, revisar cards ou enviar redacoes.</p>
+              <p className="text-sm text-[#64748B]">Suas atividades aparecem aqui assim que você gerar quizzes, revisar cards ou enviar redacoes.</p>
             )}
             <div className="mt-4 flex justify-end">
               <Link href="/dashboard/desempenho" className="flex items-center gap-1 text-sm font-bold text-[#4F46E5] hover:text-[#4338CA]">
@@ -198,16 +217,16 @@ export default async function DashboardPage() {
                     <span>{item.subject}</span>
                     <span>{item.score}%</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
-                    <div className="h-full rounded-full bg-[#4F46E5]" style={{ width: `${item.score}%` }} />
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-[#F1F5F9]">
+                    <div className="h-full rounded-full" style={{ width: `${item.score}%`, backgroundColor: getSubjectColor(item.subject) }} />
                   </div>
                 </div>
-              )) : <p className="text-sm text-[#64748B]">Complete quizzes para ver desempenho por materia.</p>}
+              )) : <p className="text-sm text-[#64748B]">Complete quizzes para ver desempenho por matéria.</p>}
             </div>
           </div>
 
           <div className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-[#0F172A]">Proximas revisoes</h2>
+            <h2 className="mb-4 text-lg font-bold text-[#0F172A]">Próximas revisões</h2>
             {dueCards.length ? (
               <div className="grid grid-cols-2 gap-3">
                 {dueCards.map((item) => (
@@ -233,7 +252,7 @@ export default async function DashboardPage() {
               <div>
                 <h2 className="flex items-center gap-2 text-lg font-bold text-[#0F172A]">
                   <PenTool size={18} className="text-[#06B6D4]" />
-                  Redacao
+                  Redação
                 </h2>
                 <p className="mt-1 text-sm text-[#64748B]">Ultima nota</p>
               </div>
@@ -244,7 +263,7 @@ export default async function DashboardPage() {
             </div>
             <Link href="/dashboard/redacao" className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#EEF2FF] py-2.5 font-bold text-[#4F46E5] transition-colors hover:bg-[#E0E7FF]">
               <PenTool size={16} />
-              Enviar nova redacao
+              Enviar nova redação
             </Link>
           </div>
         </div>

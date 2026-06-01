@@ -1,4 +1,4 @@
-﻿/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -72,7 +72,7 @@ export default function LandingPage() {
 
             <div className="hidden md:flex items-center gap-8">
               {[
-                { id: "inicio", label: "InÃ­cio" },
+                { id: "inicio", label: "Início" },
                 { id: "como-funciona", label: "Como funciona" },
                 { id: "recursos", label: "Recursos" },
                 { id: "planos", label: "Planos" },
@@ -112,7 +112,7 @@ export default function LandingPage() {
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-[var(--color-easy-card)] border-b border-[var(--color-easy-border)] px-4 pt-2 pb-4 space-y-1">
-            <a href="#inicio" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">InÃ­cio</a>
+            <a href="#inicio" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">Início</a>
             <a href="#como-funciona" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">Como funciona</a>
             <a href="#recursos" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">Recursos</a>
             <a href="#planos" className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-easy-text)] hover:bg-[var(--color-easy-bg)]">Planos</a>
@@ -133,21 +133,21 @@ export default function LandingPage() {
             <div className="easy-animate-fade-in-up">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-easy-primary)]/10 border border-[var(--color-easy-primary)]/20 text-[var(--color-easy-primary)] font-medium text-sm mb-6">
                 <Sparkles className="w-4 h-4" />
-                Seu estudo, mais fÃ¡cil
+                Seu estudo, mais fácil
               </div>
 
               <h1 className="text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-easy-primary)] to-[var(--color-easy-secondary)]">Estude fÃ¡cil</span><br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-easy-primary)] to-[var(--color-easy-secondary)]">Estude fácil</span><br/>
                 com a Easy Education
               </h1>
 
               <p className="text-lg text-[var(--color-easy-text-muted)] mb-8 max-w-lg leading-relaxed">
-                Organize sua rotina, acompanhe seu progresso e aprenda de forma mais simples com quizzes, flashcards, redaÃ§Ã£o e plano de estudos.
+                Organize sua rotina, acompanhe seu progresso e aprenda de forma mais simples com quizzes, flashcards, redação e plano de estudos.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <a href="/cadastro" className={buttonVariants({ className: "font-heading font-semibold bg-[var(--color-easy-primary)] text-white hover:opacity-90 transition-all rounded-full px-8 py-6 text-lg shadow-[0_8px_20px_-8px_var(--color-easy-primary)] hover:-translate-y-1" })}>
-                  ComeÃ§ar
+                  Começar
                 </a>
               </div>
 
@@ -203,7 +203,7 @@ export default function LandingPage() {
 
                 <div className="absolute top-1/2 -right-8 bg-white p-3 rounded-xl shadow-xl easy-animate-float-delayed flex items-center gap-2">
                   <Star className="w-5 h-5 text-[var(--color-easy-yellow)] fill-current" />
-                  <p className="text-sm font-bold text-[var(--color-easy-text)]">5.0 â˜…</p>
+                  <p className="text-sm font-bold text-[var(--color-easy-text)]">5.0 ★</p>
                 </div>
               </div>
             </div>
@@ -215,9 +215,9 @@ export default function LandingPage() {
       <section id="recursos" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Tudo que vocÃª precisa para estudar melhor</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Tudo que você precisa para estudar melhor</h2>
             <p className="text-lg text-[var(--color-easy-text-muted)]">
-              Recursos pensados para ajudar vocÃª a estudar com mais clareza, prÃ¡tica e consistÃªncia.
+              Recursos pensados para ajudar você a estudar com mais clareza, prática e consistência.
             </p>
           </div>
 
@@ -235,7 +235,7 @@ export default function LandingPage() {
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">Quizzes</h3>
-              <p className="text-[var(--color-easy-text-muted)]">Pratique conteÃºdos com perguntas objetivas.</p>
+              <p className="text-[var(--color-easy-text-muted)]">Pratique conteúdos com perguntas objetivas.</p>
             </div>
 
             <div className="bg-white border border-[var(--color-easy-border)] rounded-2xl p-6 easy-hover-lift shadow-sm">
@@ -250,8 +250,8 @@ export default function LandingPage() {
               <div className="w-12 h-12 rounded-xl bg-[var(--color-easy-green)]/10 text-[var(--color-easy-green)] flex items-center justify-center mb-6">
                 <PenTool className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">RedaÃ§Ã£o</h3>
-              <p className="text-[var(--color-easy-text-muted)]">Acompanhe correÃ§Ãµes e evoluÃ§Ã£o do seu texto.</p>
+              <h3 className="text-xl font-bold mb-3">Redação</h3>
+              <p className="text-[var(--color-easy-text-muted)]">Acompanhe correções e evolução do seu texto.</p>
             </div>
 
             <div className="bg-white border border-[var(--color-easy-border)] rounded-2xl p-6 easy-hover-lift shadow-sm">
@@ -267,7 +267,7 @@ export default function LandingPage() {
                 <MessageSquare className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">Chat IA</h3>
-              <p className="text-[var(--color-easy-text-muted)]">Tire dÃºvidas e receba ajuda nos estudos quando precisar.</p>
+              <p className="text-[var(--color-easy-text-muted)]">Tire dúvidas e receba ajuda nos estudos quando precisar.</p>
             </div>
           </div>
         </div>
@@ -296,15 +296,15 @@ export default function LandingPage() {
                 <div className="w-16 h-16 rounded-full bg-[var(--color-easy-primary)] text-white flex items-center justify-center text-2xl font-bold">2</div>
               </div>
               <h3 className="text-xl font-bold mb-3">Pratique com recursos inteligentes</h3>
-              <p className="text-[var(--color-easy-text-muted)]">Use quizzes, flashcards e simulados para fixar o conteÃºdo.</p>
+              <p className="text-[var(--color-easy-text-muted)]">Use quizzes, flashcards e simulados para fixar o conteúdo.</p>
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center mb-6 border-4 border-[var(--color-easy-bg)]">
                 <div className="w-16 h-16 rounded-full bg-[var(--color-easy-primary)] text-white flex items-center justify-center text-2xl font-bold">3</div>
               </div>
-              <h3 className="text-xl font-bold mb-3">Acompanhe sua evoluÃ§Ã£o</h3>
-              <p className="text-[var(--color-easy-text-muted)]">Veja seu progresso e ajuste a rotina conforme avanÃ§a.</p>
+              <h3 className="text-xl font-bold mb-3">Acompanhe sua evolução</h3>
+              <p className="text-[var(--color-easy-text-muted)]">Veja seu progresso e ajuste a rotina conforme avança.</p>
             </div>
           </div>
         </div>
@@ -318,9 +318,9 @@ export default function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Veja sua rotina de estudos em um sÃ³ lugar</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Veja sua rotina de estudos em um só lugar</h2>
             <p className="text-lg text-[var(--color-easy-text-muted)]">
-              Acompanhe tarefas, desempenho, redaÃ§Ãµes, revisÃµes e progresso em uma interface simples e organizada.
+              Acompanhe tarefas, desempenho, redações, revisões e progresso em uma interface simples e organizada.
             </p>
           </div>
 
@@ -358,7 +358,7 @@ export default function LandingPage() {
             </div>
             <div className="py-4 md:py-0">
               <p className="text-4xl font-extrabold text-[var(--color-easy-primary)] mb-2">98%</p>
-              <p className="text-[var(--color-easy-text-muted)] font-medium">satisfaÃ§Ã£o</p>
+              <p className="text-[var(--color-easy-text-muted)] font-medium">satisfação</p>
             </div>
           </div>
 
@@ -367,7 +367,7 @@ export default function LandingPage() {
               <div className="flex text-[var(--color-easy-yellow)] mb-4">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
               </div>
-              <p className="text-[var(--color-easy-text)] font-medium mb-6 italic">&quot;A organizaÃ§Ã£o que a plataforma traz Ã© incrÃ­vel. Consegui aumentar minha nota em matemÃ¡tica apenas seguindo o plano gerado para mim.&quot;</p>
+              <p className="text-[var(--color-easy-text)] font-medium mb-6 italic">&quot;A organização que a plataforma traz é incrível. Consegui aumentar minha nota em matemática apenas seguindo o plano gerado para mim.&quot;</p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[var(--color-easy-purple)] flex items-center justify-center font-bold text-white">M</div>
                 <div>
@@ -381,7 +381,7 @@ export default function LandingPage() {
               <div className="flex text-[var(--color-easy-yellow)] mb-4">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
               </div>
-              <p className="text-[var(--color-easy-text)] font-medium mb-6 italic">&quot;Os simulados e flashcards mudaram meu jeito de revisar. Ã‰ tudo muito direto e nÃ£o perco mais tempo procurando material.&quot;</p>
+              <p className="text-[var(--color-easy-text)] font-medium mb-6 italic">&quot;Os simulados e flashcards mudaram meu jeito de revisar. É tudo muito direto e não perco mais tempo procurando material.&quot;</p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[var(--color-easy-secondary)] flex items-center justify-center font-bold text-white">R</div>
                 <div>
@@ -395,11 +395,11 @@ export default function LandingPage() {
               <div className="flex text-[var(--color-easy-yellow)] mb-4">
                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
               </div>
-              <p className="text-[var(--color-easy-text)] font-medium mb-6 italic">&quot;A redaÃ§Ã£o com correÃ§Ã£o rÃ¡pida me ajudou a sair dos 600 pontos para 920. A interface Ã© super agradÃ¡vel e nÃ£o cansa.&quot;</p>
+              <p className="text-[var(--color-easy-text)] font-medium mb-6 italic">&quot;A redação com correção rápida me ajudou a sair dos 600 pontos para 920. A interface é super agradável e não cansa.&quot;</p>
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-[var(--color-easy-green)] flex items-center justify-center font-bold text-white">L</div>
                 <div>
-                  <p className="font-bold">LetÃ­cia Souza</p>
+                  <p className="font-bold">Letícia Souza</p>
                   <p className="text-sm text-[var(--color-easy-text-muted)]">Estudante SAT</p>
                 </div>
               </div>
@@ -414,7 +414,7 @@ export default function LandingPage() {
           <div className="text-center max-w-3xl mx-auto mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Escolha seu plano</h2>
             <p className="text-lg text-[var(--color-easy-text-muted)]">
-              Planos acessÃ­veis que cabem no bolso do estudante.
+              Planos acessíveis que cabem no bolso do estudante.
             </p>
           </div>
 
@@ -440,7 +440,7 @@ export default function LandingPage() {
             <div className="bg-white rounded-3xl p-8 border border-[var(--color-easy-border)] shadow-sm flex flex-col">
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-1">Essencial</h3>
-                <p className="text-sm text-[var(--color-easy-text-muted)]">Para quem estÃ¡ comeÃ§ando a organizar os estudos.</p>
+                <p className="text-sm text-[var(--color-easy-text-muted)]">Para quem está começando a organizar os estudos.</p>
               </div>
 
               <div className="mb-2">
@@ -454,24 +454,24 @@ export default function LandingPage() {
                   <span className="text-4xl font-extrabold text-[var(--color-easy-text)]">
                     {billingAnnual ? "R$ 190,90" : "R$ 19,90"}
                   </span>
-                  <span className="text-[var(--color-easy-text-muted)] text-sm">/{billingAnnual ? "ano" : "mÃªs"}</span>
+                  <span className="text-[var(--color-easy-text-muted)] text-sm">/{billingAnnual ? "ano" : "mês"}</span>
                 </div>
                 {billingAnnual && (
-                  <p className="text-xs text-[var(--color-easy-text-muted)] mt-1">equivale a R$ 15,91/mÃªs</p>
+                  <p className="text-xs text-[var(--color-easy-text-muted)] mt-1">equivale a R$ 15,91/mês</p>
                 )}
               </div>
 
               <a href="/cadastro" className={buttonVariants({ className: "w-full font-heading font-semibold bg-white text-[var(--color-easy-primary)] border-2 border-[var(--color-easy-primary)] hover:bg-[var(--color-easy-primary)] hover:text-white transition-all rounded-xl py-6 mb-8 mt-4" })}>
-                ComeÃ§ar
+                Começar
               </a>
 
               <ul className="space-y-3 flex-1">
                 {[
-                  { text: "Plano de estudos bÃ¡sico", ok: true },
-                  { text: "AtÃ© 200 questÃµes por mÃªs", ok: true },
-                  { text: "AtÃ© 300 flashcards", ok: true },
-                  { text: "1 simulado por mÃªs", ok: true },
-                  { text: "1 correÃ§Ã£o de redaÃ§Ã£o/mÃªs", ok: true },
+                  { text: "Plano de estudos básico", ok: true },
+                  { text: "Até 200 questões por mês", ok: true },
+                  { text: "Até 300 flashcards", ok: true },
+                  { text: "1 simulado por mês", ok: true },
+                  { text: "1 correção de redação/mês", ok: true },
                   { text: "Quizzes ilimitados", ok: false },
                   { text: "Chat IA", ok: false },
                 ].map(({ text, ok }) => (
@@ -505,24 +505,24 @@ export default function LandingPage() {
                   <span className="text-4xl font-extrabold">
                     {billingAnnual ? "R$ 490,90" : "R$ 49,90"}
                   </span>
-                  <span className="text-white/70 text-sm">/{billingAnnual ? "ano" : "mÃªs"}</span>
+                  <span className="text-white/70 text-sm">/{billingAnnual ? "ano" : "mês"}</span>
                 </div>
                 {billingAnnual && (
-                  <p className="text-xs text-white/60 mt-1">equivale a R$ 40,91/mÃªs</p>
+                  <p className="text-xs text-white/60 mt-1">equivale a R$ 40,91/mês</p>
                 )}
               </div>
 
               <a href="/cadastro" className={buttonVariants({ className: "w-full font-heading font-semibold bg-white text-[var(--color-easy-primary)] hover:bg-slate-50 transition-all rounded-xl py-6 mb-8 mt-4" })}>
-                ComeÃ§ar
+                Começar
               </a>
 
               <ul className="space-y-3 flex-1">
                 {[
                   "Plano de estudos personalizado",
-                  "QuestÃµes ilimitadas",
+                  "Questões ilimitadas",
                   "Flashcards ilimitados",
                   "Simulados ilimitados",
-                  "CorreÃ§Ãµes de redaÃ§Ã£o ilimitadas",
+                  "Correções de redação ilimitadas",
                   "Quizzes ilimitados",
                   "Chat IA 24/7",
                 ].map((text) => (
@@ -548,42 +548,42 @@ export default function LandingPage() {
             <AccordionItem value="item-1" className="border-[var(--color-easy-border)] border rounded-xl px-6 data-[state=open]:bg-[var(--color-easy-bg)] transition-colors">
               <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">Para quais provas a Easy Education serve?</AccordionTrigger>
               <AccordionContent className="text-[var(--color-easy-text-muted)] text-base">
-                Nossa plataforma Ã© focada em estudantes que se preparam para o ENEM, vestibulares tradicionais, SAT e concursos pÃºblicos. Os planos de estudos se adaptam Ã  sua meta especÃ­fica.
+                Nossa plataforma é focada em estudantes que se preparam para o ENEM, vestibulares tradicionais, SAT e concursos públicos. Os planos de estudos se adaptam à sua meta específica.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-2" className="border-[var(--color-easy-border)] border rounded-xl px-6 data-[state=open]:bg-[var(--color-easy-bg)] transition-colors">
               <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">Posso estudar para ENEM e concursos ao mesmo tempo?</AccordionTrigger>
               <AccordionContent className="text-[var(--color-easy-text-muted)] text-base">
-                Sim. VocÃª pode criar trilhas de estudo paralelas e a plataforma ajustarÃ¡ seu cronograma para conciliar os horÃ¡rios sem sobrecarregar sua rotina.
+                Sim. Você pode criar trilhas de estudo paralelas e a plataforma ajustará seu cronograma para conciliar os horários sem sobrecarregar sua rotina.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-3" className="border-[var(--color-easy-border)] border rounded-xl px-6 data-[state=open]:bg-[var(--color-easy-bg)] transition-colors">
               <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">O que tem dentro da plataforma?</AccordionTrigger>
               <AccordionContent className="text-[var(--color-easy-text-muted)] text-base">
-                VocÃª terÃ¡ acesso a um painel com seu cronograma diÃ¡rio, banco de questÃµes (quizzes), criador de flashcards, mÃ³dulo de redaÃ§Ã£o com envio para correÃ§Ã£o e relatÃ³rios detalhados de desempenho.
+                Você terá acesso a um painel com seu cronograma diário, banco de questões (quizzes), criador de flashcards, módulo de redação com envio para correção e relatórios detalhados de desempenho.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-4" className="border-[var(--color-easy-border)] border rounded-xl px-6 data-[state=open]:bg-[var(--color-easy-bg)] transition-colors">
               <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">Posso acompanhar meu progresso?</AccordionTrigger>
               <AccordionContent className="text-[var(--color-easy-text-muted)] text-base">
-                Com certeza. O painel de progresso mostra seus acertos por matÃ©ria, tempo estudado, tarefas concluÃ­das e evoluÃ§Ã£o nas notas de redaÃ§Ã£o.
+                Com certeza. O painel de progresso mostra seus acertos por matéria, tempo estudado, tarefas concluídas e evolução nas notas de redação.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-5" className="border-[var(--color-easy-border)] border rounded-xl px-6 data-[state=open]:bg-[var(--color-easy-bg)] transition-colors">
-              <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">A plataforma ajuda com redaÃ§Ã£o?</AccordionTrigger>
+              <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">A plataforma ajuda com redação?</AccordionTrigger>
               <AccordionContent className="text-[var(--color-easy-text-muted)] text-base">
-                Sim! Temos propostas semanais de redaÃ§Ã£o focadas nos modelos do ENEM e vestibulares. VocÃª escreve, envia e recebe uma correÃ§Ã£o detalhada baseada nas competÃªncias exigidas.
+                Sim! Temos propostas semanais de redação focadas nos modelos do ENEM e vestibulares. Você escreve, envia e recebe uma correção detalhada baseada nas competências exigidas.
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="item-6" className="border-[var(--color-easy-border)] border rounded-xl px-6 data-[state=open]:bg-[var(--color-easy-bg)] transition-colors">
-              <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">Existe suporte para tirar dÃºvidas?</AccordionTrigger>
+              <AccordionTrigger className="text-base font-semibold hover:no-underline py-6">Existe suporte para tirar dúvidas?</AccordionTrigger>
               <AccordionContent className="text-[var(--color-easy-text-muted)] text-base">
-                Dependendo do seu plano, vocÃª pode utilizar nosso Chat IA focado em educaÃ§Ã£o para tirar dÃºvidas pontuais 24/7 sobre os conteÃºdos que estÃ¡ estudando.
+                Dependendo do seu plano, você pode utilizar nosso Chat IA focado em educação para tirar dúvidas pontuais 24/7 sobre os conteúdos que está estudando.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -593,12 +593,12 @@ export default function LandingPage() {
       {/* 9. Final CTA */}
       <section className="py-24 bg-gradient-to-r from-[var(--color-easy-primary)] to-[var(--color-easy-secondary)] text-white text-center">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Comece a estudar com mais clareza e organizaÃ§Ã£o</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Comece a estudar com mais clareza e organização</h2>
           <p className="text-xl text-white/90 mb-10">
-            A Easy Education ajuda vocÃª a manter o foco e evoluir todos os dias.
+            A Easy Education ajuda você a manter o foco e evoluir todos os dias.
           </p>
           <a href="/cadastro" className={buttonVariants({ className: "font-heading font-bold bg-white text-[var(--color-easy-primary)] hover:bg-slate-50 rounded-full px-10 py-7 text-xl shadow-xl hover:-translate-y-1 transition-all" })}>
-            ComeÃ§ar
+            Começar
           </a>
         </div>
       </section>
@@ -650,7 +650,7 @@ export default function LandingPage() {
 
           <div className="pt-8 border-t border-[var(--color-easy-border)] flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-[var(--color-easy-text-muted)] text-sm">
-              Â© 2025 Easy Education. Todos os direitos reservados.
+              © 2025 Easy Education. Todos os direitos reservados.
             </p>
             <div className="flex gap-4">
               <a href="#" className="w-8 h-8 rounded-full bg-[var(--color-easy-bg)] flex items-center justify-center text-[var(--color-easy-text-muted)] hover:text-[var(--color-easy-primary)] hover:bg-[var(--color-easy-primary)]/10 transition-colors">

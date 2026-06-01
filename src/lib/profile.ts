@@ -10,11 +10,13 @@ function getUserName(user: User, fallbackName?: string) {
 
 export async function ensureProfileForUser(user: User, fallbackName?: string) {
   const prisma = getPrisma();
+  const metadataName = user.user_metadata.name;
+  const shouldRefreshName = (typeof metadataName === "string" && metadataName.trim()) || fallbackName?.trim();
 
   return prisma.profile.upsert({
     where: { userId: user.id },
     update: {
-      name: getUserName(user, fallbackName),
+      ...(shouldRefreshName ? { name: getUserName(user, fallbackName) } : {}),
       email: user.email ?? "",
     },
     create: {
