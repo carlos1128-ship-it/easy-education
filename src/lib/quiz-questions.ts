@@ -101,7 +101,7 @@ export function toQuizRunnerQuestions(questions: PersistedQuestion[]): QuizRunne
     options: normalizeQuizOptions(question.options),
     correctAnswer: normalizeCorrectAnswer(question.correctAnswer),
     explanation: cleanText(question.explanation) || "Sem explicacao cadastrada.",
-    userAnswer: question.userAnswer ?? null,
+    userAnswer: question.userAnswer ? normalizeCorrectAnswer(question.userAnswer) : null,
     isCorrect: question.isCorrect ?? null,
   }));
 }

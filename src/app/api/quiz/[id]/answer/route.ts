@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
+import { normalizeCorrectAnswer } from "@/lib/quiz-questions";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const { user, response } = await requireUser();
@@ -18,16 +19,19 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (question.userAnswer !== null) {
     return NextResponse.json({ error: "Resposta ja confirmada." }, { status: 409 });
   }
+  const answer = normalizeCorrectAnswer(body.answer);
+  const correctAnswer = normalizeCorrectAnswer(question.correctAnswer);
+  const isCorrect = answer === correctAnswer;
 
   await prisma.quizQuestion.update({
     where: { id: body.questionId },
-    data: { userAnswer: body.answer, isCorrect: body.answer === question.correctAnswer },
+    data: { userAnswer: answer, isCorrect },
   });
 
   const updatedQuestions = await prisma.quizQuestion.findMany({ where: { quizId: id } });
   const answered = updatedQuestions.filter((item) => item.userAnswer !== null);
   if (answered.length === updatedQuestions.length) {
-    const correct = answered.filter((item) => item.isCorrect).length;
+    const correct = answered.filter((item) => normalizeCorrectAnswer(item.userAnswer) === normalizeCorrectAnswer(item.correctAnswer)).length;
     const completedAt = new Date();
     const score = (correct / answered.length) * 100;
     const durationMinutes = Math.max(1, Math.min(180, Math.ceil((completedAt.getTime() - quiz.createdAt.getTime()) / 60000)));
@@ -55,5 +59,5 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   revalidatePath("/dashboard/simulados");
   revalidatePath("/dashboard/desempenho");
 
-  return NextResponse.json({ correct: body.answer === question.correctAnswer, explanation: question.explanation });
+  return NextResponse.json({ correct: isCorrect, explanation: question.explanation });
 }
