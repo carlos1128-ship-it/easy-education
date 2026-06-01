@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { SUBJECTS } from "@/lib/subjects";
+import { cn } from "@/lib/utils";
 
 export function SubjectSelect({
   value,
@@ -76,6 +77,44 @@ export function SubjectChecklist({
               </div>
             ) : null}
           </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function SubjectMultiSelect({
+  value,
+  onChange,
+  compact = false,
+}: {
+  value: string[];
+  onChange: (value: string[]) => void;
+  compact?: boolean;
+}) {
+  const subjects = SUBJECTS.filter((subject) => subject.name !== "Multidisciplinar");
+
+  function toggleSubject(name: string, checked: boolean) {
+    const next = checked ? [...value, name] : value.filter((item) => item !== name);
+    onChange([...new Set(next)]);
+  }
+
+  return (
+    <div className={cn("grid max-h-56 gap-2 overflow-y-auto rounded-xl border border-input bg-white p-2 dark:bg-[#0D1117]", compact ? "grid-cols-1 sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3")}>
+      {subjects.map((subject) => {
+        const checked = value.includes(subject.name);
+        return (
+          <label
+            key={subject.name}
+            className={cn(
+              "flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-semibold text-[#64748B] transition-colors hover:bg-[#EEF2FF]/60",
+              checked && "border-[#4F46E5]/30 bg-[#EEF2FF] text-[#4F46E5]",
+            )}
+          >
+            <Checkbox checked={checked} onCheckedChange={(nextChecked) => toggleSubject(subject.name, Boolean(nextChecked))} />
+            <span className="size-2.5 rounded-full" style={{ backgroundColor: subject.color }} />
+            <span>{subject.name}</span>
+          </label>
         );
       })}
     </div>

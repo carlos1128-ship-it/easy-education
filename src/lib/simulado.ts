@@ -1,21 +1,9 @@
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
+import { describeSubjectForPrompt, fallbackQuizQuestions, fillQuestionCount, sanitizeGeneratedQuizQuestions, subjectsFromText } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-function fallbackQuestions(subjects: string[]): GeneratedQuizQuestion[] {
-  const baseSubjects = subjects.length ? subjects : ["Matematica", "Portugues", "Biologia", "Historia"];
-  return Array.from({ length: 20 }).map((_, index) => {
-    const subject = baseSubjects[index % baseSubjects.length];
-    return {
-      question: `Questao ${index + 1} - ${subject}: resolva a situacao-problema proposta e escolha a alternativa mais adequada.`,
-      options: ["A) Alternativa correta", "B) Distrator plausivel", "C) Distrator comum", "D) Distrator conceitual"],
-      correctAnswer: "A",
-      explanation: `Esta questao revisa fundamentos de ${subject}.`,
-    };
-  });
-}
 
 export async function createSimuladoForUser({
   userId,
@@ -31,19 +19,19 @@ export async function createSimuladoForUser({
   questionCount?: number;
 }) {
   const prisma = getPrisma();
-  const prompt = `Crie exatamente ${questionCount} questoes para um simulado realista sobre "${topic ?? subject}". Misture estilos de ENEM, vestibulares brasileiros e concursos quando fizer sentido. Use enunciados contextualizados, mais de uma habilidade cognitiva, alternativas A-D e uma explicacao curta. Retorne APENAS um array JSON valido com question, options, correctAnswer e explanation.`;
+  const promptScope = describeSubjectForPrompt(subject, topic);
+  const subjectList = subjectsFromText(subject);
+  const prompt = `Crie exatamente ${questionCount} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}. Misture estilos de ENEM, vestibulares brasileiros e concursos quando fizer sentido. Se for multidisciplinar, distribua as questoes entre as materias indicadas. Use enunciados contextualizados, mais de uma habilidade cognitiva, alternativas A-D e uma explicacao curta. Retorne APENAS um array JSON valido com question, options, correctAnswer e explanation.`;
   let questions: GeneratedQuizQuestion[];
 
   try {
-    questions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
+    const rawQuestions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
+    questions = sanitizeGeneratedQuizQuestions(rawQuestions, questionCount, subject);
   } catch {
-    questions = fallbackQuestions([subject]);
+    questions = fallbackQuizQuestions(questionCount, subjectList);
   }
 
-  const safeQuestions = questions.slice(0, questionCount);
-  if (safeQuestions.length < questionCount) {
-    safeQuestions.push(...fallbackQuestions([subject]).slice(safeQuestions.length, questionCount));
-  }
+  const safeQuestions = fillQuestionCount(questions, questionCount, subjectList);
 
   return prisma.quiz.create({
     data: {

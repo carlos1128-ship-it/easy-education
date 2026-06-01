@@ -4,6 +4,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
+import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions, subjectsFromText } from "@/lib/quiz-questions";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { quizGenerateSchema } from "@/lib/validators";
@@ -34,9 +35,15 @@ export async function POST(request: Request) {
     }
 
     const file = payload.fileId ? await prisma.uploadedFile.findFirst({ where: { id: payload.fileId, userId: user.id } }) : null;
-    const topic = payload.topic ?? file?.textContent?.slice(0, 5000) ?? payload.subject;
-    const prompt = `Gere exatamente ${payload.questionCount} questoes de multipla escolha sobre "${topic}" no nivel ${payload.difficulty} no estilo ${payload.model}. Para cada questao, retorne um JSON com: question (string), options (array de 4 strings A-D), correctAnswer (letra), explanation (string explicando por que a resposta esta correta). Responda APENAS com um array JSON valido, sem texto adicional.`;
-    const questions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
+    const topic = payload.topic ?? file?.textContent?.slice(0, 5000);
+    const promptScope = describeSubjectForPrompt(payload.subject, topic);
+    const prompt = `Gere exatamente ${payload.questionCount} questoes de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${payload.difficulty} no estilo ${payload.model}. Se houver mais de uma materia, distribua as questoes entre elas e deixe claro o assunto no enunciado. Para cada questao, retorne um JSON com: question (string), options (array de exatamente 4 strings A-D), correctAnswer (apenas A, B, C ou D), explanation (string explicando por que a resposta esta correta). Responda APENAS com um array JSON valido, sem texto adicional.`;
+    const rawQuestions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
+    const questions = fillQuestionCount(
+      sanitizeGeneratedQuizQuestions(rawQuestions, payload.questionCount, payload.subject),
+      payload.questionCount,
+      subjectsFromText(payload.subject),
+    );
 
     const quiz = await prisma.quiz.create({
       data: {

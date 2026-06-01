@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardCheck } from "lucide-react";
-import { SubjectSelect } from "@/components/subjects/subject-fields";
+import { SubjectMultiSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,17 +12,19 @@ import { readApiJson } from "@/lib/client-response";
 export function SimuladoCreateForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [subject, setSubject] = useState("ENEM");
+  const [subjects, setSubjects] = useState(["Matematica", "Portugues", "Biologia", "Historia"]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const selectedSubjects = subjects.length ? subjects : ["ENEM"];
+    const subject = selectedSubjects.join(", ");
     setLoading(true);
     const response = await fetch("/api/quiz/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        topic: `Simulado de ${subject} no estilo ENEM, com questões contextualizadas e nível de prova`,
+        topic: `Simulado de ${subject} no estilo ENEM, com questoes contextualizadas e nivel de prova`,
         subject,
         difficulty: "simulado",
         questionCount: Number(formData.get("questionCount") ?? 20),
@@ -46,14 +48,14 @@ export function SimuladoCreateForm() {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-4 shadow-sm sm:flex-row sm:items-end">
+    <form onSubmit={submit} className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-4 shadow-sm lg:flex-row lg:items-end">
       <div className="flex-1">
-        <label className="text-sm font-semibold text-[#0F172A]">Área ou matéria</label>
+        <label className="text-sm font-semibold text-[#0F172A]">Áreas ou matérias</label>
         <div className="mt-1">
-          <SubjectSelect value={subject} onChange={setSubject} placeholder="Selecione a matéria" />
+          <SubjectMultiSelect value={subjects} onChange={setSubjects} compact />
         </div>
       </div>
-      <div className="w-full sm:w-36">
+      <div className="w-full lg:w-36">
         <label htmlFor="simulado-count" className="text-sm font-semibold text-[#0F172A]">Questões</label>
         <Input id="simulado-count" name="questionCount" type="number" min={5} max={20} defaultValue={20} className="mt-1" />
       </div>

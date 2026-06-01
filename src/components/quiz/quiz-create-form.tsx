@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
-import { SubjectSelect } from "@/components/subjects/subject-fields";
+import { SubjectMultiSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,11 +22,12 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   const [loading, setLoading] = useState(false);
   const [difficulty, setDifficulty] = useState("medio");
   const [fileId, setFileId] = useState("none");
-  const [subject, setSubject] = useState("Matematica");
+  const [subjects, setSubjects] = useState(["Matematica"]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const selectedSubjects = subjects.length ? subjects : ["ENEM"];
     setLoading(true);
     const response = await fetch("/api/quiz/generate", {
       method: "POST",
@@ -34,7 +35,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
       body: JSON.stringify({
         topic: String(formData.get("topic") ?? "").trim() || undefined,
         fileId: fileId !== "none" ? fileId : undefined,
-        subject,
+        subject: selectedSubjects.join(", "),
         difficulty,
         questionCount: Number(formData.get("questionCount") ?? 10),
         model: "ENEM",
@@ -64,8 +65,8 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label>Matéria</Label>
-          <SubjectSelect value={subject} onChange={setSubject} />
+          <Label>Matérias</Label>
+          <SubjectMultiSelect value={subjects} onChange={setSubjects} compact />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="quiz-topic">Tema</Label>

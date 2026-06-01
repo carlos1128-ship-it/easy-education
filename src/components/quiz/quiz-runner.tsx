@@ -6,26 +6,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-
-type QuizQuestion = {
-  id: string;
-  question: string;
-  options: unknown;
-  correctAnswer: string;
-  explanation: string;
-  userAnswer: string | null;
-  isCorrect: boolean | null;
-};
+import type { QuizRunnerQuestion } from "@/lib/quiz-questions";
 
 type QuizRunnerProps = {
   quizId: string;
-  questions: QuizQuestion[];
+  questions: QuizRunnerQuestion[];
   mode?: "quiz" | "simulado";
 };
-
-function normalizeOptions(options: unknown) {
-  return Array.isArray(options) ? options.map(String) : [];
-}
 
 export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps) {
   const [index, setIndex] = useState(0);
@@ -41,7 +28,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
   const score = questions.filter((item) => answers[item.id] === item.correctAnswer).length;
   const canGoNext = pageQuestions.every((item) => answers[item.id]);
 
-  async function confirmAnswer(question: QuizQuestion) {
+  async function confirmAnswer(question: QuizRunnerQuestion) {
     const answer = drafts[question.id];
     if (!answer || answers[question.id]) return;
     setSaving(true);
@@ -107,7 +94,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
 
       <div className="space-y-6">
         {pageQuestions.map((question, questionIndex) => {
-          const options = normalizeOptions(question.options);
+          const options = question.options;
           const confirmed = answers[question.id];
           const selected = confirmed ?? drafts[question.id];
           return (
