@@ -64,36 +64,49 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
     { title: "Simulados", icon: ClipboardCheck, items: simulados.map((item) => ({ title: item.title, sub: `${item.subject} · ${item.questionCount} questões`, href: `/dashboard/simulados/${item.id}` })) },
     { title: "Arquivos", icon: FileText, items: files.map((item) => ({ title: item.name, sub: item.processed ? "Processado" : "Aguardando processamento", href: "/dashboard/arquivos" })) },
     { title: "Flashcards", icon: Layers, items: decks.map((item) => ({ title: item.title, sub: item.subject, href: `/dashboard/flashcards/${item.id}` })) },
-    { title: "Redacoes", icon: PenTool, items: essays.map((item) => ({ title: item.title, sub: item.theme ?? "Redação", href: "/dashboard/redacao" })) },
+    { title: "Redações", icon: PenTool, items: essays.map((item) => ({ title: item.title, sub: item.theme ?? "Redação", href: "/dashboard/redacao" })) },
   ];
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">Busca</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">
+        <p className="text-sm font-medium text-brand-strong">Busca</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">
           Resultados para {query ? `"${query}"` : "sua pesquisa"}
         </h1>
+        <form action="/dashboard/busca" role="search" className="mt-4 flex max-w-xl gap-2">
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder="Buscar estudos, arquivos ou quizzes…"
+            aria-label="Buscar estudos, arquivos ou quizzes"
+            className="h-11 min-w-0 flex-1 rounded-lg border border-border-strong bg-surface px-3.5 text-[15px] text-ink placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          />
+          <button type="submit" className="h-11 rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand hover:bg-brand-strong">
+            Buscar
+          </button>
+        </form>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
         {groups.map(({ title, icon: Icon, items }) => (
-          <section key={title} className="rounded-[20px] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+          <section key={title} className="rounded-2xl border border-border bg-surface p-5 shadow-card">
             <div className="mb-4 flex items-center gap-2">
-              <Icon className="size-5 text-[#4F46E5]" />
-              <h2 className="font-bold text-[#0F172A]">{title}</h2>
+              <Icon className="size-5 text-brand-strong" />
+              <h2 className="font-bold text-ink">{title}</h2>
             </div>
             {items.length ? (
               <div className="space-y-2">
                 {items.map((item) => (
-                  <Link key={`${item.href}-${item.title}`} href={item.href} className="block rounded-xl border border-[#E2E8F0] p-3 transition-colors hover:border-[#4F46E5]/30">
-                    <p className="font-semibold text-[#0F172A]">{item.title}</p>
-                    <p className="mt-1 text-sm text-[#64748B]">{item.sub}</p>
+                  <Link key={`${item.href}-${item.title}`} href={item.href} className="block rounded-lg border border-border p-3 transition-colors hover:border-border-strong">
+                    <p className="font-medium text-ink">{item.title}</p>
+                    <p className="mt-1 text-sm text-ink-muted">{item.sub}</p>
                   </Link>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#64748B]">Nada encontrado aqui.</p>
+              <p className="text-sm text-ink-muted">Nada encontrado aqui.</p>
             )}
           </section>
         ))}

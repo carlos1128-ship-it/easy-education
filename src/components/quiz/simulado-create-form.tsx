@@ -48,18 +48,18 @@ export function SimuladoCreateForm() {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-4 shadow-sm lg:flex-row lg:items-end">
+    <form onSubmit={submit} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 shadow-card lg:flex-row lg:items-end">
       <div className="flex-1">
-        <label className="text-sm font-semibold text-[#0F172A]">Áreas ou matérias</label>
+        <label className="text-sm font-medium text-ink">Áreas ou matérias</label>
         <div className="mt-1">
           <SubjectMultiSelect value={subjects} onChange={setSubjects} compact />
         </div>
       </div>
       <div className="w-full lg:w-36">
-        <label htmlFor="simulado-count" className="text-sm font-semibold text-[#0F172A]">Questões</label>
+        <label htmlFor="simulado-count" className="text-sm font-medium text-ink">Questões</label>
         <Input id="simulado-count" name="questionCount" type="number" min={5} max={20} defaultValue={20} className="mt-1" />
       </div>
-      <Button type="submit" disabled={loading} className="gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]">
+      <Button type="submit" disabled={loading} className="gap-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong">
         <ClipboardCheck className="size-4" />
         {loading ? "Gerando..." : "Novo simulado"}
       </Button>

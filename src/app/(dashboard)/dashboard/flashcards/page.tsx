@@ -20,8 +20,8 @@ export default async function FlashcardsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">Flashcards</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Decks de revisão</h1>
+        <p className="text-sm font-medium text-brand-strong">Flashcards</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Decks de revisão</h1>
       </div>
 
       <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
@@ -34,11 +34,11 @@ export default async function FlashcardsPage() {
             <Link
               href={`/dashboard/flashcards/${deck.id}`}
               key={deck.id}
-              className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition hover:border-[#4F46E5]/30"
+              className="rounded-2xl border border-border bg-surface p-5 shadow-card transition hover:border-border-strong"
             >
-              <BookOpen className="size-6 text-[#4F46E5]" />
-              <h2 className="mt-4 font-bold text-[#0F172A]">{deck.title}</h2>
-              <p className="mt-1 text-sm text-[#64748B]">
+              <BookOpen className="size-6 text-brand-strong" />
+              <h2 className="mt-4 font-bold text-ink">{deck.title}</h2>
+              <p className="mt-1 text-sm text-ink-muted">
                 {deck.subject} · {deck._count.flashcards} cards
               </p>
             </Link>

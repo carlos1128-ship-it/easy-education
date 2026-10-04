@@ -76,70 +76,70 @@ export default async function DesempenhoPage({ searchParams }: { searchParams: P
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">Desempenho</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Evolução dos estudos</h1>
+        <p className="text-sm font-medium text-brand-strong">Desempenho</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Evolução dos estudos</h1>
       </div>
 
-      <form className="flex flex-col gap-3 rounded-[18px] border border-[#E2E8F0] bg-white p-4 shadow-sm sm:flex-row sm:items-end">
+      <form className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 shadow-card sm:flex-row sm:items-end">
         <div className="flex-1">
-          <label htmlFor="from" className="text-sm font-semibold text-[#0F172A]">Inicio</label>
+          <label htmlFor="from" className="text-sm font-medium text-ink">Início</label>
           <input id="from" name="from" type="date" defaultValue={from ?? ""} className="mt-1 h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm" />
         </div>
         <div className="flex-1">
-          <label htmlFor="to" className="text-sm font-semibold text-[#0F172A]">Fim</label>
+          <label htmlFor="to" className="text-sm font-medium text-ink">Fim</label>
           <input id="to" name="to" type="date" defaultValue={to ?? ""} className="mt-1 h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm" />
         </div>
-        <button type="submit" className="h-9 rounded-xl bg-[#4F46E5] px-4 text-sm font-semibold text-white hover:bg-[#4338CA]">
+        <button type="submit" className="h-9 rounded-lg bg-brand px-4 text-sm font-medium text-on-brand hover:bg-brand-strong">
           Filtrar
         </button>
       </form>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <section className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-[#0F172A]">Evolução geral</h2>
+        <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
+          <h2 className="text-xl font-bold text-ink">Evolução geral</h2>
           <div className="mt-4">
             <WeeklyHoursChart data={weeklyHours} />
           </div>
         </section>
-        <section className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-[#0F172A]">Desempenho por matéria</h2>
+        <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
+          <h2 className="text-xl font-bold text-ink">Desempenho por matéria</h2>
           <div className="mt-4">
             <SubjectBarChart data={subjectPerformance} />
           </div>
         </section>
-        <section className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-[#0F172A]">Evolução por matéria</h2>
+        <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
+          <h2 className="text-xl font-bold text-ink">Evolução por matéria</h2>
           <div className="mt-4">
             <SubjectEvolutionChart data={subjectEvolution} subjects={evolutionSubjects} />
           </div>
         </section>
-        <section className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-[#0F172A]">Historico de redacoes</h2>
+        <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
+          <h2 className="text-xl font-bold text-ink">Histórico de redações</h2>
           <div className="mt-4">
             <EssayLineChart data={essayScores} />
           </div>
         </section>
-        <section className="rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-[#0F172A]">Mapa de calor de atividade</h2>
+        <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
+          <h2 className="text-xl font-bold text-ink">Mapa de calor de atividade</h2>
           <div className="mt-5 grid grid-cols-14 gap-1">
             {heatmap.map((count, index) => (
-              <div key={index} className={`aspect-square rounded-sm ${count > 2 ? "bg-[#4F46E5]" : count > 0 ? "bg-[#A5B4FC]" : "bg-[#F1F5F9]"}`} />
+              <div key={index} className={`aspect-square rounded-sm ${count > 2 ? "bg-brand" : count > 0 ? "bg-brand-soft" : "bg-surface-muted"}`} />
             ))}
           </div>
         </section>
       </div>
 
-      <section className="rounded-[20px] border border-red-200 bg-white p-6 shadow-sm">
-        <div className="flex items-center gap-2 text-red-700">
+      <section className="rounded-2xl border border-danger/40 bg-surface p-6 shadow-card">
+        <div className="flex items-center gap-2 text-danger">
           <AlertTriangle className="size-5" />
           <h2 className="text-xl font-bold">Matérias com mais erros</h2>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           {weakTopics.length ? weakTopics.map((topic) => (
-            <span key={topic} className="rounded-full bg-red-50 px-3 py-1 text-sm text-red-700">
+            <span key={topic} className="rounded-full bg-danger-tint px-3 py-1 text-sm text-danger">
               {topic}
             </span>
-          )) : <p className="text-sm text-[#64748B]">Complete quizzes para mapear seus pontos fracos.</p>}
+          )) : <p className="text-sm text-ink-muted">Complete quizzes para mapear seus pontos fracos.</p>}
         </div>
       </section>
     </div>

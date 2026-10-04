@@ -30,18 +30,18 @@ export function QuizOption({ letter, state = "default", className, children, typ
       )}
       {...props}
     >
-      <span className="grid size-7 flex-none place-items-center rounded-full border-[1.5px] border-current text-[13px] font-semibold leading-4">
+      <span className="grid size-7 flex-none place-items-center rounded-full border-[1.5px] border-current text-[13px] font-medium leading-4">
         {letter}
       </span>
       <span className="flex-1 text-ink">{children}</span>
       {state === "correct" ? (
-        <span className="inline-flex items-center gap-1 text-[13px] font-semibold leading-4">
+        <span className="inline-flex items-center gap-1 text-[13px] font-medium leading-4">
           <Check className="size-4" strokeWidth={2.5} aria-hidden="true" />
           Correta
         </span>
       ) : null}
       {state === "wrong" ? (
-        <span className="inline-flex items-center gap-1 text-[13px] font-semibold leading-4">
+        <span className="inline-flex items-center gap-1 text-[13px] font-medium leading-4">
           <X className="size-4" strokeWidth={2.5} aria-hidden="true" />
           Errada
         </span>

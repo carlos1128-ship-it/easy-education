@@ -63,7 +63,7 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 grid gap-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 md:grid-cols-4">
+    <form onSubmit={submit} className="mt-6 grid gap-3 rounded-lg border border-border bg-surface-muted p-4 md:grid-cols-4">
       <div className="space-y-1.5">
         <Label htmlFor="plan-goal">Objetivo</Label>
         <Input id="plan-goal" name="goal" defaultValue={goal} />
@@ -80,7 +80,7 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
         <Label>Matérias</Label>
         <SubjectChecklist value={selectedSubjects} onChange={setSelectedSubjects} />
       </div>
-      <Button type="submit" disabled={loading} className="gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA] md:col-span-4">
+      <Button type="submit" disabled={loading} className="gap-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong md:col-span-4">
         <Sparkles className="size-4" />
         {loading ? "Gerando..." : "Gerar novo plano"}
       </Button>

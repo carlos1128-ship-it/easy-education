@@ -5,6 +5,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { QuizOption, type QuizOptionState } from "@/components/ui/quiz-option";
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QuizRunnerQuestion } from "@/lib/quiz-questions";
 
@@ -53,10 +55,10 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
 
   if (!pageQuestions.length && !finished) {
     return (
-      <div className="mx-auto max-w-3xl rounded-[20px] border border-[#E2E8F0] bg-white p-6 text-center shadow-sm">
-        <h1 className="text-2xl font-bold text-[#0F172A]">Quiz sem questões</h1>
-        <p className="mt-2 text-[#64748B]">Gere outro quiz para comecar a praticar.</p>
-        <Link href="/dashboard/quizzes" className="mt-6 inline-flex h-9 items-center rounded-xl bg-[#4F46E5] px-4 text-sm font-medium text-white hover:bg-[#4338CA]">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-6 text-center shadow-card">
+        <h1 className="text-2xl font-bold text-ink">Quiz sem questões</h1>
+        <p className="mt-2 text-ink-muted">Gere outro quiz para começar a praticar.</p>
+        <Link href="/dashboard/quizzes" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand hover:bg-brand-strong">
           Voltar aos quizzes
         </Link>
       </div>
@@ -65,17 +67,17 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
 
   if (finished) {
     return (
-      <div className="mx-auto max-w-3xl rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold text-[#0F172A]">Resultado</h1>
-        <p className="mt-3 text-4xl font-bold text-[#4F46E5]">{Math.round((score / questions.length) * 100)}%</p>
-        <p className="mt-2 text-[#64748B]">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-6 shadow-card">
+        <h1 className="text-2xl font-bold text-ink">Resultado</h1>
+        <p className="mt-3 text-4xl font-bold text-brand-strong">{Math.round((score / questions.length) * 100)}%</p>
+        <p className="mt-2 text-ink-muted">
           {score} de {questions.length} questões corretas.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Button className="rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]" onClick={() => setIndex(0)}>
+          <Button className="rounded-lg bg-brand text-on-brand hover:bg-brand-strong" onClick={() => setIndex(0)}>
             Revisar respostas
           </Button>
-          <Link href="/dashboard/quizzes" className="inline-flex h-9 items-center rounded-lg border border-input px-4 text-sm font-medium text-[#0F172A] hover:bg-[#F8FAFC]">
+          <Link href="/dashboard/quizzes" className="inline-flex min-h-11 items-center rounded-lg border border-border-strong px-5 text-[15px] font-medium text-ink hover:bg-surface-muted">
             Ver todos
           </Link>
         </div>
@@ -84,9 +86,9 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
   }
 
   return (
-    <div className="mx-auto max-w-5xl rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-sm">
+    <div className="mx-auto max-w-5xl rounded-2xl border border-border bg-surface p-6 shadow-card">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <span className="text-sm text-[#64748B]">
+        <span className="text-sm text-ink-muted">
           {mode === "simulado" ? `Questões ${index + 1}-${Math.min(index + pageSize, questions.length)}` : `Questão ${index + 1}`} de {questions.length}
         </span>
         <Progress value={(answeredCount / questions.length) * 100} className="max-w-40" />
@@ -98,36 +100,48 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
           const confirmed = answers[question.id];
           const selected = confirmed ?? drafts[question.id];
           return (
-            <section key={question.id} className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-              <h2 className="text-base font-bold text-[#0F172A]">
+            <section key={question.id} className="rounded-2xl border border-border bg-surface-muted p-4">
+              <h2 className="text-[17px] font-medium leading-[26px] text-ink">
                 {index + questionIndex + 1}. {question.question}
               </h2>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 {options.map((option) => {
                   const letter = option.slice(0, 1);
+                  const text = option.replace(/^[A-Ea-e]\s*[).:-]\s*/, "");
+                  const state: QuizOptionState = confirmed
+                    ? letter === question.correctAnswer
+                      ? "correct"
+                      : letter === confirmed
+                        ? "wrong"
+                        : "default"
+                    : selected === letter
+                      ? "selected"
+                      : "default";
                   return (
-                    <button
-                      type="button"
+                    <QuizOption
                       key={option}
+                      letter={letter}
+                      state={state}
                       disabled={Boolean(confirmed) || saving}
                       onClick={() => setDrafts((current) => ({ ...current, [question.id]: letter }))}
-                      className={cn(
-                        "rounded-xl border border-[#E2E8F0] bg-white p-4 text-left text-[#0F172A] transition-colors hover:border-[#4F46E5]/30 disabled:cursor-not-allowed",
-                        selected === letter && "border-[#4F46E5] bg-[#EEF2FF]",
-                        confirmed && selected !== letter && "opacity-60",
-                      )}
+                      className={cn(confirmed && state === "default" && "opacity-60")}
                     >
-                      {option}
-                    </button>
+                      {text}
+                    </QuizOption>
                   );
                 })}
               </div>
               {confirmed ? (
-                <div className="mt-5 rounded-xl bg-white p-4 text-sm">
-                  <p className={confirmed === question.correctAnswer ? "font-semibold text-emerald-700" : "font-semibold text-red-700"}>
-                    {confirmed === question.correctAnswer ? "Você acertou." : `Resposta correta: ${question.correctAnswer}`}
+                <div className="mt-5 rounded-lg bg-surface p-4 text-[13px] leading-5">
+                  <p className={cn("flex items-center gap-1.5 font-medium", confirmed === question.correctAnswer ? "text-success" : "text-danger")}>
+                    {confirmed === question.correctAnswer ? (
+                      <Check className="size-4" strokeWidth={2.5} aria-hidden="true" />
+                    ) : (
+                      <X className="size-4" strokeWidth={2.5} aria-hidden="true" />
+                    )}
+                    {confirmed === question.correctAnswer ? "Você acertou." : `Errou. Resposta correta: ${question.correctAnswer}`}
                   </p>
-                  <p className="mt-2 text-[#64748B]">{question.explanation}</p>
+                  <p className="mt-2 text-ink-muted">{question.explanation}</p>
                 </div>
               ) : null}
             </section>
@@ -143,7 +157,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
           <Button variant="outline" disabled={saving || pageQuestions.every((item) => answers[item.id])} onClick={confirmPage}>
             {saving ? "Salvando..." : mode === "simulado" ? "Confirmar página" : "Confirmar resposta"}
           </Button>
-          <Button className="rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]" disabled={!canGoNext || saving} onClick={() => setIndex((value) => value + pageSize)}>
+          <Button className="rounded-lg bg-brand text-on-brand hover:bg-brand-strong" disabled={!canGoNext || saving} onClick={() => setIndex((value) => value + pageSize)}>
             {index + pageSize >= questions.length ? "Finalizar" : "Próxima"}
           </Button>
         </div>

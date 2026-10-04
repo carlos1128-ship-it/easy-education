@@ -17,8 +17,8 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">Arquivos</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Meus Arquivos</h1>
+        <p className="text-sm font-medium text-brand-strong">Arquivos</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Meus Arquivos</h1>
       </div>
 
       <FileUploader />
@@ -28,14 +28,14 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
           {files.map((file) => (
             <div
               key={file.id}
-              className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition-colors hover:border-[#4F46E5]/30"
+              className="rounded-2xl border border-border bg-surface p-5 shadow-card transition-colors hover:border-border-strong"
             >
-              <FileText className="size-6 text-[#4F46E5]" />
-              <h2 className="mt-4 font-bold text-[#0F172A]">{file.name}</h2>
-              <p className="mt-1 text-sm text-[#64748B]">
+              <FileText className="size-6 text-brand-strong" />
+              <h2 className="mt-4 font-bold text-ink">{file.name}</h2>
+              <p className="mt-1 text-sm text-ink-muted">
                 {file.type || "arquivo"} · {formatBytes(file.sizeBytes)}
               </p>
-              <span className="mt-4 inline-flex rounded-md bg-[#EEF2FF] px-3 py-1 text-xs font-bold text-[#4F46E5]">
+              <span className="mt-4 inline-flex rounded-md bg-brand-tint px-3 py-1 text-xs font-bold text-brand-strong">
                 {file.processed ? "Pronto" : "Aguardando processamento"}
               </span>
               <FileActions fileId={file.id} fileName={file.name} processed={file.processed} />

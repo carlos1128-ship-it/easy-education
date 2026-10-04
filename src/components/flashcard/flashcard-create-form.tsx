@@ -55,14 +55,14 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+    <form onSubmit={submit} className="rounded-2xl border border-border bg-surface p-5 shadow-card">
       <div className="mb-4 flex items-center gap-2">
-        <Sparkles className="size-5 text-[#4F46E5]" />
-        <h2 className="font-bold text-[#0F172A]">Gerar flashcards com IA</h2>
+        <Sparkles className="size-5 text-brand-strong" />
+        <h2 className="font-bold text-ink">Gerar flashcards com IA</h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="deck-title">Titulo</Label>
+          <Label htmlFor="deck-title">Título</Label>
           <Input id="deck-title" name="title" required placeholder="Revisão de Biologia" />
         </div>
         <div className="space-y-1.5">
@@ -92,7 +92,7 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
           <Input id="card-count" name="count" type="number" min={5} max={30} defaultValue={12} />
         </div>
       </div>
-      <Button type="submit" disabled={loading} className="mt-4 gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]">
+      <Button type="submit" disabled={loading} className="mt-4 gap-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong">
         <Sparkles className="size-4" />
         {loading ? "Gerando..." : "Criar deck"}
       </Button>

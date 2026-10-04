@@ -34,18 +34,18 @@ export function FileUploader() {
 
   return (
     <div
-      className="rounded-[20px] border border-dashed border-[#CBD5E1] bg-white p-8 text-center shadow-sm"
+      className="rounded-2xl border border-dashed border-border-strong bg-surface p-8 text-center shadow-card"
       onDrop={(event) => {
         event.preventDefault();
         upload(event.dataTransfer.files[0]);
       }}
       onDragOver={(event) => event.preventDefault()}
     >
-      <Upload className="mx-auto size-8 text-[#4F46E5]" />
-      <h3 className="mt-4 text-lg font-bold text-[#0F172A]">Arraste seu arquivo aqui</h3>
-      <p className="mt-2 text-sm text-slate-500">PDF ou TXT ate 20MB</p>
+      <Upload className="mx-auto size-8 text-brand-strong" />
+      <h3 className="mt-4 text-lg font-bold text-ink">Arraste seu arquivo aqui</h3>
+      <p className="mt-2 text-sm text-ink-muted">PDF ou TXT até 20MB</p>
       <input ref={inputRef} type="file" className="hidden" accept=".pdf,.txt,text/plain,application/pdf" onChange={(event) => upload(event.target.files?.[0])} />
-      <Button className="mt-5 bg-[#4F46E5] text-white hover:bg-[#4338CA]" onClick={() => inputRef.current?.click()} disabled={loading}>
+      <Button className="mt-5 bg-brand text-on-brand hover:bg-brand-strong" onClick={() => inputRef.current?.click()} disabled={loading}>
         {loading ? "Enviando..." : "Selecionar arquivo"}
       </Button>
     </div>

@@ -16,8 +16,8 @@ export default async function FlashcardDeckPage({ params }: { params: Promise<{ 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">Revisão</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">{deck.title}</h1>
+        <p className="text-sm font-medium text-brand-strong">Revisão</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{deck.title}</h1>
       </div>
       <FlashcardReview cards={deck.flashcards} />
     </div>

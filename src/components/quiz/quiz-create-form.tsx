@@ -58,10 +58,10 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-sm">
+    <form onSubmit={submit} className="rounded-2xl border border-border bg-surface p-5 shadow-card">
       <div className="mb-4 flex items-center gap-2">
-        <Sparkles className="size-5 text-[#4F46E5]" />
-        <h2 className="font-bold text-[#0F172A]">Gerar quiz com IA</h2>
+        <Sparkles className="size-5 text-brand-strong" />
+        <h2 className="font-bold text-ink">Gerar quiz com IA</h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
@@ -94,9 +94,9 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="facil">Facil</SelectItem>
-                <SelectItem value="medio">Medio</SelectItem>
-                <SelectItem value="dificil">Dificil</SelectItem>
+                <SelectItem value="facil">Fácil</SelectItem>
+                <SelectItem value="medio">Médio</SelectItem>
+                <SelectItem value="dificil">Difícil</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -106,7 +106,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
           </div>
         </div>
       </div>
-      <Button type="submit" disabled={loading} className="mt-4 gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]">
+      <Button type="submit" disabled={loading} className="mt-4 gap-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong">
         <Sparkles className="size-4" />
         {loading ? "Gerando..." : "Criar quiz"}
       </Button>

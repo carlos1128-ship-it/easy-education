@@ -51,24 +51,24 @@ export function ProfileSettingsForm({ name, studyGoal, dailyMinutes, studyMethod
     <form onSubmit={submit}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor="settings-name" className="text-sm font-bold text-[#0F172A]">Nome</label>
+          <label htmlFor="settings-name" className="text-sm font-bold text-ink">Nome</label>
           <Input id="settings-name" name="name" defaultValue={name} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="settings-goal" className="text-sm font-bold text-[#0F172A]">Objetivo</label>
+          <label htmlFor="settings-goal" className="text-sm font-bold text-ink">Objetivo</label>
           <Input id="settings-goal" name="studyGoal" defaultValue={studyGoal} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="settings-minutes" className="text-sm font-bold text-[#0F172A]">Minutos por dia</label>
+          <label htmlFor="settings-minutes" className="text-sm font-bold text-ink">Minutos por dia</label>
           <Input id="settings-minutes" name="dailyMinutes" type="number" min={30} max={600} defaultValue={dailyMinutes} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="settings-method" className="text-sm font-bold text-[#0F172A]">Metodo preferido</label>
+          <label htmlFor="settings-method" className="text-sm font-bold text-ink">Método preferido</label>
           <Input id="settings-method" name="studyMethod" defaultValue={studyMethod} />
         </div>
       </div>
 
-      <Button type="submit" disabled={loading} className="mt-6 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]">
+      <Button type="submit" disabled={loading} className="mt-6 rounded-lg bg-brand text-on-brand hover:bg-brand-strong">
         {loading ? "Salvando..." : "Salvar alteracoes"}
       </Button>
     </form>

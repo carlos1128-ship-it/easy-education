@@ -16,8 +16,8 @@ export default async function QuizzesPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">Quizzes</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">Seus quizzes</h1>
+        <p className="text-sm font-medium text-brand-strong">Quizzes</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Seus quizzes</h1>
       </div>
 
       <QuizCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
@@ -30,14 +30,14 @@ export default async function QuizzesPage() {
             <Link
               href={`/dashboard/quizzes/${quiz.id}`}
               key={quiz.id}
-              className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)] transition hover:border-[#4F46E5]/30"
+              className="rounded-2xl border border-border bg-surface p-5 shadow-card transition hover:border-border-strong"
             >
-              <HelpCircle className="size-6 text-[#4F46E5]" />
-              <h2 className="mt-4 font-bold text-[#0F172A]">{quiz.title}</h2>
-              <p className="mt-1 text-sm text-[#64748B]">
+              <HelpCircle className="size-6 text-brand-strong" />
+              <h2 className="mt-4 font-bold text-ink">{quiz.title}</h2>
+              <p className="mt-1 text-sm text-ink-muted">
                 {quiz.subject} · {quiz.questionCount} questões
               </p>
-              <p className="mt-4 text-sm text-[#64748B]">
+              <p className="mt-4 text-sm text-ink-muted">
                 {quiz.score === null ? "Não realizado" : `Score ${Math.round(quiz.score)}%`}
               </p>
             </Link>

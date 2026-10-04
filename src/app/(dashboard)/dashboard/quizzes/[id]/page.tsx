@@ -16,10 +16,10 @@ export default async function QuizDetailPage({ params }: { params: Promise<{ id:
   } catch (error) {
     console.error("[quiz.detail]", error);
     return (
-      <div className="mx-auto max-w-3xl rounded-[20px] border border-red-200 bg-white p-6 shadow-sm">
-        <p className="text-sm font-semibold text-red-600">Erro ao abrir quiz</p>
-        <h1 className="mt-2 text-2xl font-bold text-[#0F172A]">Nao foi possivel carregar este quiz.</h1>
-        <p className="mt-2 text-[#64748B]">Tente voltar para a lista e abrir novamente. O erro foi registrado para analise.</p>
+      <div className="mx-auto max-w-3xl rounded-2xl border border-danger/40 bg-surface p-6 shadow-card">
+        <p className="text-sm font-medium text-danger">Erro ao abrir quiz</p>
+        <h1 className="mt-2 text-2xl font-bold text-ink">Não foi possível carregar este quiz.</h1>
+        <p className="mt-2 text-ink-muted">Tente voltar para a lista e abrir novamente. O erro foi registrado para análise.</p>
       </div>
     );
   }
@@ -29,8 +29,8 @@ export default async function QuizDetailPage({ params }: { params: Promise<{ id:
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#4F46E5]">{quiz.subject}</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0F172A]">{quiz.title}</h1>
+        <p className="text-sm font-medium text-brand-strong">{quiz.subject}</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{quiz.title}</h1>
       </div>
       <QuizRunner quizId={quiz.id} questions={toQuizRunnerQuestions(quiz.questions)} mode={quiz.difficulty === "simulado" ? "simulado" : "quiz"} />
     </div>

@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Search, Sparkles } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 import { MobileSidebar } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getProfileInitials } from "@/lib/subjects";
@@ -11,6 +12,7 @@ import { getProfileInitials } from "@/lib/subjects";
 export function Header({ profileName, studyGoal }: { profileName: string; studyGoal?: string }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const initials = getProfileInitials(profileName).toUpperCase();
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,35 +21,62 @@ export function Header({ profileName, studyGoal }: { profileName: string; studyG
   }
 
   return (
-    <header className="z-10 flex h-16 flex-shrink-0 items-center justify-between border-b border-[#E2E8F0] bg-white px-4 md:px-6">
-      <div className="flex flex-1 items-center gap-4">
+    <header className="z-10 flex h-14 flex-shrink-0 items-center gap-2.5 border-b border-border bg-surface px-4 lg:h-16 lg:gap-3 lg:px-8">
+      {/* Celular: menu completo + logo, busca e avatar */}
+      <div className="-ml-2 lg:hidden">
         <MobileSidebar profileName={profileName} studyGoal={studyGoal} />
-        <form onSubmit={submit} className="relative hidden w-full max-w-md sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" size={18} />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar estudos, arquivos ou quizzes..."
-            className="w-full rounded-xl border-none bg-[#F1F5F9] py-2 pl-10 pr-4 text-sm text-[#0F172A] placeholder:text-[#94A3B8] transition-all focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20"
-          />
-        </form>
       </div>
+      <Link href="/dashboard" prefetch={false} className="flex flex-1 no-underline lg:hidden">
+        <Logo size="sm" />
+      </Link>
+      <Link
+        href="/dashboard/busca"
+        prefetch={false}
+        aria-label="Buscar"
+        className="grid size-11 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink lg:hidden"
+      >
+        <Search size={20} strokeWidth={1.75} aria-hidden="true" />
+      </Link>
 
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/chat" prefetch={false} className="flex items-center gap-2 rounded-lg bg-[#EEF2FF] px-3 py-1.5 text-sm font-semibold text-[#4F46E5] transition-colors hover:bg-[#4F46E5] hover:text-white">
-          <Sparkles size={16} />
-          IA
-        </Link>
-        <ThemeToggle />
-        <Link href="/dashboard/desempenho" prefetch={false} className="relative p-2 text-[#64748B] transition-colors hover:text-[#0F172A]" aria-label="Desempenho">
-          <Bell size={20} />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
-        </Link>
-        <Link href="/dashboard/configuracoes" prefetch={false} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#4F46E5]/20 bg-[#4F46E5]/10 text-sm font-bold text-[#4F46E5]" aria-label="Configurações">
-          {getProfileInitials(profileName).toUpperCase()}
-        </Link>
-      </div>
+      {/* Desktop */}
+      <form onSubmit={submit} role="search" className="hidden h-10 max-w-[440px] flex-1 items-center gap-2.5 rounded-lg bg-surface-muted px-3.5 text-ink-muted focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus-ring lg:flex">
+        <Search size={18} strokeWidth={1.75} aria-hidden="true" />
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Buscar estudos, arquivos ou quizzes…"
+          aria-label="Buscar estudos, arquivos ou quizzes"
+          className="h-full w-full border-0 bg-transparent text-sm text-ink outline-none placeholder:text-ink-muted"
+        />
+      </form>
+      <div className="hidden flex-1 lg:block" />
+      <Link
+        href="/dashboard/chat"
+        prefetch={false}
+        className="hidden h-9 items-center gap-1.5 whitespace-nowrap rounded-lg bg-brand-tint px-3 text-sm font-medium text-brand-strong no-underline transition-colors hover:bg-brand-soft lg:flex"
+      >
+        <Sparkles size={16} strokeWidth={1.75} aria-hidden="true" />
+        IA
+      </Link>
+      <ThemeToggle className="hidden lg:flex" />
+      <Link
+        href="/dashboard/desempenho"
+        prefetch={false}
+        className="relative hidden size-10 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink lg:grid"
+        aria-label="Desempenho"
+      >
+        <Bell size={20} strokeWidth={1.75} aria-hidden="true" />
+        <span className="absolute right-2.5 top-[9px] size-2 rounded-full bg-brand shadow-[0_0_0_2px_var(--surface)]" />
+      </Link>
+      <Link
+        href="/dashboard/configuracoes"
+        prefetch={false}
+        className="grid size-9 flex-shrink-0 place-items-center rounded-full bg-brand text-[13px] font-bold text-on-brand no-underline"
+        aria-label="Configurações"
+      >
+        {initials}
+      </Link>
     </header>
   );
 }

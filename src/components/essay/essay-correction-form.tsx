@@ -34,12 +34,12 @@ export function EssayCorrectionForm() {
     });
     const data = await readApiJson<{ error?: string }>(
       response,
-      "Não foi possível corrigir a redacao.",
+      "Não foi possível corrigir a redação.",
     );
     setLoading(false);
 
     if (!response.ok) {
-      toast.error(data.error ?? "Não foi possível corrigir a redacao.");
+      toast.error(data.error ?? "Não foi possível corrigir a redação.");
       return;
     }
 
@@ -52,10 +52,10 @@ export function EssayCorrectionForm() {
     <form onSubmit={submit} className="mt-6 grid gap-4">
       <Input name="title" required placeholder="Título da redação" />
       <Input name="theme" required placeholder="Tema" />
-      <Textarea value={content} onChange={(event) => setContent(event.target.value)} className="min-h-80 resize-none rounded-xl" placeholder="Digite sua redação aqui..." />
-      <div className="flex flex-col justify-between gap-3 text-sm text-[#64748B] sm:flex-row sm:items-center">
+      <Textarea value={content} onChange={(event) => setContent(event.target.value)} className="min-h-80 resize-none rounded-lg" placeholder="Digite sua redação aqui..." />
+      <div className="flex flex-col justify-between gap-3 text-sm text-ink-muted sm:flex-row sm:items-center">
         <span>{stats}</span>
-        <Button type="submit" disabled={loading || content.length < 300} className="gap-2 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]">
+        <Button type="submit" disabled={loading || content.length < 300} className="gap-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong">
           <PenTool className="size-4" />
           {loading ? "Corrigindo..." : "Enviar para correção"}
         </Button>

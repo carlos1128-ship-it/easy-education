@@ -100,15 +100,15 @@ export function SubjectMultiSelect({
   }
 
   return (
-    <div className={cn("grid max-h-56 gap-2 overflow-y-auto rounded-xl border border-input bg-white p-2 dark:bg-[#0D1117]", compact ? "grid-cols-1 sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3")}>
+    <div className={cn("grid max-h-56 gap-2 overflow-y-auto rounded-xl border border-input bg-surface p-2", compact ? "grid-cols-1 sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3")}>
       {subjects.map((subject) => {
         const checked = value.includes(subject.name);
         return (
           <label
             key={subject.name}
             className={cn(
-              "flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-semibold text-[#64748B] transition-colors hover:bg-[#EEF2FF]/60",
-              checked && "border-[#4F46E5]/30 bg-[#EEF2FF] text-[#4F46E5]",
+              "flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-sm font-semibold text-ink-muted transition-colors hover:bg-brand-tint/60",
+              checked && "border-brand/30 bg-brand-tint text-brand-strong",
             )}
           >
             <Checkbox checked={checked} onCheckedChange={(nextChecked) => toggleSubject(subject.name, Boolean(nextChecked))} />

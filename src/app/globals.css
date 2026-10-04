@@ -31,6 +31,7 @@
   --elev-card: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.06);
   --elev-pop: 0 8px 32px rgba(15, 23, 42, 0.14);
   --track: #e2e8f0;
+  --sidebar-surface: #ffffff;
   --wordmark: #1e3a8a;
   --hero-panel: #f1f6ff;
   --hero-ring: #dbeafe;
@@ -62,6 +63,7 @@
   --elev-card: 0 1px 2px rgba(0, 0, 0, 0.4);
   --elev-pop: 0 8px 32px rgba(0, 0, 0, 0.6);
   --track: #1a2744;
+  --sidebar-surface: #0a0e17;
   --wordmark: #f1f5f9;
   --hero-panel: #0b1730;
   --hero-ring: #142a52;
@@ -94,7 +96,7 @@
   --chart-3: var(--brand-soft);
   --chart-4: var(--warning);
   --chart-5: var(--ink-muted);
-  --sidebar: var(--surface);
+  --sidebar: var(--sidebar-surface);
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: var(--on-brand);
@@ -250,6 +252,12 @@
   --input: #cbd5e1;
   --ring: #6366f1;
   --radius: 0.625rem;
+  /* tokens usados por componentes compartilhados (subject-fields) */
+  --surface: #ffffff;
+  --ink-muted: #64748b;
+  --brand: #4f46e5;
+  --brand-strong: #4f46e5;
+  --brand-tint: #eef2ff;
 }
 
 .dark .legacy-auth {
@@ -271,8 +279,12 @@
   --border: #1a2744;
   --input: #1a2744;
   --ring: #6366f1;
+  --surface: #0d1117;
+  --ink-muted: #94a3b8;
+  --brand: #4f46e5;
+  --brand-strong: #4f46e5;
+  --brand-tint: rgba(99, 102, 241, 0.15);
 }
-
 
 @layer utilities {
   /* Compatibilidade do tema escuro para classes de cor fixas que ainda restam
@@ -281,6 +293,9 @@
   .dark .bg-\[\#F6F8FC\] { background-color: #070a13 !important; }
   .dark .bg-\[\#F8FAFC\],
   .dark .bg-\[\#F1F5F9\] { background-color: #131d35 !important; }
+  .dark .bg-\[\#EEF2FF\],
+  .dark .bg-\[\#E0E7FF\] { background-color: rgba(99, 102, 241, 0.15) !important; }
+  .dark .legacy-auth .shadow-sm { box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3) !important; }
   .dark .text-\[\#0F172A\] { color: #f1f5f9 !important; }
   .dark .text-\[\#64748B\],
   .dark .text-\[\#94A3B8\] { color: #94a3b8 !important; }
