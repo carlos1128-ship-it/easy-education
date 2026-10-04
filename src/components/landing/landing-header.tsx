@@ -14,7 +14,7 @@ export function LandingHeader() {
     <header className="relative z-[6] flex items-center justify-between gap-4 pl-4 pr-3 pt-3 lg:pl-14 lg:pr-8 lg:pt-5">
       <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
         <LogoMark size="sm" className="rounded-[10px]" />
-        <span className="text-[17px] font-extrabold leading-none tracking-[-0.3px]">Easy Education</span>
+        <span className="whitespace-nowrap text-[17px] font-extrabold leading-none tracking-[-0.3px]">Easy Education</span>
       </Link>
 
       <nav aria-label="Seções" className="hidden items-center gap-8 lg:flex">

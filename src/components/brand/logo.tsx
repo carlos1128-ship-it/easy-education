@@ -36,7 +36,7 @@ export function Logo({
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <LogoMark size={size} />
       {showWordmark ? (
-        <span className={cn("font-extrabold tracking-[-0.02em] text-wordmark", sizes[size].text, wordmarkClassName)}>
+        <span className={cn("whitespace-nowrap font-extrabold tracking-[-0.02em] text-wordmark", sizes[size].text, wordmarkClassName)}>
           Easy Education
         </span>
       ) : (
