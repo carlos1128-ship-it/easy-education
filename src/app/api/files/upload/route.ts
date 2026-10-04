@@ -5,7 +5,8 @@ import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { createStorageServerClient } from "@/lib/supabase/storage";
 
-const allowedTypes = ["application/pdf", "text/plain"];
+const imageTypes = ["image/png", "image/jpeg", "image/webp"];
+const allowedTypes = ["application/pdf", "text/plain", ...imageTypes];
 
 export async function POST(request: Request) {
   try {
@@ -14,9 +15,10 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file");
-    if (!(file instanceof File)) return NextResponse.json({ error: "Arquivo invalido." }, { status: 400 });
+    if (!(file instanceof File)) return NextResponse.json({ error: "Arquivo inválido." }, { status: 400 });
     if (file.size > 20 * 1024 * 1024) return NextResponse.json({ error: "Arquivo acima de 20MB." }, { status: 400 });
-    if (!allowedTypes.includes(file.type)) return NextResponse.json({ error: "Tipo de arquivo nao permitido." }, { status: 400 });
+    if (!allowedTypes.includes(file.type)) return NextResponse.json({ error: "Envie PDF, TXT ou imagem (PNG, JPG ou WebP)." }, { status: 400 });
+    if (imageTypes.includes(file.type) && file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "Imagem acima de 10MB." }, { status: 400 });
 
     const supabase = await createStorageServerClient();
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return apiErrorResponse(error, {
       scope: "files.upload",
-      fallback: "Nao foi possivel enviar o arquivo.",
+      fallback: "Não foi possível enviar o arquivo.",
     });
   }
 }

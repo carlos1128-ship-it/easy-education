@@ -1,4 +1,4 @@
-import { GoogleGenAI, type Content } from "@google/genai";
+import { FunctionCallingConfigMode, GoogleGenAI, type Content, type FunctionDeclaration } from "@google/genai";
 import type { ChatInputMessage } from "@/types";
 
 const defaultModel = "gemini-2.5-flash";
@@ -129,4 +129,76 @@ export async function generateChatText(messages: ChatInputMessage[], systemPromp
   }
 
   throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
+}
+
+export type ChatToolResult =
+  | { kind: "text"; text: string }
+  | { kind: "call"; name: string; args: Record<string, unknown> };
+
+/**
+ * Conversa com a IA podendo chamar funções (criar quiz, plano, flashcards...).
+ * Devolve o texto da resposta ou a primeira função que a IA quer executar.
+ */
+export async function generateChatWithTools(
+  messages: ChatInputMessage[],
+  systemPrompt: string,
+  functionDeclarations: FunctionDeclaration[],
+): Promise<ChatToolResult> {
+  let lastError: unknown;
+
+  for (const model of configuredModels()) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await getGemini().models.generateContent({
+          model,
+          contents: toGeminiContents(messages),
+          config: {
+            maxOutputTokens: 2048,
+            systemInstruction: systemPrompt,
+            temperature: attempt === 0 ? 0.5 : 0.2,
+            tools: [{ functionDeclarations }],
+            toolConfig: { functionCallingConfig: { mode: FunctionCallingConfigMode.AUTO } },
+          },
+        });
+
+        const call = response.functionCalls?.[0];
+        if (call?.name) return { kind: "call", name: call.name, args: (call.args ?? {}) as Record<string, unknown> };
+
+        const text = response.text?.trim();
+        if (!text) throw new Error("A IA retornou resposta vazia.");
+        return { kind: "text", text };
+      } catch (error) {
+        lastError = error;
+      }
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
+}
+
+/** Lê uma imagem (foto de caderno, redação, apostila) e devolve o texto extraído. */
+export async function generateTextFromImage(image: Buffer, mimeType: string, instruction: string) {
+  let lastError: unknown;
+
+  for (const model of configuredModels()) {
+    try {
+      const response = await getGemini().models.generateContent({
+        model,
+        contents: [
+          {
+            role: "user",
+            parts: [{ inlineData: { mimeType, data: image.toString("base64") } }, { text: instruction }],
+          },
+        ],
+        config: { maxOutputTokens: 8192, temperature: 0 },
+      });
+      const text = response.text?.trim();
+      if (!text) throw new Error("A IA não encontrou texto na imagem.");
+      return text;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Falha ao ler a imagem.");
 }

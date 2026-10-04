@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
+import { generateTextFromImage } from "@/lib/gemini";
 import { extractTextFromPDF } from "@/lib/pdf";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { getPrisma } from "@/lib/prisma";
 import { createStorageServerClient } from "@/lib/supabase/storage";
 import { extractTextFromBuffer } from "@/lib/text";
+
+const IMAGE_INSTRUCTION = `Você recebeu a foto de um material de estudo (caderno, apostila, livro, lousa ou exercício).
+Transcreva todo o texto legível, na ordem de leitura, em português.
+Depois, se houver fórmulas, gráficos, tabelas ou esquemas, descreva o conteúdo deles em texto simples.
+Não invente o que não estiver legível; escreva [ilegível] nesses trechos. Responda só com o conteúdo, sem markdown.`;
 
 export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -23,9 +30,16 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
 
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const textContent = file.type === "application/pdf"
-      ? await extractTextFromPDF(buffer)
-      : extractTextFromBuffer(buffer, file.type);
+    let textContent: string;
+    if (file.type.startsWith("image/")) {
+      // Foto de caderno, apostila ou lousa: a IA transcreve o texto e descreve o que for visual.
+      if (!checkRateLimit(`image-read:${user.id}`).ok) return NextResponse.json({ error: "Muitas imagens em pouco tempo. Tente de novo em um minuto." }, { status: 429 });
+      textContent = await generateTextFromImage(buffer, file.type, IMAGE_INSTRUCTION);
+    } else if (file.type === "application/pdf") {
+      textContent = await extractTextFromPDF(buffer);
+    } else {
+      textContent = extractTextFromBuffer(buffer, file.type);
+    }
 
     await prisma.uploadedFile.update({
       where: { id },
