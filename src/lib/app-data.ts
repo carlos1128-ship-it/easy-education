@@ -9,6 +9,7 @@ import {
   Layers,
   LayoutDashboard,
   PenTool,
+  Route,
   Settings,
   Sparkles,
   Target,
@@ -26,6 +27,7 @@ type NavItem = {
 
 export const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "Menu Principal" },
+  { href: "/dashboard/trilha", label: "Trilha", icon: Route, group: "Menu Principal" },
   { href: "/dashboard/chat", label: "Chat IA", icon: Sparkles, group: "Menu Principal", accent: "#06B6D4" },
   { href: "/dashboard/arquivos", label: "Arquivos", icon: Folder, group: "Menu Principal" },
   { href: "/dashboard/quizzes", label: "Quizzes", icon: Target, group: "Menu Principal" },

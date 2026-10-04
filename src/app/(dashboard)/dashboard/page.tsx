@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { getTrailForUser } from "@/lib/study-trail";
 import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
 import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
@@ -45,7 +46,8 @@ export default async function DashboardPage() {
   // Gerar o simulado semanal chama a IA; roda depois da resposta para não travar o dashboard.
   after(() => ensureWeeklySimuladoForUser(user.id).catch((error) => console.error("[simulado-semanal]", error)));
 
-  const [profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks] = await Promise.all([
+  const [trail, profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks] = await Promise.all([
+    getTrailForUser(user.id),
     prisma.profile.findUnique({ where: { userId: user.id } }),
     prisma.studySession.findMany({ where: { userId: user.id, date: { gte: weekStart } }, orderBy: { date: "desc" } }),
     prisma.quiz.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 6 }),
@@ -234,6 +236,43 @@ export default async function DashboardPage() {
               ))}
             </ul>
           </div>
+        </section>
+      ) : null}
+
+      {trail.currentUnit && trail.current ? (
+        <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-8 lg:p-6")} aria-label="Sua trilha">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <p className="m-0 text-[13px] font-bold uppercase tracking-[0.6px] text-brand-strong">
+              Trilha · Seção {trail.currentUnit.section}, unidade {trail.currentUnit.index + 1}
+            </p>
+            <h2 className={h2}>{trail.currentUnit.title}</h2>
+            <p className="m-0 text-sm text-ink-muted">
+              Próxima etapa: <span className="font-medium text-ink">{trail.current.title}</span>
+              {trail.current.progress ? ` · ${trail.current.progress.label}` : ""}
+            </p>
+          </div>
+          <ol className="m-0 flex list-none items-center gap-1.5 p-0" aria-label="Etapas da unidade">
+            {trail.currentUnit.nodes.map((node) => (
+              <li
+                key={node.id}
+                className={cn(
+                  "size-3.5 rounded-full",
+                  node.status === "done" ? "bg-brand" : node.status === "current" ? "bg-brand-tint ring-2 ring-brand" : "bg-track",
+                )}
+              >
+                <span className="sr-only">
+                  {node.title}: {node.status === "done" ? "concluída" : node.status === "current" ? "atual" : "bloqueada"}
+                </span>
+              </li>
+            ))}
+          </ol>
+          <Link
+            href="/dashboard/trilha"
+            className="inline-flex min-h-11 flex-none items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline transition-colors hover:bg-brand-strong"
+          >
+            Continuar trilha
+            <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
+          </Link>
         </section>
       ) : null}
 

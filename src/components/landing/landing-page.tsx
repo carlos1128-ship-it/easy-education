@@ -35,7 +35,7 @@ import {
 } from "@/content/landing";
 import { cn } from "@/lib/utils";
 
-const container = "mx-auto max-w-[1184px] px-5 lg:px-12";
+const container = "mx-auto max-w-[1520px] px-5 lg:px-12 2xl:px-16";
 const sectionTop = "pt-16 lg:pt-24";
 const eyebrow = "text-[13px] font-medium uppercase leading-4 tracking-[0.6px] text-brand-strong";
 const h2 = "m-0 text-[28px] font-extrabold leading-[34px] tracking-[-0.5px] [text-wrap:balance] lg:text-4xl lg:leading-[42px]";
@@ -59,7 +59,7 @@ export function LandingPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
       {/* Hero */}
       <section className="px-3 pt-4 lg:px-6">
-        <div className="relative mx-auto max-w-[1232px] overflow-hidden rounded-3xl bg-hero-panel dark:overflow-visible">
+        <div className="relative mx-auto max-w-[1600px] overflow-hidden rounded-3xl bg-hero-panel dark:overflow-visible">
           <LandingHeader />
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
             <div className="relative z-[2] flex flex-col items-start gap-5 px-5 pb-2 pt-7 lg:pb-16 lg:pl-14 lg:pr-0 lg:pt-12">
@@ -285,7 +285,7 @@ export function LandingPage() {
 
       {/* CTA final */}
       <section className="px-3 pt-16 lg:px-6 lg:pt-24">
-        <div className="relative mx-auto max-w-[1232px] overflow-hidden rounded-3xl">
+        <div className="relative mx-auto max-w-[1600px] overflow-hidden rounded-3xl">
           <Image src={landingFinalCta.image.src} alt="" fill sizes="(min-width: 1232px) 1232px, 100vw" className="object-cover object-[center_35%]" />
           <div className="relative flex flex-col items-center gap-4 bg-cta-overlay px-5 pb-7 pt-10 text-center lg:px-14 lg:py-16">
             <h2 className={cn(h2, "max-w-[620px] text-white")}>{landingFinalCta.title}</h2>
