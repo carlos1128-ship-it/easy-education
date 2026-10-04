@@ -12,7 +12,7 @@ export async function readApiJson<T extends Record<string, unknown>>(
     return JSON.parse(text) as T & { error?: string };
   } catch {
     return {
-      error: response.ok ? fallbackError : text.slice(0, 300) || fallbackError,
+      error: fallbackError,
     } as T & { error?: string };
   }
 }

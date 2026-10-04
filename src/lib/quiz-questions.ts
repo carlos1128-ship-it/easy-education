@@ -26,6 +26,26 @@ function cleanText(value: unknown) {
   return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
+function normalizeForMatch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isPlaceholderText(value: string) {
+  const normalized = normalizeForMatch(value);
+  return (
+    normalized.includes("alternativa correta") ||
+    normalized.includes("distrator plausivel") ||
+    normalized.includes("distrator comum") ||
+    normalized.includes("distrator conceitual") ||
+    normalized.includes("resolva a situacao-problema proposta") ||
+    normalized.includes("questao 1 sobre") ||
+    normalized.includes("questao 2 sobre")
+  );
+}
+
 export function normalizeCorrectAnswer(value: unknown) {
   const answer = cleanText(value).toUpperCase();
   const direct = LETTERS.find((letter) => answer === letter || answer.startsWith(`${letter})`) || answer.startsWith(`${letter}.`));
@@ -62,34 +82,28 @@ export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: num
   return questions.slice(0, count).map((item, index) => {
     const question = item as Partial<GeneratedQuizQuestion>;
     const subject = fallbackSubject || "conteudo";
+    const questionText = cleanText(question.question) || `Questao ${index + 1} sobre ${subject}.`;
+    const options = normalizeQuizOptions(question.options);
+    const explanation = cleanText(question.explanation) || `Esta questao revisa conceitos de ${subject}.`;
 
     return {
-      question: cleanText(question.question) || `Questao ${index + 1} sobre ${subject}.`,
-      options: normalizeQuizOptions(question.options),
+      question: questionText,
+      options,
       correctAnswer: normalizeCorrectAnswer(question.correctAnswer),
-      explanation: cleanText(question.explanation) || `Esta questao revisa conceitos de ${subject}.`,
+      explanation,
     };
-  });
+  }).filter((question) => (
+    !isPlaceholderText(question.question) &&
+    !isPlaceholderText(question.explanation) &&
+    question.options.length === 4 &&
+    !question.options.some(isPlaceholderText)
+  ));
 }
 
-export function fallbackQuizQuestions(count: number, subjects: string[]) {
-  const baseSubjects = subjects.length ? subjects : ["Matematica", "Portugues", "Biologia", "Historia"];
-
-  return Array.from({ length: count }).map((_, index) => {
-    const subject = baseSubjects[index % baseSubjects.length];
-    return {
-      question: `Questao ${index + 1} - ${subject}: resolva a situacao-problema proposta e escolha a alternativa mais adequada.`,
-      options: ["A) Alternativa correta", "B) Distrator plausivel", "C) Distrator comum", "D) Distrator conceitual"],
-      correctAnswer: "A",
-      explanation: `Esta questao revisa fundamentos de ${subject}.`,
-    };
-  });
-}
-
-export function fillQuestionCount(questions: GeneratedQuizQuestion[], count: number, subjects: string[]) {
+export function fillQuestionCount(questions: GeneratedQuizQuestion[], count: number) {
   const safeQuestions = questions.slice(0, count);
   if (safeQuestions.length < count) {
-    safeQuestions.push(...fallbackQuizQuestions(count - safeQuestions.length, subjects));
+    throw new Error("A IA retornou poucas questoes validas.");
   }
   return safeQuestions;
 }

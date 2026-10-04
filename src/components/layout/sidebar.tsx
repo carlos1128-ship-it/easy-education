@@ -42,6 +42,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
       <Link
         key={item.href}
         href={item.href}
+        prefetch={false}
         onClick={onNavigate}
         className={cn(
           "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#64748B] transition-colors hover:bg-[#EEF2FF]/50 hover:text-[#4F46E5]",
@@ -58,7 +59,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
   return (
     <aside className="flex h-full w-[240px] flex-shrink-0 flex-col border-r border-[#E2E8F0] bg-white text-[#0F172A]">
       <div className="p-6 pb-2">
-        <Link href="/dashboard" onClick={onNavigate} className="mb-8 flex items-center gap-2">
+        <Link href="/dashboard" prefetch={false} onClick={onNavigate} className="mb-8 flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5] text-white">
             <GraduationCap size={20} />
           </div>
@@ -75,7 +76,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
               {studyGoal ?? "Plano ativo"}
             </span>
           </div>
-          <Link href="/dashboard/configuracoes" onClick={onNavigate} className="text-[#64748B] transition-colors hover:text-[#0F172A]" aria-label="Mais opções">
+          <Link href="/dashboard/configuracoes" prefetch={false} onClick={onNavigate} className="text-[#64748B] transition-colors hover:text-[#0F172A]" aria-label="Mais opções">
             <MoreVertical size={16} />
           </Link>
         </div>
@@ -153,6 +154,7 @@ export function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-semibold text-[#64748B] transition-colors active:bg-[#EEF2FF] dark:text-[#94A3B8]",

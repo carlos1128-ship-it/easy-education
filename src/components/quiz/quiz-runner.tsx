@@ -135,11 +135,6 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
         })}
       </div>
 
-      {pageQuestions.some((item) => !answers[item.id] && drafts[item.id]) ? (
-        <div className="mt-5 rounded-xl bg-[#FFF7ED] p-4 text-sm font-medium text-[#9A3412]">
-          Confirme para salvar a resposta. Depois de confirmar, ela fica bloqueada como em uma prova.
-        </div>
-      ) : null}
       <div className="mt-6 flex justify-between">
         <Button variant="outline" disabled={index === 0 || saving} onClick={() => setIndex((value) => Math.max(0, value - pageSize))}>
           Anterior

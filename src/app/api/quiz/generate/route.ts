@@ -4,7 +4,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
-import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions, subjectsFromText } from "@/lib/quiz-questions";
+import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions } from "@/lib/quiz-questions";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { quizGenerateSchema } from "@/lib/validators";
@@ -37,12 +37,17 @@ export async function POST(request: Request) {
     const file = payload.fileId ? await prisma.uploadedFile.findFirst({ where: { id: payload.fileId, userId: user.id } }) : null;
     const topic = payload.topic ?? file?.textContent?.slice(0, 5000);
     const promptScope = describeSubjectForPrompt(payload.subject, topic);
-    const prompt = `Gere exatamente ${payload.questionCount} questoes de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${payload.difficulty} no estilo ${payload.model}. Se houver mais de uma materia, distribua as questoes entre elas e deixe claro o assunto no enunciado. Para cada questao, retorne um JSON com: question (string), options (array de exatamente 4 strings A-D), correctAnswer (apenas A, B, C ou D), explanation (string explicando por que a resposta esta correta). Responda APENAS com um array JSON valido, sem texto adicional.`;
+    const prompt = `Gere exatamente ${payload.questionCount} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${payload.difficulty} no estilo ${payload.model}.
+Regras obrigatorias:
+- Cada enunciado deve conter uma situacao, dado, texto curto, fenomeno ou contexto real; nao use "resolva a situacao-problema proposta" sem apresentar a situacao.
+- As alternativas devem ser conteudos concretos, nunca "Alternativa correta", "Distrator plausivel", "Distrator comum" ou placeholders.
+- Se houver mais de uma materia, distribua as questoes entre elas e cite a materia no enunciado de forma natural.
+- A explicacao deve justificar a alternativa correta e mencionar por que ao menos um distrator esta errado.
+Retorne APENAS um array JSON valido com exatamente estes campos: question (string), options (array de exatamente 4 strings A-D), correctAnswer (apenas A, B, C ou D), explanation (string).`;
     const rawQuestions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
     const questions = fillQuestionCount(
       sanitizeGeneratedQuizQuestions(rawQuestions, payload.questionCount, payload.subject),
       payload.questionCount,
-      subjectsFromText(payload.subject),
     );
 
     const quiz = await prisma.quiz.create({

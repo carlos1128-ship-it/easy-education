@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { readApiJson } from "@/lib/client-response";
 
 export function FileUploader() {
   const router = useRouter();
@@ -22,8 +23,12 @@ export function FileUploader() {
     formData.append("file", file);
     setLoading(true);
     const response = await fetch("/api/files/upload", { method: "POST", body: formData });
+    const data = await readApiJson<{ error?: string }>(
+      response,
+      "Falha no envio.",
+    );
     setLoading(false);
-    toast[response.ok ? "success" : "error"](response.ok ? "Arquivo enviado para processamento." : "Falha no envio.");
+    toast[response.ok ? "success" : "error"](response.ok ? "Arquivo enviado para processamento." : data.error ?? "Falha no envio.");
     if (response.ok) router.refresh();
   }
 
@@ -38,8 +43,8 @@ export function FileUploader() {
     >
       <Upload className="mx-auto size-8 text-[#4F46E5]" />
       <h3 className="mt-4 text-lg font-bold text-[#0F172A]">Arraste seu arquivo aqui</h3>
-      <p className="mt-2 text-sm text-slate-500">PDF, DOC, DOCX ou TXT ate 20MB</p>
-      <input ref={inputRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" onChange={(event) => upload(event.target.files?.[0])} />
+      <p className="mt-2 text-sm text-slate-500">PDF ou TXT ate 20MB</p>
+      <input ref={inputRef} type="file" className="hidden" accept=".pdf,.txt,text/plain,application/pdf" onChange={(event) => upload(event.target.files?.[0])} />
       <Button className="mt-5 bg-[#4F46E5] text-white hover:bg-[#4338CA]" onClick={() => inputRef.current?.click()} disabled={loading}>
         {loading ? "Enviando..." : "Selecionar arquivo"}
       </Button>

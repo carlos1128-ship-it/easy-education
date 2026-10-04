@@ -24,6 +24,16 @@ function passwordStrength(password: string) {
   return checks.filter(Boolean).length * 25;
 }
 
+function publicAuthMessage(message?: string) {
+  const normalized = message?.toLowerCase() ?? "";
+
+  if (normalized.includes("invalid")) return "E-mail ou senha invalidos.";
+  if (normalized.includes("rate") || normalized.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+  if (normalized.includes("email")) return "Confira seu e-mail e tente novamente.";
+
+  return "Nao foi possivel concluir a autenticacao. Tente novamente em instantes.";
+}
+
 type FormStatus = {
   type: "success" | "error";
   title: string;
@@ -35,7 +45,6 @@ type SignUpResponse = {
   message?: string;
   redirectTo?: string;
   error?: string;
-  debugMessage?: string;
 };
 
 type ProfileResponse = {
@@ -91,13 +100,11 @@ export function SignUpForm() {
       );
 
       if (!response.ok) {
-        const message = [data.error, data.debugMessage ? `Detalhe tecnico: ${data.debugMessage}` : null]
-          .filter(Boolean)
-          .join("\n\n");
+        const message = data.error ?? "Falha desconhecida ao criar conta.";
         setStatus({
           type: "error",
           title: response.status === 429 ? "Muitas tentativas" : "Cadastro não concluído",
-          message: message || "Falha desconhecida ao criar conta.",
+          message,
         });
         toast.error(data.error ?? "Falha desconhecida ao criar conta.");
         return;
@@ -139,8 +146,9 @@ export function SignUpForm() {
     });
 
     if (error) {
-      setStatus({ type: "error", title: "Google indisponivel", message: error.message });
-      toast.error(error.message);
+      const message = publicAuthMessage(error.message);
+      setStatus({ type: "error", title: "Google indisponivel", message });
+      toast.error(message);
     }
   }
 
@@ -236,9 +244,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      const message = error.message.includes("Invalid")
-        ? "E-mail ou senha invalidos."
-        : error.message;
+      const message = publicAuthMessage(error.message);
       setStatus({ type: "error", title: "Login não concluído", message });
       toast.error(message);
       setLoading(false);
@@ -287,7 +293,7 @@ export function LoginForm() {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback`,
     });
-    const message = error?.message ?? "E-mail de recuperacao enviado.";
+    const message = error ? publicAuthMessage(error.message) : "E-mail de recuperacao enviado.";
     setStatus({ type: error ? "error" : "success", title: error ? "Falha ao recuperar senha" : "Verifique seu e-mail", message });
     toast[error ? "error" : "success"](message);
   }
@@ -306,8 +312,9 @@ export function LoginForm() {
     });
 
     if (error) {
-      setStatus({ type: "error", title: "Google indisponivel", message: error.message });
-      toast.error(error.message);
+      const message = publicAuthMessage(error.message);
+      setStatus({ type: "error", title: "Google indisponivel", message });
+      toast.error(message);
     }
   }
 

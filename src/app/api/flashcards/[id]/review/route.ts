@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 
@@ -10,27 +11,34 @@ function nextReview(currentInterval: number, easeFactor: number, quality: "again
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const { user, response } = await requireUser();
-  if (response) return response;
+  try {
+    const { user, response } = await requireUser();
+    if (response) return response;
 
-  const { id } = await context.params;
-  const body = (await request.json()) as { quality: "again" | "medium" | "good" };
-  const prisma = getPrisma();
-  const card = await prisma.flashcard.findFirst({ where: { id, deck: { userId: user.id } } });
-  if (!card) return NextResponse.json({ ok: true });
+    const { id } = await context.params;
+    const body = (await request.json()) as { quality: "again" | "medium" | "good" };
+    const prisma = getPrisma();
+    const card = await prisma.flashcard.findFirst({ where: { id, deck: { userId: user.id } } });
+    if (!card) return NextResponse.json({ ok: true });
 
-  const review = nextReview(card.interval, card.easeFactor, body.quality);
-  const due = new Date();
-  due.setDate(due.getDate() + review.interval);
+    const review = nextReview(card.interval, card.easeFactor, body.quality);
+    const due = new Date();
+    due.setDate(due.getDate() + review.interval);
 
-  await prisma.flashcard.update({
-    where: { id },
-    data: { interval: review.interval, easeFactor: review.easeFactor, repetitions: card.repetitions + 1, nextReview: due },
-  });
+    await prisma.flashcard.update({
+      where: { id },
+      data: { interval: review.interval, easeFactor: review.easeFactor, repetitions: card.repetitions + 1, nextReview: due },
+    });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/flashcards");
-  revalidatePath("/dashboard/desempenho");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/flashcards");
+    revalidatePath("/dashboard/desempenho");
 
-  return NextResponse.json({ ok: true, nextReview: due });
+    return NextResponse.json({ ok: true, nextReview: due });
+  } catch (error) {
+    return apiErrorResponse(error, {
+      scope: "flashcards.review",
+      fallback: "Nao foi possivel salvar a revisao.",
+    });
+  }
 }

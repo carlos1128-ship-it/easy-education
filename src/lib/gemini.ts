@@ -2,6 +2,7 @@ import { GoogleGenAI, type Content } from "@google/genai";
 import type { ChatInputMessage } from "@/types";
 
 const defaultModel = "gemini-2.5-flash";
+const defaultFallbackModels = ["gemini-2.5-flash-lite"];
 
 let geminiClient: GoogleGenAI | null = null;
 
@@ -23,6 +24,16 @@ export function getGemini() {
   }
 
   return geminiClient;
+}
+
+function configuredModels() {
+  const primary = process.env.GEMINI_MODEL ?? defaultModel;
+  const fallbacks = (process.env.GEMINI_FALLBACK_MODELS ?? defaultFallbackModels.join(","))
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
+
+  return [...new Set([primary, ...fallbacks])];
 }
 
 function cleanJSON(text: string) {
@@ -51,21 +62,23 @@ function parseJSON<T>(text: string): T {
 export async function generateJSON<T>(prompt: string): Promise<T> {
   let lastError: unknown;
 
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const response = await getGemini().models.generateContent({
-      model: process.env.GEMINI_MODEL ?? defaultModel,
-      contents: `${prompt}\n\nImportante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
-      config: {
-        maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
-        responseMimeType: "application/json",
-        temperature: attempt === 0 ? 0.2 : 0,
-      },
-    });
+  for (const model of configuredModels()) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await getGemini().models.generateContent({
+          model,
+          contents: `${prompt}\n\nImportante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
+          config: {
+            maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
+            responseMimeType: "application/json",
+            temperature: attempt === 0 ? 0.2 : 0,
+          },
+        });
 
-    try {
-      return parseJSON<T>(response.text ?? "");
-    } catch (error) {
-      lastError = error;
+        return parseJSON<T>(response.text ?? "");
+      } catch (error) {
+        lastError = error;
+      }
     }
   }
 
@@ -89,4 +102,31 @@ export async function streamChat(messages: ChatInputMessage[], systemPrompt: str
       temperature: 0.6,
     },
   });
+}
+
+export async function generateChatText(messages: ChatInputMessage[], systemPrompt: string) {
+  let lastError: unknown;
+
+  for (const model of configuredModels()) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await getGemini().models.generateContent({
+          model,
+          contents: toGeminiContents(messages),
+          config: {
+            maxOutputTokens: 2048,
+            systemInstruction: systemPrompt,
+            temperature: attempt === 0 ? 0.6 : 0.2,
+          },
+        });
+        const text = response.text?.trim();
+        if (!text) throw new Error("A IA retornou resposta vazia.");
+        return text;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
 }

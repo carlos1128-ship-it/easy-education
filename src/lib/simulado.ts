@@ -1,6 +1,6 @@
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
-import { describeSubjectForPrompt, fallbackQuizQuestions, fillQuestionCount, sanitizeGeneratedQuizQuestions, subjectsFromText } from "@/lib/quiz-questions";
+import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -20,18 +20,16 @@ export async function createSimuladoForUser({
 }) {
   const prisma = getPrisma();
   const promptScope = describeSubjectForPrompt(subject, topic);
-  const subjectList = subjectsFromText(subject);
-  const prompt = `Crie exatamente ${questionCount} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}. Misture estilos de ENEM, vestibulares brasileiros e concursos quando fizer sentido. Se for multidisciplinar, distribua as questoes entre as materias indicadas. Use enunciados contextualizados, mais de uma habilidade cognitiva, alternativas A-D e uma explicacao curta. Retorne APENAS um array JSON valido com question, options, correctAnswer e explanation.`;
-  let questions: GeneratedQuizQuestion[];
-
-  try {
-    const rawQuestions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
-    questions = sanitizeGeneratedQuizQuestions(rawQuestions, questionCount, subject);
-  } catch {
-    questions = fallbackQuizQuestions(questionCount, subjectList);
-  }
-
-  const safeQuestions = fillQuestionCount(questions, questionCount, subjectList);
+  const prompt = `Crie exatamente ${questionCount} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
+Regras obrigatorias:
+- Misture estilos de ENEM e vestibulares brasileiros, com contexto concreto em cada enunciado.
+- Nao use placeholders como "Alternativa correta", "Distrator plausivel" ou "resolva a situacao-problema proposta" sem apresentar a situacao.
+- Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
+- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta.
+Retorne APENAS um array JSON valido com question, options, correctAnswer e explanation.`;
+  const rawQuestions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
+  const questions = sanitizeGeneratedQuizQuestions(rawQuestions, questionCount, subject);
+  const safeQuestions = fillQuestionCount(questions, questionCount);
 
   return prisma.quiz.create({
     data: {

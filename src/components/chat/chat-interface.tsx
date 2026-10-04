@@ -7,7 +7,16 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { quickSuggestions } from "@/lib/app-data";
+import { readApiJson } from "@/lib/client-response";
 import type { ChatInputMessage } from "@/types";
+
+const chatErrorMessage = "Nao foi possivel conversar com a IA agora. Tente novamente em instantes.";
+
+function messageForChatStatus(status: number) {
+  if (status === 429) return "Muitas mensagens em pouco tempo. Tente novamente em instantes.";
+  if (status === 401 || status === 403) return "Entre novamente para continuar usando o chat.";
+  return chatErrorMessage;
+}
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<ChatInputMessage[]>([
@@ -30,7 +39,12 @@ export function ChatInterface() {
         body: JSON.stringify({ messages: nextMessages }),
       });
 
-      if (!response.body) throw new Error("Resposta indisponível.");
+      if (!response.ok) {
+        const data = await readApiJson(response, messageForChatStatus(response.status));
+        throw new Error(data.error ?? messageForChatStatus(response.status));
+      }
+      if (!response.body) throw new Error(chatErrorMessage);
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let assistant = "";
@@ -43,7 +57,7 @@ export function ChatInterface() {
         setMessages([...nextMessages, { role: "assistant", content: assistant }]);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao conversar com a IA.");
+      toast.error(error instanceof Error ? error.message : chatErrorMessage);
     } finally {
       setLoading(false);
     }

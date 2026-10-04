@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
@@ -13,25 +14,32 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
-  const { user, response } = await requireUser();
-  if (response) return response;
+  try {
+    const { user, response } = await requireUser();
+    if (response) return response;
 
-  const payload = schema.parse(await request.json());
-  const session = await getPrisma().studySession.create({
-    data: {
-      userId: user.id,
-      subject: payload.subject,
-      durationMinutes: payload.durationMinutes,
-      method: payload.method,
-      notes: payload.notes,
-    },
-  });
+    const payload = schema.parse(await request.json());
+    const session = await getPrisma().studySession.create({
+      data: {
+        userId: user.id,
+        subject: payload.subject,
+        durationMinutes: payload.durationMinutes,
+        method: payload.method,
+        notes: payload.notes,
+      },
+    });
 
-  await ensureWeeklySimuladoForUser(user.id).catch(() => null);
+    await ensureWeeklySimuladoForUser(user.id).catch(() => null);
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/plano");
-  revalidatePath("/dashboard/desempenho");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/plano");
+    revalidatePath("/dashboard/desempenho");
 
-  return NextResponse.json({ session });
+    return NextResponse.json({ session });
+  } catch (error) {
+    return apiErrorResponse(error, {
+      scope: "study-sessions",
+      fallback: "Nao foi possivel registrar o estudo.",
+    });
+  }
 }

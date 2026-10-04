@@ -14,8 +14,12 @@ export function FileActions({ fileId, fileName, processed }: { fileId: string; f
   async function processFile() {
     setLoading("process");
     const response = await fetch(`/api/files/${fileId}/process`, { method: "POST" });
+    const data = await readApiJson<{ error?: string }>(
+      response,
+      "Falha ao processar arquivo.",
+    );
     setLoading(null);
-    toast[response.ok ? "success" : "error"](response.ok ? "Arquivo processado." : "Falha ao processar arquivo.");
+    toast[response.ok ? "success" : "error"](response.ok ? "Arquivo processado." : data.error ?? "Falha ao processar arquivo.");
     router.refresh();
     return response.ok;
   }
@@ -52,8 +56,12 @@ export function FileActions({ fileId, fileName, processed }: { fileId: string; f
   async function remove() {
     setLoading("delete");
     const response = await fetch(`/api/files/${fileId}/process`, { method: "DELETE" });
+    const data = await readApiJson<{ error?: string }>(
+      response,
+      "Falha ao excluir arquivo.",
+    );
     setLoading(null);
-    toast[response.ok ? "success" : "error"](response.ok ? "Arquivo excluido." : "Falha ao excluir arquivo.");
+    toast[response.ok ? "success" : "error"](response.ok ? "Arquivo excluido." : data.error ?? "Falha ao excluir arquivo.");
     router.refresh();
   }
 

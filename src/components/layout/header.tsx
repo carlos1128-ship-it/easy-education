@@ -35,16 +35,16 @@ export function Header({ profileName, studyGoal }: { profileName: string; studyG
       </div>
 
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/chat" className="flex items-center gap-2 rounded-lg bg-[#EEF2FF] px-3 py-1.5 text-sm font-semibold text-[#4F46E5] transition-colors hover:bg-[#4F46E5] hover:text-white">
+        <Link href="/dashboard/chat" prefetch={false} className="flex items-center gap-2 rounded-lg bg-[#EEF2FF] px-3 py-1.5 text-sm font-semibold text-[#4F46E5] transition-colors hover:bg-[#4F46E5] hover:text-white">
           <Sparkles size={16} />
           IA
         </Link>
         <ThemeToggle />
-        <Link href="/dashboard/desempenho" className="relative p-2 text-[#64748B] transition-colors hover:text-[#0F172A]" aria-label="Desempenho">
+        <Link href="/dashboard/desempenho" prefetch={false} className="relative p-2 text-[#64748B] transition-colors hover:text-[#0F172A]" aria-label="Desempenho">
           <Bell size={20} />
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
         </Link>
-        <Link href="/dashboard/configuracoes" className="flex h-8 w-8 items-center justify-center rounded-full border border-[#4F46E5]/20 bg-[#4F46E5]/10 text-sm font-bold text-[#4F46E5]" aria-label="Configurações">
+        <Link href="/dashboard/configuracoes" prefetch={false} className="flex h-8 w-8 items-center justify-center rounded-full border border-[#4F46E5]/20 bg-[#4F46E5]/10 text-sm font-bold text-[#4F46E5]" aria-label="Configurações">
           {getProfileInitials(profileName).toUpperCase()}
         </Link>
       </div>

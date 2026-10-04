@@ -38,10 +38,6 @@ function getSignupErrorMessage(message: string, status?: number) {
   return "Nao foi possivel criar sua conta agora. Tente novamente em instantes.";
 }
 
-function devDebug(message: string) {
-  return process.env.NODE_ENV === "development" ? message : undefined;
-}
-
 function isAlreadyRegistered(message: string) {
   const normalized = message.toLowerCase();
   return normalized.includes("already") || normalized.includes("registered") || normalized.includes("exists");
@@ -111,7 +107,6 @@ export async function POST(request: Request) {
         return NextResponse.json(
           {
             error: getSignupErrorMessage(adminError.message, adminError.status),
-            debugMessage: devDebug(adminError.message),
           },
           { status: adminError.status ?? 400 },
         );
@@ -148,7 +143,6 @@ export async function POST(request: Request) {
           status: "created_login_required",
           message: "Conta criada com sucesso. Entre com seu e-mail e senha para continuar.",
           redirectTo: "/login",
-          debugMessage: devDebug(signInError.message),
         });
       }
 
@@ -176,7 +170,6 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error: getSignupErrorMessage(error.message, error.status),
-          debugMessage: devDebug(error.message),
         },
         { status: error.status ?? 400 },
       );

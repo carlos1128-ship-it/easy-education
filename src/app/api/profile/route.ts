@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
-import { devWarn } from "@/lib/dev-log";
 import { ensureProfileForUser } from "@/lib/profile";
 import { getPrisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
-  const { user, response } = await requireUser();
-  if (response) return response;
-
   try {
+    const { user, response } = await requireUser();
+    if (response) return response;
+
     const text = await request.text();
     const body = text ? (JSON.parse(text) as { name?: string; studyGoal?: string; dailyMinutes?: number; studyMethod?: string }) : {};
     const profile = await ensureProfileForUser(user, body.name);
@@ -27,9 +27,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ profile: updated });
   } catch (error) {
-    devWarn("Falha no upsert de perfil autenticado.", {
-      name: error instanceof Error ? error.name : "unknown",
+    return apiErrorResponse(error, {
+      scope: "profile",
+      fallback: "Nao foi possivel preparar seu perfil.",
     });
-    return NextResponse.json({ error: "Nao foi possivel preparar seu perfil." }, { status: 500 });
   }
 }
