@@ -35,7 +35,7 @@ export function FileActions({ fileId, fileName, processed }: { fileId: string; f
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(kind === "quiz"
-        ? { fileId, subject: fileName, difficulty: "medio", questionCount: 10, model: "ENEM" }
+        ? { fileId, subject: fileName, difficulty: "medio", questionCount: 10 }
         : { fileId, title: `Flashcards - ${fileName}`, subject: fileName, count: 12 }),
     });
     const data = await readApiJson<{ quizId?: string; deckId?: string; error?: string }>(

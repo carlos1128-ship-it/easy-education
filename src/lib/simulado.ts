@@ -1,3 +1,4 @@
+import { getExamStyleForUser } from "@/lib/exam-style";
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions } from "@/lib/quiz-questions";
@@ -20,9 +21,10 @@ export async function createSimuladoForUser({
 }) {
   const prisma = getPrisma();
   const promptScope = describeSubjectForPrompt(subject, topic);
+  const style = await getExamStyleForUser(userId);
   const prompt = `Crie exatamente ${questionCount} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
 Regras obrigatorias:
-- Misture estilos de ENEM e vestibulares brasileiros, com contexto concreto em cada enunciado.
+- Siga o estilo de ${style}, com contexto concreto em cada enunciado.
 - Nao use placeholders como "Alternativa correta", "Distrator plausivel" ou "resolva a situacao-problema proposta" sem apresentar a situacao.
 - Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
 - Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta.
@@ -73,12 +75,12 @@ export async function ensureWeeklySimuladoForUser(userId: string) {
     take: 40,
   });
   const subjects = [...new Set(sessions.map((session) => session.subject))].slice(0, 6);
-  const subject = subjects.length > 1 ? "Multidisciplinar" : subjects[0] ?? "ENEM";
+  const subject = subjects.length > 1 ? "Multidisciplinar" : subjects[0] ?? "Conhecimentos gerais";
 
   return createSimuladoForUser({
     userId,
     subject,
-    topic: `Simulado semanal com base nas materias estudadas: ${subjects.join(", ") || "ENEM"}`,
+    topic: `Simulado semanal com base nas materias estudadas: ${subjects.join(", ") || "conhecimentos gerais"}`,
     title: "Simulado semanal automatico",
     questionCount: 20,
   });

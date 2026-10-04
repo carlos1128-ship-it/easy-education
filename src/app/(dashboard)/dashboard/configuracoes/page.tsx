@@ -28,7 +28,7 @@ export default async function ConfiguraçõesPage() {
 
           <ProfileSettingsForm
             name={profile?.name ?? user.email ?? "Aluno Easy"}
-            studyGoal={profile?.studyGoal ?? "ENEM"}
+            studyGoal={profile?.studyGoal ?? ""}
             dailyMinutes={profile?.dailyMinutes ?? 60}
             studyMethod={profile?.studyMethod ?? "Pomodoro"}
           />

@@ -3,7 +3,7 @@
  * Copiado de Landing.dc.html (versão aprovada, título "a").
  *
  * Itens marcados como TODO estão desligados por decisão pendente:
- * - Planos: seção visível; botões levam ao cadastro até o pagamento existir; limites a preencher.
+ * - Planos: seção visível; botões levam ao cadastro até o pagamento existir; números dos limites a preencher.
  * - Avaliações: só com depoimentos reais e autorizados.
  * - E-mail de contato: falta o endereço real.
  * - Termos de uso e Privacidade: as rotas ainda não existem.
@@ -24,17 +24,18 @@ export const landingNav = [
 export const landingHeader = {
   cta: "Assinar",
   login: "Entrar",
+  loginHint: "Já é assinante?",
   openMenu: "Abrir menu",
   closeMenu: "Fechar menu",
 } as const;
 
 export const landingHero = {
-  title: "Estude com mais foco e menos tempo perdido",
+  title: "Transforme qualquer material de estudo em treino",
   subtitle:
-    "Envie sua apostila e receba quizzes, flashcards e correção de redação na hora. Você descobre o que revisar antes da prova, não depois.",
-  boxText: "Quiz, flashcards e redação em um só lugar",
-  cta: "Assinar agora",
-  highlights: ["Revisão espaçada (SM-2)", "Correção estilo ENEM", "Estude com seu PDF"],
+    "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
+  boxText: "A partir de R$ 26,90/mês · 7 dias de garantia",
+  cta: "Criar meu plano",
+  highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
     src: "/images/estudante-jeans-recorte.webp",
     width: 792,
@@ -45,14 +46,14 @@ export const landingHero = {
 } as const;
 
 export const landingFeatureStrip = [
-  "Revisão espaçada com algoritmo SM-2",
-  "Correção de redação estilo ENEM",
-  "Envie seu PDF e estude com ele",
+  "Flashcards voltam pouco antes de você esquecer",
+  "Envie a foto da redação escrita à mão",
+  "Clique em Iniciar e a atividade do dia abre pronta",
 ] as const;
 
 export const landingProblem = {
   eyebrow: "O problema",
-  title: "Tanto material, pouco tempo",
+  title: "Muito material, pouco tempo até a prova",
   text: "Apostila, resumo, lista, vídeo salvo. Conteúdo não falta. Falta saber por onde começar.",
   points: [
     "Você relê o capítulo inteiro para achar o que esqueceu.",
@@ -74,7 +75,7 @@ export const landingSolution = {
   points: [
     "Quiz gerado da sua apostila, com explicação em cada alternativa.",
     "Flashcards do dia escolhidos pela revisão espaçada.",
-    "Redação com nota e comentário por competência na hora.",
+    "Redação com nota e comentário por competência, digitada ou por foto.",
   ],
   image: {
     src: "/images/estudante-laptop-recorte.webp",
@@ -91,14 +92,20 @@ export const landingSolution = {
 
 export const illustrativeLabel = "Exemplo ilustrativo";
 
+export const landingMeta = {
+  title: "Easy Education: estude com IA usando o seu próprio material",
+  description:
+    "Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos e correção de redação. Para escola, faculdade, vestibular e concurso. A partir de R$ 26,90 por mês.",
+} as const;
+
 export const landingResources = {
   eyebrow: "Recursos",
-  title: "Uma ferramenta para cada parte do estudo",
-  text: "Pratique, revise e escreva no mesmo lugar. Tudo vai para o seu painel.",
+  title: "Pratique, revise e escreva no mesmo lugar",
+  text: "Cada quiz, cartão e redação entra no seu painel e define o que você revisa depois.",
   quiz: {
     tag: "Quizzes",
     title: "Sua apostila vira questões",
-    text: "Envie o PDF ou escolha a matéria. Cada alternativa tem explicação: você entende o erro na hora.",
+    text: "Envie o PDF, uma foto ou só escolha a matéria. Cada alternativa tem explicação, então você entende o erro na hora em que erra.",
     link: "Gerar um quiz",
     mock: {
       title: "Novo quiz",
@@ -120,7 +127,7 @@ export const landingResources = {
   flashcards: {
     tag: "Flashcards",
     title: "Revise só o que está quase esquecendo",
-    text: "O algoritmo SM-2 decide quando cada cartão volta. O que você já sabe aparece menos. O que é difícil, mais vezes.",
+    text: "O app decide quando cada cartão volta. O que você já sabe aparece menos, e o que é difícil aparece mais vezes.",
     link: "Revisar flashcards",
     mock: {
       meta: "História · Cartão 3 de 12",
@@ -137,8 +144,8 @@ export const landingResources = {
   essay: {
     tag: "Redação",
     title: "Redação corrigida na hora",
-    text: "Nota de 0 a 1000 e um comentário por competência do ENEM. Você sabe o que reescrever na próxima.",
-    button: "Corrigir redação",
+    text: "Digite o texto ou fotografe a folha. A correção segue o modelo do ENEM: nota de 0 a 1000 e um comentário por competência, para você saber o que reescrever.",
+    button: "Corrigir minha redação",
     mock: {
       title: "Desafios da mobilidade urbana no Brasil",
       meta: "Enviada em 2 de out. · 29 linhas",
@@ -157,21 +164,21 @@ export const landingResources = {
   cards: {
     simulado: {
       title: "Simulados",
-      text: "Treine no tempo de prova e veja em que área você perdeu mais pontos.",
+      text: "Treine no tempo de prova. Toda semana um simulado novo fica pronto no seu painel.",
       mock: {
-        name: "Simulado ENEM · Dia 2",
-        timer: "2:41:18 restantes",
-        progressLabel: "Questão 37 de 90",
-        progress: 41,
+        name: "Simulado da semana",
+        timer: "1:12:40 restantes",
+        progressLabel: "Questão 12 de 30",
+        progress: 40,
         areas: [
-          { name: "Ciências da Natureza", value: "37 de 45" },
-          { name: "Matemática", value: "0 de 45" },
+          { name: "Biologia", value: "8 de 15" },
+          { name: "Química", value: "4 de 15" },
         ],
       },
     },
     chat: {
       title: "Chat com IA",
-      text: "Pergunte sobre a questão que errou. A explicação vem passo a passo, no seu ritmo.",
+      text: "Pergunte sobre a questão que errou ou peça “monta um simulado de matemática”. O chat cria e já te leva até ele.",
       image: { src: "/images/robo-estudando-azul.jpg", alt: "Robô sentado num banco lendo um livro" },
       question: "Por que errei a de MRU?",
       answerPrefix: "Converta km/h para m/s antes:",
@@ -179,7 +186,7 @@ export const landingResources = {
     },
     plan: {
       title: "Plano de estudos",
-      text: "Diga quanto tempo você tem por dia. O plano mostra o que estudar em cada um.",
+      text: "Diga quanto tempo você tem por dia e o plano divide as matérias. Clique em Iniciar e o cronômetro liga.",
       image: { src: "/images/pilha-de-livros.jpg", alt: "Pessoa sentada sobre uma pilha de livros, lendo" },
       doneLabel: "Concluído",
       days: [
@@ -193,35 +200,57 @@ export const landingResources = {
 
 export const landingSteps = {
   eyebrow: "Como funciona",
-  title: "Do material à prática em três passos",
+  title: "Do cadastro ao primeiro quiz em três passos",
   steps: [
-    { n: 1, title: "Envie seu material ou escolha a matéria", text: "Um PDF da escola, um resumo seu ou um assunto da lista." },
-    { n: 2, title: "A IA gera quiz, simulado ou plano", text: "Questões, cartões e cronograma prontos a partir do que você enviou." },
-    { n: 3, title: "Pratique e acompanhe seu desempenho", text: "Cada resposta mostra o que você já domina e o que revisar." },
+    { n: 1, title: "Conte o que você estuda", text: "Escola, faculdade, vestibular ou concurso, a data da próxima prova e quantas horas por dia você tem. O plano da semana sai na hora." },
+    { n: 2, title: "Mande seu material", text: "PDF da escola, foto do caderno ou só o nome da matéria. A IA monta quiz, flashcards e simulado." },
+    { n: 3, title: "Pratique e veja sua evolução", text: "Cada resposta entra no painel e mostra o que você já domina e o que precisa revisar." },
   ],
 } as const;
 
 /**
- * Seção "Planos" (copiada do design). Os botões levam ao cadastro.
- * TODO: ligar ao pagamento (Stripe) quando a cobrança existir.
- * TODO: preencher os números de cada limite (`value`); no design estavam como "[X]".
- * TODO: os recursos exclusivos do Completo estavam como marcadores no design; incluir quando definidos.
+ * Seção "Planos". Os botões levam ao cadastro até a cobrança (Stripe) existir.
+ * Empacotamento: os dois planos têm todas as ferramentas; o Completo tem limites maiores de IA.
+ * TODO: preencher os números de cada limite (`value`); linhas sem número não aparecem.
  */
 export const landingPlans = {
   enabled: true,
   eyebrow: "Planos",
-  title: "Escolha o plano que cabe na sua rotina",
-  text: "O Completo tem limites maiores de IA e recursos que o Básico não inclui.",
-  basic: { name: "Básico", description: "Para praticar com IA em ritmo mais leve.", price: "R$ 26,90", period: "por mês" },
-  full: { name: "Completo", description: "Para quem usa a IA todo dia.", price: "R$ 46,90", period: "por mês", badge: "Mais indicado" },
-  limits: [
-    { label: "Quizzes por mês", value: null as string | null },
-    { label: "Correções de redação por mês", value: null as string | null },
-    { label: "Mensagens no chat com IA por dia", value: null as string | null },
+  title: "Escolha quanto de IA você quer usar",
+  text: "Os dois planos têm todas as ferramentas. O Completo libera mais uso de IA para quem estuda todo dia.",
+  basic: {
+    name: "Básico",
+    description: "Para estudar algumas vezes por semana.",
+    price: "R$ 26,90",
+    period: "por mês",
+    perDay: "Menos de R$ 1 por dia",
+    usage: "Limite padrão de uso da IA",
+    cta: "Assinar o Básico",
+  },
+  full: {
+    name: "Completo",
+    description: "Para quem estuda todo dia e usa muito a IA.",
+    price: "R$ 46,90",
+    period: "por mês",
+    perDay: "Cerca de R$ 1,56 por dia",
+    usage: "Limite maior de uso da IA",
+    cta: "Assinar o Completo",
+    badge: "Mais indicado",
+  },
+  includedTitle: "Incluso nos dois planos",
+  included: [
+    "Quizzes e simulados com explicação",
+    "Flashcards com revisão espaçada",
+    "Correção de redação por texto ou foto",
+    "Chat com IA e plano de estudos diário",
+    "Painel de desempenho por matéria",
   ],
-  fullExtra: "Limites maiores de IA que o Básico",
-  cta: "Assinar plano",
-  guarantee: "Garantia de 7 dias. Cancele quando quiser.",
+  limits: [
+    { label: "quizzes por mês", basic: null as string | null, full: null as string | null },
+    { label: "correções de redação por mês", basic: null as string | null, full: null as string | null },
+    { label: "mensagens no chat por dia", basic: null as string | null, full: null as string | null },
+  ],
+  guarantee: "Garantia de 7 dias: se não gostar, devolvemos seu dinheiro. Cancele quando quiser.",
   images: [
     { src: "/images/estudante-xadrez-recorte.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
     { src: "/images/estudante-jeans-recorte.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
@@ -282,23 +311,35 @@ export const landingFaq = {
   items: [
     {
       q: "Quanto custa o Easy Education?",
-      a: "Os planos começam em R$ 26,90 por mês. Você cancela quando quiser e tem 7 dias de garantia.",
+      a: "O Básico custa R$ 26,90 por mês e o Completo, R$ 46,90. Você cancela quando quiser e tem 7 dias de garantia.",
     },
     {
       q: "Qual a diferença entre o Básico e o Completo?",
-      a: "O Completo tem limites maiores de quizzes, correções e mensagens no chat, além de recursos que o Básico não inclui. Os limites estão na seção de planos.",
+      a: "Os dois têm todas as ferramentas. O Completo tem limites maiores de uso da IA, pensado para quem gera quizzes, corrige redações e conversa com o chat todo dia.",
     },
     {
-      q: "Serve para ENEM, vestibular e concursos?",
-      a: "Sim. Você escolhe a matéria ou envia o próprio material, então as questões seguem o que você está estudando.",
+      q: "Preciso ter a apostila em PDF?",
+      a: "Não. Você pode mandar a foto da matéria ou só escolher o assunto. As questões seguem o que você está estudando.",
+    },
+    {
+      q: "Posso mandar a redação escrita à mão?",
+      a: "Pode. Tire uma foto da folha, confira o texto transcrito e peça a correção.",
+    },
+    {
+      q: "Serve para escola, faculdade e concurso?",
+      a: "Sim. As questões seguem o material que você envia ou o assunto que você escolhe, seja a prova do colégio, uma disciplina da faculdade, o vestibular ou o edital do concurso.",
+    },
+    {
+      q: "A IA pode errar?",
+      a: "Pode. Por isso cada questão traz a explicação e a correção da redação mostra o motivo de cada nota. Se algo não bater com o seu material, siga o material.",
     },
     {
       q: "A correção de redação substitui um professor?",
-      a: "Não. Ela avalia as cinco competências do ENEM e aponta o que melhorar. A leitura de um professor continua valendo.",
+      a: "Não. Ela segue as cinco competências do modelo do ENEM e aponta o que melhorar. A leitura de um professor continua valendo.",
     },
     {
       q: "Como funciona a revisão espaçada?",
-      a: "Depois de cada flashcard, você diz se foi fácil ou difícil. O algoritmo SM-2 calcula quando ele volta.",
+      a: "Depois de cada flashcard, você diz se foi fácil ou difícil. O algoritmo SM-2 calcula quando ele volta, pouco antes de você esquecer.",
     },
     {
       q: "Dá para estudar pelo celular?",
@@ -308,9 +349,9 @@ export const landingFaq = {
 } as const;
 
 export const landingFinalCta = {
-  title: "Comece hoje a estudar com mais foco",
-  text: "Assine, envie sua apostila e comece a revisar pelo que mais importa.",
-  cta: "Assinar agora",
+  title: "Comece seu plano de estudos hoje",
+  text: "Assine, conte o que você está estudando e receba o plano da semana na hora. Se não gostar, a garantia de 7 dias devolve seu dinheiro.",
+  cta: "Criar meu plano",
   image: { src: "/images/formatura-azul.jpg" },
 } as const;
 

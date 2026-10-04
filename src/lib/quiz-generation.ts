@@ -1,3 +1,4 @@
+import { getExamStyleForUser } from "@/lib/exam-style";
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions } from "@/lib/quiz-questions";
@@ -10,7 +11,8 @@ export type QuizGenerationInput = {
   fileId?: string;
   difficulty: string;
   questionCount: number;
-  model: string;
+  /** Estilo da prova. Sem ele, segue o objetivo do aluno no perfil. */
+  model?: string;
 };
 
 /** Gera um quiz com a IA e salva no banco. Usado pela tela de quizzes e pelo chat. */
@@ -19,7 +21,8 @@ export async function createQuizForUser(input: QuizGenerationInput) {
   const file = input.fileId ? await prisma.uploadedFile.findFirst({ where: { id: input.fileId, userId: input.userId } }) : null;
   const topic = input.topic ?? file?.textContent?.slice(0, 5000);
   const promptScope = describeSubjectForPrompt(input.subject, topic);
-  const prompt = `Gere exatamente ${input.questionCount} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${input.difficulty} no estilo ${input.model}.
+  const style = input.model ?? (await getExamStyleForUser(input.userId));
+  const prompt = `Gere exatamente ${input.questionCount} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${input.difficulty} no estilo de ${style}.
 Regras obrigatorias:
 - Cada enunciado deve conter uma situacao, dado, texto curto, fenomeno ou contexto real; nao use "resolva a situacao-problema proposta" sem apresentar a situacao.
 - As alternativas devem ser conteudos concretos, nunca "Alternativa correta", "Distrator plausivel", "Distrator comum" ou placeholders.

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { after } from "next/server";
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, Flame, PenTool, PlayCircle, Sparkles, Target } from "lucide-react";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
@@ -123,6 +124,17 @@ export default async function DashboardPage() {
     },
   ];
 
+  // Primeiros passos: some quando o aluno já usou cada parte principal do app.
+  const firstSteps = [
+    { label: "Criar seu plano de estudos", done: Boolean(latestPlan), href: "/dashboard/plano" },
+    { label: "Enviar um material (PDF ou foto)", done: files.length > 0, href: "/dashboard/arquivos" },
+    { label: "Responder seu primeiro quiz", done: completedQuizzes.length > 0, href: "/dashboard/quizzes" },
+    { label: "Criar flashcards para revisar", done: decks.length > 0, href: "/dashboard/flashcards" },
+    { label: "Corrigir uma redação", done: essays.length > 0, href: "/dashboard/redacao" },
+  ];
+  const firstStepsDone = firstSteps.filter((item) => item.done).length;
+  const nextStep = firstSteps.find((item) => !item.done);
+
   const stats = [
     { label: "Horas esta semana", icon: Clock, value: formatMinutes(totalMinutes), empty: totalMinutes === 0, step: "Começar estudo de hoje", href: "/dashboard/plano" },
     { label: "Acerto nos quizzes", icon: Target, value: `${quizAverage}%`, empty: completedQuizzes.length === 0, step: "Gerar seu primeiro quiz", href: "/dashboard/quizzes" },
@@ -182,6 +194,48 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+
+      {nextStep ? (
+        <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-6 lg:p-6")} aria-label="Primeiros passos">
+          <OwlMascot mood="piscando" size={88} className="hidden lg:flex" />
+          <div className="flex min-w-0 flex-1 flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className={h2}>Primeiros passos</h2>
+              <span className="text-[13px] font-medium text-ink-muted">
+                {firstStepsDone} de {firstSteps.length}
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-track" aria-hidden="true">
+              <div className="h-full rounded-full bg-brand" style={{ width: `${(firstStepsDone / firstSteps.length) * 100}%` }} />
+            </div>
+            <ul className="m-0 grid list-none grid-cols-1 gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {firstSteps.map((item) => (
+                <li key={item.label}>
+                  {item.done ? (
+                    <span className="flex items-center gap-2 text-sm text-ink-muted line-through decoration-ink-muted/50">
+                      <CheckCircle2 size={18} strokeWidth={2} className="flex-shrink-0 text-success" aria-hidden="true" />
+                      {item.label}
+                      <span className="sr-only">(feito)</span>
+                    </span>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-2 text-sm font-medium no-underline hover:underline",
+                        item === nextStep ? "text-brand-strong" : "text-ink",
+                      )}
+                    >
+                      <span className="size-[18px] flex-shrink-0 rounded-full border-2 border-border-strong" aria-hidden="true" />
+                      {item.label}
+                      {item === nextStep ? <ArrowRight size={14} strokeWidth={2} className="flex-shrink-0" aria-hidden="true" /> : null}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(({ label, icon: Icon, value, empty, step, href }) => (

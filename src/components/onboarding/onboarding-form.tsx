@@ -14,18 +14,29 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { DEFAULT_SELECTED_SUBJECTS } from "@/lib/subjects";
 
-const levels = ["Iniciante", "Intermediario", "Avancado"];
-const methods = ["Pomodoro", "Revisão espacada", "Active Recall", "Blocos de estudo"];
+const levels = [
+  { value: "Iniciante", hint: "Estou começando a matéria" },
+  { value: "Intermediário", hint: "Já vi boa parte do conteúdo" },
+  { value: "Avançado", hint: "Quero treinar no nível da prova" },
+];
+const methods = ["Pomodoro", "Revisão espaçada", "Active Recall", "Blocos de estudo"];
+
+function formatHours(minutes: number) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
 
 export function OnboardingForm() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [goal, setGoal] = useState("ENEM");
+  const [goal, setGoal] = useState("Provas escolares");
   const [targetDate, setTargetDate] = useState("");
   const [level, setLevel] = useState("Iniciante");
   const [dailyMinutes, setDailyMinutes] = useState(120);
   const [selectedSubjects, setSelectedSubjects] = useState<Record<string, number>>(DEFAULT_SELECTED_SUBJECTS);
   const [method, setMethod] = useState("Pomodoro");
+  const [saving, setSaving] = useState(false);
   const progress = ((step + 1) / 4) * 100;
   const StepIcon = [Target, Clock, Layers, CalendarCheck][step];
 
@@ -35,6 +46,7 @@ export function OnboardingForm() {
   );
 
   async function finish() {
+    setSaving(true);
     const response = await fetch("/api/onboarding", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -49,11 +61,12 @@ export function OnboardingForm() {
     });
 
     if (!response.ok) {
-      toast.error("Não foi possível salvar seu onboarding.");
+      setSaving(false);
+      toast.error("Não foi possível criar seu plano. Tente de novo.");
       return;
     }
 
-    toast.success("Seu plano inicial foi criado.");
+    toast.success("Seu plano de estudos está pronto.");
     router.push("/dashboard");
   }
 
@@ -72,18 +85,18 @@ export function OnboardingForm() {
       {step === 0 ? (
         <div className="space-y-5">
           <div className="space-y-2">
-            <Label>Qual e seu objetivo?</Label>
+            <Label>O que você está estudando?</Label>
             <Select value={goal} onValueChange={(value) => value && setGoal(value)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {["ENEM", "Vestibular", "Concurso publico", "SAT/Processo internacional", "Provas escolares"].map((item) => (
+                {["Provas escolares", "ENEM", "Vestibular", "Faculdade", "Concurso público", "SAT/Processo internacional"].map((item) => (
                   <SelectItem key={item} value={item}>{item}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Data da prova</Label>
+            <Label>Data da próxima prova (opcional)</Label>
             <Input type="date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
           </div>
         </div>
@@ -96,19 +109,19 @@ export function OnboardingForm() {
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {levels.map((item) => (
                 <button
-                  className={cn("rounded-lg border p-4 text-left", level === item && "border-[#1B4FD8] bg-[#EFF4FF] dark:bg-[#131D35]")}
-                  key={item}
-                  onClick={() => setLevel(item)}
+                  className={cn("rounded-lg border p-4 text-left", level === item.value && "border-[#1B4FD8] bg-[#EFF4FF] dark:bg-[#131D35]")}
+                  key={item.value}
+                  onClick={() => setLevel(item.value)}
                   type="button"
                 >
-                  <p className="font-medium">{item}</p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-[#94A3B8]">Ajusta dificuldade inicial</p>
+                  <p className="font-medium">{item.value}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-[#94A3B8]">{item.hint}</p>
                 </button>
               ))}
             </div>
           </div>
           <div className="space-y-3">
-            <Label>{dailyMinutes / 60}h por dia disponiveis</Label>
+            <Label>{formatHours(dailyMinutes)} por dia para estudar</Label>
             <Slider min={60} max={480} step={30} value={[dailyMinutes]} onValueChange={(nextValue) => {
                 const value = Array.isArray(nextValue) ? nextValue[0] : nextValue;
                 setDailyMinutes(value);
@@ -122,27 +135,30 @@ export function OnboardingForm() {
       ) : null}
 
       {step === 3 ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {methods.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setMethod(item)}
-              className={cn("rounded-lg border p-4 text-left", method === item && "border-[#1B4FD8] bg-[#EFF4FF] dark:bg-[#131D35]")}
-            >
-              <Check className={cn("mb-3 size-4 text-slate-300 dark:text-[#5B6B8C]", method === item && "text-[#1B4FD8] dark:text-[#93C5FD]")} />
-              <p className="font-medium">{item}</p>
-            </button>
-          ))}
+        <div className="space-y-3">
+          <Label>Como você prefere estudar?</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {methods.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setMethod(item)}
+                className={cn("rounded-lg border p-4 text-left", method === item && "border-[#1B4FD8] bg-[#EFF4FF] dark:bg-[#131D35]")}
+              >
+                <Check className={cn("mb-3 size-4 text-slate-300 dark:text-[#5B6B8C]", method === item && "text-[#1B4FD8] dark:text-[#93C5FD]")} />
+                <p className="font-medium">{item}</p>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
 
       <div className="mt-8 flex justify-between">
-        <Button disabled={step === 0} variant="outline" onClick={() => setStep((value) => value - 1)}>
+        <Button disabled={step === 0 || saving} variant="outline" onClick={() => setStep((value) => value - 1)}>
           Voltar
         </Button>
-        <Button className="bg-[#1B4FD8] text-white hover:bg-[#0F2B8A]" onClick={step === 3 ? finish : () => setStep((value) => value + 1)}>
-          {step === 3 ? "Finalizar" : "Continuar"}
+        <Button className="bg-[#1B4FD8] text-white hover:bg-[#0F2B8A]" disabled={saving} onClick={step === 3 ? finish : () => setStep((value) => value + 1)}>
+          {step === 3 ? (saving ? "Montando seu plano…" : "Criar meu plano") : "Continuar"}
         </Button>
       </div>
     </div>

@@ -41,14 +41,14 @@ export const features = [
   { title: "Chat IA", icon: Sparkles, text: "Tire dúvidas, gere resumos e aprenda com explicações no seu ritmo." },
   { title: "Upload de materiais", icon: Upload, text: "Envie PDFs e apostilas para transformar conteúdo em revisões." },
   { title: "Plano personalizado", icon: CalendarCheck, text: "Receba uma agenda semanal baseada no seu objetivo e tempo real." },
-  { title: "Quiz e simulados", icon: Target, text: "Pratique com questões no estilo ENEM, vestibular ou concurso." },
+  { title: "Quiz e simulados", icon: Target, text: "Pratique com questões no estilo da sua prova: escola, faculdade, vestibular ou concurso." },
   { title: "Flashcards", icon: BookOpen, text: "Revise com repetição espaçada e foco no que você ainda esquece." },
   { title: "Correção de redação", icon: FileEdit, text: "Veja nota, critérios e melhorias seguindo rubricas ENEM ou SAT." },
 ] as const;
 
 export const quickSuggestions = [
   "Crie 12 flashcards de Biologia celular",
-  "Gere 10 questões de Matemática nível ENEM",
+  "Gere 10 questões de Matemática sobre funções",
   "Monte meu plano de estudo para esta semana",
   "Explique o conteúdo que mais errei nos quizzes",
 ] as const;

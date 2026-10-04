@@ -16,7 +16,6 @@ import {
   IconRotate,
   IconShield,
   IconSquareCheck,
-  IconUpload,
 } from "@/components/landing/landing-icons";
 import {
   illustrativeLabel,
@@ -51,12 +50,13 @@ function IllustrativeBadge({ className }: { className?: string }) {
   return <span className={cn(smallBadge, "bg-surface-muted", className)}>{illustrativeLabel}</span>;
 }
 
-const featureIcons = [IconRotate, IconPen, IconUpload] as const;
-const heroIcons = [IconRotate, IconPen, IconFile] as const;
+const featureIcons = [IconRotate, IconPen, IconClock] as const;
+const heroIcons = [IconBook, IconSquareCheck, IconFile] as const;
 
 export function LandingPage() {
   return (
     <div className="overflow-hidden bg-bg text-[15px] leading-6 text-ink antialiased">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
       {/* Hero */}
       <section className="px-3 pt-4 lg:px-6">
         <div className="relative mx-auto max-w-[1232px] overflow-hidden rounded-3xl bg-hero-panel dark:overflow-visible">
@@ -738,16 +738,59 @@ function PlanFeature({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PlanLimits() {
+function PricingCard({ tier }: { tier: "basic" | "full" }) {
+  const p = landingPlans;
+  const plan = p[tier];
+  const featured = tier === "full";
+  const limits = p.limits.filter((limit) => limit[tier]);
   return (
-    <>
-      {landingPlans.limits.map((limit) => (
-        <PlanFeature key={limit.label}>
-          {limit.value ? <strong className="font-medium">{limit.value} </strong> : null}
-          {limit.label}
+    <div
+      className={cn(
+        "relative flex flex-col gap-5 rounded-3xl bg-surface px-4 py-7 lg:px-6",
+        featured ? "border-2 border-brand shadow-pop" : "border border-border shadow-card",
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[22px] font-bold leading-7">{plan.name}</span>
+          <span className="text-ink-muted lg:min-h-12">{plan.description}</span>
+        </div>
+        {"badge" in plan ? (
+          <span className="flex-none rounded-full bg-brand px-2.5 py-1 text-xs font-medium leading-4 text-on-brand">{plan.badge}</span>
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-4xl font-extrabold leading-[42px] tracking-[-0.5px]">{plan.price}</span>
+          <span className="text-ink-muted">{plan.period}</span>
+        </div>
+        <span className="text-sm font-medium text-brand-strong">{plan.perDay}</span>
+      </div>
+      <div className="flex flex-col gap-3">
+        <PlanFeature>
+          <strong className="font-bold">{plan.usage}</strong>
         </PlanFeature>
-      ))}
-    </>
+        {limits.map((limit) => (
+          <PlanFeature key={limit.label}>
+            <strong className="font-medium">{limit[tier]} </strong>
+            {limit.label}
+          </PlanFeature>
+        ))}
+        <span className="mt-1 text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">{p.includedTitle}</span>
+        {p.included.map((item) => (
+          <PlanFeature key={item}>{item}</PlanFeature>
+        ))}
+      </div>
+      <Link
+        href={landingLinks.signUp}
+        className={cn(
+          "mt-auto grid h-12 place-items-center rounded-lg text-[15px] font-medium no-underline transition-colors",
+          featured ? "bg-brand text-on-brand hover:bg-brand-strong" : "border-[1.5px] border-border-strong text-ink hover:bg-surface-muted",
+        )}
+      >
+        {plan.cta}
+      </Link>
+    </div>
   );
 }
 
@@ -761,7 +804,7 @@ function PlansSection() {
         <p className={lead}>{p.text}</p>
       </div>
       <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="relative flex min-h-[300px] items-end justify-center overflow-hidden rounded-3xl bg-brand-tint">
+        <div className="relative hidden min-h-[300px] items-end justify-center overflow-hidden rounded-3xl bg-brand-tint lg:flex">
           <div className="absolute left-1/2 top-10 size-[280px] -translate-x-1/2 rounded-full bg-brand-soft" />
           <Image
             src={p.images[0].src}
@@ -780,50 +823,8 @@ function PlansSection() {
             className="relative -ml-6 block h-[86%] max-h-[410px] w-auto"
           />
         </div>
-
-        <div className="flex flex-col gap-5 rounded-3xl border border-border bg-surface px-4 py-7 shadow-card lg:px-6">
-          <div className="flex flex-col gap-1.5">
-            <span className="text-[22px] font-bold leading-7">{p.basic.name}</span>
-            <span className="text-ink-muted">{p.basic.description}</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-4xl font-extrabold leading-[42px] tracking-[-0.5px]">{p.basic.price}</span>
-            <span className="text-ink-muted">{p.basic.period}</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            <PlanLimits />
-          </div>
-          <Link
-            href={landingLinks.signUp}
-            className="mt-auto grid h-12 place-items-center rounded-lg border-[1.5px] border-border-strong text-[15px] font-medium text-ink no-underline transition-colors hover:bg-surface-muted"
-          >
-            {p.cta}
-          </Link>
-        </div>
-
-        <div className="relative flex flex-col gap-5 rounded-3xl border-2 border-brand bg-surface px-4 py-7 shadow-pop lg:px-6">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[22px] font-bold leading-7">{p.full.name}</span>
-              <span className="text-ink-muted">{p.full.description}</span>
-            </div>
-            <span className="flex-none rounded-full bg-brand px-2.5 py-1 text-xs font-medium leading-4 text-on-brand">{p.full.badge}</span>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-4xl font-extrabold leading-[42px] tracking-[-0.5px]">{p.full.price}</span>
-            <span className="text-ink-muted">{p.full.period}</span>
-          </div>
-          <div className="flex flex-col gap-3">
-            <PlanLimits />
-            <PlanFeature>{p.fullExtra}</PlanFeature>
-          </div>
-          <Link
-            href={landingLinks.signUp}
-            className="mt-auto grid h-12 place-items-center rounded-lg bg-brand text-[15px] font-medium text-on-brand no-underline transition-colors hover:bg-brand-strong"
-          >
-            {p.cta}
-          </Link>
-        </div>
+        <PricingCard tier="full" />
+        <PricingCard tier="basic" />
       </div>
       <div className="flex items-center justify-center gap-2.5 text-center text-ink-muted">
         <IconShield size={18} className="flex-none" />
@@ -832,3 +833,17 @@ function PlansSection() {
     </section>
   );
 }
+
+const productJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "Easy Education",
+  description: "Plataforma de estudos com IA para qualquer estudante: quiz, flashcards, simulados, plano de estudos e correção de redação a partir do próprio material.",
+  offers: [landingPlans.basic, landingPlans.full].map((plan) => ({
+    "@type": "Offer",
+    name: `Plano ${plan.name}`,
+    price: plan.price.replace(/[^\d,]/g, "").replace(",", "."),
+    priceCurrency: "BRL",
+    category: "subscription",
+  })),
+};

@@ -27,7 +27,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const selectedSubjects = subjects.length ? subjects : ["ENEM"];
+    const selectedSubjects = subjects.length ? subjects : ["Conhecimentos gerais"];
     setLoading(true);
     const response = await fetch("/api/quiz/generate", {
       method: "POST",
@@ -38,7 +38,6 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
         subject: selectedSubjects.join(", "),
         difficulty,
         questionCount: Number(formData.get("questionCount") ?? 10),
-        model: "ENEM",
       }),
     });
     const data = await readApiJson<{ quizId?: string; error?: string }>(

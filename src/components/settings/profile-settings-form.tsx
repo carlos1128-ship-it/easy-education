@@ -55,8 +55,9 @@ export function ProfileSettingsForm({ name, studyGoal, dailyMinutes, studyMethod
           <Input id="settings-name" name="name" defaultValue={name} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="settings-goal" className="text-sm font-bold text-ink">Objetivo</label>
-          <Input id="settings-goal" name="studyGoal" defaultValue={studyGoal} />
+          <label htmlFor="settings-goal" className="text-sm font-bold text-ink">O que você estuda</label>
+          <Input id="settings-goal" name="studyGoal" defaultValue={studyGoal} placeholder="Ex.: Faculdade de Direito, ENEM, concurso do INSS" aria-describedby="settings-goal-hint" />
+          <p id="settings-goal-hint" className="text-xs text-ink-muted">As questões geradas pela IA seguem o estilo desse objetivo.</p>
         </div>
         <div className="space-y-2">
           <label htmlFor="settings-minutes" className="text-sm font-bold text-ink">Minutos por dia</label>

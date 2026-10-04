@@ -24,7 +24,10 @@ export function LandingHeader() {
         ))}
       </nav>
 
-      <div className="hidden items-center gap-3 lg:flex">
+      <div className="hidden items-center gap-5 lg:flex">
+        <Link href={landingLinks.login} className="font-medium text-ink-muted no-underline transition-colors hover:text-ink" title={landingHeader.loginHint}>
+          {landingHeader.login}
+        </Link>
         <Link
           href={landingLinks.signUp}
           className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline transition-colors hover:bg-brand-strong"

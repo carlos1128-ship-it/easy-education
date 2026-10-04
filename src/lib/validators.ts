@@ -38,7 +38,7 @@ export const quizGenerateSchema = z.object({
   subject: z.string().min(2),
   difficulty: z.string().min(2),
   questionCount: z.number().min(5).max(20),
-  model: z.string().min(2),
+  model: z.string().min(2).optional(),
 });
 
 export const flashcardGenerateSchema = z.object({

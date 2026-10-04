@@ -33,7 +33,7 @@ export default async function PlanoPage() {
         </div>
 
         <StudyPlanGenerator
-          goal={profile?.studyGoal ?? "ENEM"}
+          goal={profile?.studyGoal ?? "Estudos gerais"}
           dailyMinutes={profile?.dailyMinutes ?? 60}
           method={profile?.studyMethod ?? "pomodoro"}
           targetDate={profile?.targetDate ? profile.targetDate.toISOString().slice(0, 10) : null}

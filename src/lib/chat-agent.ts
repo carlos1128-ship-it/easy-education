@@ -11,7 +11,7 @@ import { createStudyPlanForUser } from "@/lib/study-plan-generation";
 /** Ação executada pela IA no app; o chat mostra o link e leva o aluno até ela. */
 export type ChatAction = { type: "quiz" | "simulado" | "plano" | "flashcards"; href: string; label: string };
 
-export const chatSystemPrompt = `Você é a IA de estudos do Easy Education e ajuda estudantes brasileiros (ENEM, vestibulares e concursos).
+export const chatSystemPrompt = `Você é a IA de estudos do Easy Education e ajuda estudantes brasileiros de escola, faculdade, vestibular e concurso.
 
 Como responder:
 - Sempre em português do Brasil, tratando o aluno por "você", com frases curtas e claras.
@@ -25,7 +25,7 @@ Você tem controle do app e deve AGIR, não ensinar o aluno a fazer:
 - Pediu plano, cronograma ou rotina de estudo? Chame criar_plano_de_estudo.
 - Pediu flashcards ou cartões de revisão? Chame criar_flashcards.
 Se faltar algum detalhe, use valores padrão razoáveis em vez de perguntar. Só pergunte se o pedido for ambíguo de verdade.
-Para dúvidas de conteúdo, explique normalmente. Questões no estilo ENEM seguem a linguagem das provas reais.`;
+Para dúvidas de conteúdo, explique normalmente, no nível do aluno. As questões seguem o estilo da prova que ele escolheu no perfil.`;
 
 const difficultyEnum = ["facil", "medio", "dificil"];
 
@@ -40,7 +40,7 @@ export const chatTools: FunctionDeclaration[] = [
         assunto: { type: Type.STRING, description: "Assunto específico, ex.: funções do 2º grau. Opcional." },
         quantidade: { type: Type.INTEGER, description: "Número de questões, de 5 a 20. Padrão 10." },
         dificuldade: { type: Type.STRING, enum: difficultyEnum, description: "Padrão medio." },
-        estilo: { type: Type.STRING, description: "Estilo da prova: ENEM, Vestibular ou Concurso. Padrão ENEM." },
+        estilo: { type: Type.STRING, description: "Estilo da prova só se o aluno pedir um específico (ex.: ENEM, faculdade, concurso). Sem isso, deixe vazio e o app usa o objetivo do perfil." },
       },
       required: ["materia"],
     },
@@ -125,11 +125,11 @@ export async function runChatTool(userId: string, name: string, args: Record<str
 
   if (name === "criar_quiz") {
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new ChatActionError("Muitos quizzes em pouco tempo. Tente de novo em um minuto.", 429);
-    const subject = text(args.materia) ?? "ENEM";
+    const subject = text(args.materia) ?? "Conhecimentos gerais";
     const topic = text(args.assunto);
     const questionCount = clampInt(args.quantidade, 5, 20, 10);
     const difficulty = difficultyEnum.includes(String(args.dificuldade)) ? String(args.dificuldade) : "medio";
-    const quiz = await createQuizForUser({ userId, subject, topic, questionCount, difficulty, model: text(args.estilo) ?? "ENEM" });
+    const quiz = await createQuizForUser({ userId, subject, topic, questionCount, difficulty, model: text(args.estilo) });
     revalidateAll();
     return {
       reply: `Pronto. Criei o quiz "${quiz.title}" com ${quiz.questionCount} questões de ${subject}. Vou abrir para você responder.`,
@@ -157,7 +157,7 @@ export async function runChatTool(userId: string, name: string, args: Record<str
       .map((item) => ({ name: item.nome.slice(0, 60), difficulty: clampInt(item.dificuldade, 1, 5, 3) }));
     const hours = Number(args.horas_por_dia);
     const dailyHours = Number.isFinite(hours) ? Math.min(8, Math.max(1, hours)) : Math.min(8, Math.max(1, (profile?.dailyMinutes ?? 60) / 60));
-    const goal = text(args.objetivo) ?? profile?.studyGoal ?? "ENEM";
+    const goal = text(args.objetivo) ?? profile?.studyGoal ?? "Estudos gerais";
     const { plan } = await createStudyPlanForUser(userId, {
       goal,
       targetDate: text(args.data_prova) ?? profile?.targetDate?.toISOString().slice(0, 10) ?? null,

@@ -17,18 +17,17 @@ export function SimuladoCreateForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const selectedSubjects = subjects.length ? subjects : ["ENEM"];
+    const selectedSubjects = subjects.length ? subjects : ["Conhecimentos gerais"];
     const subject = selectedSubjects.join(", ");
     setLoading(true);
     const response = await fetch("/api/quiz/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        topic: `Simulado de ${subject} no estilo ENEM, com questoes contextualizadas e nivel de prova`,
+        topic: `Simulado de ${subject}, com questoes contextualizadas e nivel de prova`,
         subject,
         difficulty: "simulado",
         questionCount: Number(formData.get("questionCount") ?? 20),
-        model: "ENEM",
       }),
     });
     const data = await readApiJson<{ quizId?: string; error?: string }>(

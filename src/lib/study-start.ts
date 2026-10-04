@@ -77,7 +77,7 @@ export async function startStudyBlockForUser(userId: string, block: StudyBlockIn
   });
   if (existing) return { href: `/dashboard/quizzes/${existing.id}`, activity: "quiz", reused: true };
   if (!checkRateLimit(`quiz:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
-  const quiz = await createQuizForUser({ userId, subject: block.subject, topic, difficulty: "medio", questionCount: 10, model: "ENEM" });
+  const quiz = await createQuizForUser({ userId, subject: block.subject, topic, difficulty: "medio", questionCount: 10 });
   revalidateStudyPages();
   return { href: `/dashboard/quizzes/${quiz.id}`, activity: "quiz", reused: false };
 }
