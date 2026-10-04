@@ -286,6 +286,17 @@
   --brand-tint: rgba(99, 102, 241, 0.15);
 }
 
+/* O logo mantém o azul da marca mesmo dentro das telas legadas. */
+.legacy-auth .brand-scope {
+  --brand: #2563eb;
+  --on-brand: #ffffff;
+}
+
+.dark .legacy-auth .brand-scope {
+  --brand: #60a5fa;
+  --on-brand: #06142e;
+}
+
 @layer utilities {
   /* Compatibilidade do tema escuro para classes de cor fixas que ainda restam
      (inclui as telas de autenticação, que mantêm o visual anterior). */
