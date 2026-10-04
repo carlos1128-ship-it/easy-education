@@ -59,7 +59,7 @@ export function LandingPage() {
     <div className="overflow-hidden bg-bg text-[15px] leading-6 text-ink antialiased">
       {/* Hero */}
       <section className="px-3 pt-4 lg:px-6">
-        <div className="relative mx-auto max-w-[1232px] overflow-hidden rounded-3xl bg-hero-panel">
+        <div className="relative mx-auto max-w-[1232px] overflow-hidden rounded-3xl bg-hero-panel dark:overflow-visible">
           <LandingHeader />
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
             <div className="relative z-[2] flex flex-col items-start gap-5 px-5 pb-2 pt-7 lg:pb-16 lg:pl-14 lg:pr-0 lg:pt-12">
@@ -104,7 +104,7 @@ export function LandingPage() {
                 alt={landingHero.image.alt}
                 priority
                 sizes="(min-width: 1024px) 380px, 300px"
-                className="absolute bottom-0 left-1/2 h-[96%] w-auto max-w-none -translate-x-1/2 lg:left-[56%] lg:h-[94%]"
+                className="absolute bottom-0 left-1/2 h-[96%] w-auto max-w-none -translate-x-1/2 lg:left-[56%] lg:h-[94%] dark:[mask-image:linear-gradient(to_bottom,#000_82%,transparent)]"
               />
               <span className="absolute left-[6%] top-[38%] z-[3] hidden size-14 items-center justify-center rounded-full border border-border bg-surface text-brand-strong shadow-pop lg:flex">
                 <IconSquareCheck size={22} />

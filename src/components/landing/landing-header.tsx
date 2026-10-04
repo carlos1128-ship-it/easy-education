@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/brand/logo";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { landingHeader, landingLinks, landingNav } from "@/content/landing";
 import { IconArrowUpRight, IconClose, IconMenu } from "@/components/landing/landing-icons";
 
@@ -26,7 +25,6 @@ export function LandingHeader() {
       </nav>
 
       <div className="hidden items-center gap-3 lg:flex">
-        <ThemeToggle />
         <Link
           href={landingLinks.signUp}
           className="inline-flex h-11 items-center gap-2 rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline transition-colors hover:bg-brand-strong"
@@ -70,10 +68,6 @@ export function LandingHeader() {
               {item.label}
             </a>
           ))}
-          <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-sm text-ink-muted">Tema</span>
-            <ThemeToggle />
-          </div>
           <Link
             href={landingLinks.login}
             className="mx-1 mb-1 mt-2 grid h-12 place-items-center rounded-lg border-[1.5px] border-border-strong text-[15px] font-medium text-ink no-underline"

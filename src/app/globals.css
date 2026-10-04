@@ -65,7 +65,7 @@
   --track: #1a2744;
   --sidebar-surface: #0a0e17;
   --wordmark: #f1f5f9;
-  --hero-panel: #0b1730;
+  --hero-panel: #070a13; /* igual ao fundo: sem moldura em volta do hero */
   --hero-ring: #142a52;
   --cta-overlay: rgba(30, 64, 175, 0.85);
 }
