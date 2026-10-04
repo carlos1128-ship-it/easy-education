@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { after } from "next/server";
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, Flame, PenTool, PlayCircle, Sparkles, Target } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
@@ -62,16 +63,17 @@ export default async function DashboardPage() {
   const user = await getCurrentUserOrRedirect();
   const prisma = getPrisma();
   const weekStart = startOfWindow(6);
-  await ensureWeeklySimuladoForUser(user.id);
+  // Gerar o simulado semanal chama a IA; roda depois da resposta para não travar o dashboard.
+  after(() => ensureWeeklySimuladoForUser(user.id).catch((error) => console.error("[simulado-semanal]", error)));
 
   const [profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks] = await Promise.all([
     prisma.profile.findUnique({ where: { userId: user.id } }),
     prisma.studySession.findMany({ where: { userId: user.id, date: { gte: weekStart } }, orderBy: { date: "desc" } }),
-    prisma.quiz.findMany({ where: { userId: user.id }, include: { questions: true }, orderBy: { createdAt: "desc" }, take: 6 }),
+    prisma.quiz.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 6 }),
     prisma.essay.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 3 }),
     prisma.flashcard.findMany({ where: { deck: { userId: user.id }, nextReview: { lte: new Date() } }, include: { deck: true }, take: 4 }),
     prisma.studyPlan.findFirst({ where: { userId: user.id, status: "active" }, orderBy: { createdAt: "desc" } }),
-    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 3 }),
+    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 3, select: { id: true, name: true, processed: true } }),
     prisma.flashcardDeck.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 2 }),
   ]);
 

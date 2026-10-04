@@ -14,7 +14,7 @@ export default async function FlashcardsPage() {
       include: { _count: { select: { flashcards: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
+    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, select: { id: true, name: true, processed: true } }),
   ]);
 
   return (

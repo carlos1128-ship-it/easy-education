@@ -12,6 +12,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
   const files = await getPrisma().uploadedFile.findMany({
     where: { userId: user.id, name: busca ? { contains: busca, mode: "insensitive" } : undefined },
     orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, type: true, sizeBytes: true, processed: true },
   });
 
   return (

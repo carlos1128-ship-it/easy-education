@@ -8,21 +8,38 @@ function getUserName(user: User, fallbackName?: string) {
   return user.email ?? "Aluno Easy";
 }
 
+/**
+ * Garante que o perfil existe. Só grava no banco quando algo mudou:
+ * gravar a cada render disparava o realtime de `profiles`, que chamava
+ * router.refresh(), que renderizava de novo — um ciclo infinito.
+ */
 export async function ensureProfileForUser(user: User, fallbackName?: string) {
   const prisma = getPrisma();
   const metadataName = user.user_metadata.name;
   const shouldRefreshName = (typeof metadataName === "string" && metadataName.trim()) || fallbackName?.trim();
+  const email = user.email ?? "";
 
-  return prisma.profile.upsert({
+  const existing = await prisma.profile.findUnique({ where: { userId: user.id } });
+
+  if (!existing) {
+    return prisma.profile.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        name: getUserName(user, fallbackName),
+        email,
+      },
+    });
+  }
+
+  const nextName = shouldRefreshName ? getUserName(user, fallbackName) : existing.name;
+  if (existing.name === nextName && existing.email === email) {
+    return existing;
+  }
+
+  return prisma.profile.update({
     where: { userId: user.id },
-    update: {
-      ...(shouldRefreshName ? { name: getUserName(user, fallbackName) } : {}),
-      email: user.email ?? "",
-    },
-    create: {
-      userId: user.id,
-      name: getUserName(user, fallbackName),
-      email: user.email ?? "",
-    },
+    data: { name: nextName, email },
   });
 }

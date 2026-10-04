@@ -10,7 +10,7 @@ export default async function QuizzesPage() {
   const prisma = getPrisma();
   const [quizzes, files] = await Promise.all([
     prisma.quiz.findMany({ where: { userId: user.id, difficulty: { not: "simulado" } }, orderBy: { createdAt: "desc" } }),
-    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } }),
+    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, select: { id: true, name: true, processed: true } }),
   ]);
 
   return (

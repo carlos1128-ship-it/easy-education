@@ -39,6 +39,7 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
           where: { userId: user.id, OR: variants.map((term) => ({ name: { contains: term, mode: "insensitive" } })) },
           take: 8,
           orderBy: { createdAt: "desc" },
+          select: { id: true, name: true, processed: true },
         }),
         prisma.flashcardDeck.findMany({
           where: {
