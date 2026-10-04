@@ -4,6 +4,7 @@ export const OWL_PATH =
   "M4 2.5 9 6.6c1.9-.6 4.1-.6 6 0L20 2.5V13a8 8 0 0 1-16 0ZM5.6 12.4a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0-6.4 0ZM7.5 12.4a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0ZM12 12.4a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0-6.4 0ZM13.9 12.4a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0ZM11 16.8h2l-1 1.6Z";
 
 const sizes = {
+  xs: { box: "size-7 rounded-[9px]", owl: 19, text: "text-[15px]" },
   sm: { box: "size-8 rounded-[8px]", owl: 22, text: "text-base" },
   md: { box: "size-9 rounded-[9px]", owl: 24, text: "text-lg" },
   lg: { box: "size-14 rounded-[14px]", owl: 38, text: "text-[22px]" },

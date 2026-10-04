@@ -1,5 +1,5 @@
-import DigitalAssetLanding from "@/components/landing/digital-asset-landing";
+import { LandingPage } from "@/components/landing/landing-page";
 
-export default function LandingPage() {
-  return <DigitalAssetLanding />;
+export default function Page() {
+  return <LandingPage />;
 }

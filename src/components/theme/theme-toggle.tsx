@@ -2,26 +2,45 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
+  const option = (active: boolean) =>
+    cn(
+      "grid size-7 place-items-center rounded-full transition-colors",
+      active ? "bg-surface text-brand-strong shadow-card" : "text-ink-muted hover:text-ink",
+    );
+
   return (
-    <button
-      type="button"
-      aria-label="Alternar tema"
-      title="Alternar tema"
+    <div
+      role="group"
+      aria-label="Tema"
       suppressHydrationWarning
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="relative flex h-8 w-16 items-center rounded-full border border-[#CBD5E1] bg-[#F1F5F9] p-1 text-[#64748B] shadow-inner transition-colors hover:border-[#4F46E5]/40 dark:border-[#1A2744] dark:bg-[#131D35] dark:text-[#94A3B8]"
+      className={cn("flex h-9 items-center gap-0.5 rounded-full border border-border bg-surface-muted p-[3px]", className)}
     >
-      <Sun className="absolute left-2 size-3.5 text-[#F59E0B]" />
-      <Moon className="absolute right-2 size-3.5 text-[#818CF8]" />
-      <span className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#F59E0B] shadow-sm transition-transform dark:translate-x-8 dark:bg-[#070A13] dark:text-[#818CF8]">
-        <Sun className="size-3.5 dark:hidden" />
-        <Moon className="hidden size-3.5 dark:block" />
-      </span>
-    </button>
+      <button
+        type="button"
+        aria-label="Tema claro"
+        aria-pressed={!isDark}
+        suppressHydrationWarning
+        onClick={() => setTheme("light")}
+        className={option(!isDark)}
+      >
+        <Sun className="size-4" strokeWidth={1.75} aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        aria-label="Tema escuro"
+        aria-pressed={isDark}
+        suppressHydrationWarning
+        onClick={() => setTheme("dark")}
+        className={option(isDark)}
+      >
+        <Moon className="size-4" strokeWidth={1.75} aria-hidden="true" />
+      </button>
+    </div>
   );
 }
