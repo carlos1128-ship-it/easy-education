@@ -36,7 +36,7 @@ export const landingHero = {
   cta: "Assinar agora",
   highlights: ["Revisão espaçada (SM-2)", "Correção estilo ENEM", "Estude com seu PDF"],
   image: {
-    src: "/images/estudante-jeans.webp",
+    src: "/images/estudante-jeans-recorte.webp",
     width: 792,
     height: 1240,
     alt: "Estudante de óculos e mochila, sorrindo e segurando cadernos",
@@ -60,7 +60,7 @@ export const landingProblem = {
     "A redação volta corrigida uma semana depois, quando o tema já passou.",
   ],
   image: {
-    src: "/images/estudantes-casal.webp",
+    src: "/images/estudantes-casal-recorte.webp",
     width: 1281,
     height: 1199,
     alt: "Estudante carregando uma pilha de livros ao lado de uma estudante concentrada num livro aberto",
@@ -77,7 +77,7 @@ export const landingSolution = {
     "Redação com nota e comentário por competência na hora.",
   ],
   image: {
-    src: "/images/estudante-laptop.webp",
+    src: "/images/estudante-laptop-recorte.webp",
     width: 1792,
     height: 1336,
     alt: "Estudante sorrindo enquanto usa um notebook",
@@ -223,8 +223,8 @@ export const landingPlans = {
   cta: "Assinar plano",
   guarantee: "Garantia de 7 dias. Cancele quando quiser.",
   images: [
-    { src: "/images/estudante-xadrez.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
-    { src: "/images/estudante-jeans.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
+    { src: "/images/estudante-xadrez-recorte.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
+    { src: "/images/estudante-jeans-recorte.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
   ],
 } as const;
 

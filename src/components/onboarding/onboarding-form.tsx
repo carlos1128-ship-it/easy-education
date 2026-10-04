@@ -58,13 +58,13 @@ export function OnboardingForm() {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="rounded-lg border border-slate-200 dark:border-[#1A2744] bg-white p-6 shadow-sm">
       <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-lg bg-[#EFF4FF] p-2 text-[#1B4FD8]">
+        <div className="rounded-lg bg-[#EFF4FF] dark:bg-[#131D35] p-2 text-[#1B4FD8] dark:text-[#93C5FD]">
           <StepIcon className="size-5" />
         </div>
         <div className="flex-1">
-          <p className="text-sm text-slate-500">Etapa {step + 1} de 4</p>
+          <p className="text-sm text-slate-500 dark:text-[#94A3B8]">Etapa {step + 1} de 4</p>
           <Progress value={progress} className="mt-2 h-2" />
         </div>
       </div>
@@ -96,13 +96,13 @@ export function OnboardingForm() {
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               {levels.map((item) => (
                 <button
-                  className={cn("rounded-lg border p-4 text-left", level === item && "border-[#1B4FD8] bg-[#EFF4FF]")}
+                  className={cn("rounded-lg border p-4 text-left", level === item && "border-[#1B4FD8] bg-[#EFF4FF] dark:bg-[#131D35]")}
                   key={item}
                   onClick={() => setLevel(item)}
                   type="button"
                 >
                   <p className="font-medium">{item}</p>
-                  <p className="mt-1 text-xs text-slate-500">Ajusta dificuldade inicial</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-[#94A3B8]">Ajusta dificuldade inicial</p>
                 </button>
               ))}
             </div>
@@ -128,9 +128,9 @@ export function OnboardingForm() {
               key={item}
               type="button"
               onClick={() => setMethod(item)}
-              className={cn("rounded-lg border p-4 text-left", method === item && "border-[#1B4FD8] bg-[#EFF4FF]")}
+              className={cn("rounded-lg border p-4 text-left", method === item && "border-[#1B4FD8] bg-[#EFF4FF] dark:bg-[#131D35]")}
             >
-              <Check className={cn("mb-3 size-4 text-slate-300", method === item && "text-[#1B4FD8]")} />
+              <Check className={cn("mb-3 size-4 text-slate-300 dark:text-[#5B6B8C]", method === item && "text-[#1B4FD8] dark:text-[#93C5FD]")} />
               <p className="font-medium">{item}</p>
             </button>
           ))}
