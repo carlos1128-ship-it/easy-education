@@ -3,8 +3,9 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Search, Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { MobileSidebar } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getProfileInitials } from "@/lib/subjects";
@@ -60,15 +61,7 @@ export function Header({ profileName, studyGoal }: { profileName: string; studyG
         IA
       </Link>
       <ThemeToggle className="hidden lg:flex" />
-      <Link
-        href="/dashboard/desempenho"
-        prefetch={false}
-        className="relative hidden size-10 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink lg:grid"
-        aria-label="Desempenho"
-      >
-        <Bell size={20} strokeWidth={1.75} aria-hidden="true" />
-        <span className="absolute right-2.5 top-[9px] size-2 rounded-full bg-brand shadow-[0_0_0_2px_var(--surface)]" />
-      </Link>
+      <NotificationsBell />
       <Link
         href="/dashboard/configuracoes"
         prefetch={false}

@@ -7,30 +7,8 @@ import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
 import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
+import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
 import { cn } from "@/lib/utils";
-
-function startOfToday() {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function startOfWindow(days: number) {
-  const date = startOfToday();
-  date.setDate(date.getDate() - days);
-  return date;
-}
-
-function calculateStreak(dates: Date[]) {
-  const active = new Set(dates.map((date) => date.toISOString().slice(0, 10)));
-  let streak = 0;
-  const cursor = startOfToday();
-  while (active.has(cursor.toISOString().slice(0, 10))) {
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
-}
 
 /* Apresentação */
 
@@ -79,6 +57,8 @@ export default async function DashboardPage() {
 
   const completedQuizzes = quizzes.filter((quiz) => quiz.score !== null);
   const totalMinutes = sessions.reduce((sum, session) => sum + session.durationMinutes, 0);
+  const todayStart = startOfToday();
+  const todayMinutes = sessions.filter((session) => session.date >= todayStart).reduce((sum, session) => sum + session.durationMinutes, 0);
   const quizAverage = completedQuizzes.length
     ? Math.round(completedQuizzes.reduce((sum, quiz) => sum + (quiz.score ?? 0), 0) / completedQuizzes.length)
     : 0;
@@ -87,7 +67,7 @@ export default async function DashboardPage() {
   const plan = parseStudyPlan(latestPlan?.planData);
   const todayBlocks = getTodayPlanBlocks(plan);
   const goalMinutes = profile?.dailyMinutes ?? 60;
-  const dailyProgress = Math.min(100, Math.round((totalMinutes / Math.max(goalMinutes, 1)) * 100));
+  const dailyProgress = Math.min(100, Math.round((todayMinutes / Math.max(goalMinutes, 1)) * 100));
   const weeklyGoalMinutes = goalMinutes * 7;
   const weeklyProgress = Math.min(100, Math.round((totalMinutes / Math.max(weeklyGoalMinutes, 1)) * 100));
 
@@ -132,8 +112,8 @@ export default async function DashboardPage() {
     {
       title: "Meta diária",
       progress: dailyProgress,
-      sub: `${formatAmount(totalMinutes)} de ${formatMinutes(goalMinutes)}`,
-      hint: totalMinutes >= goalMinutes ? "Meta de hoje cumprida" : `Faltam ${formatMinutes(goalMinutes - totalMinutes)} hoje`,
+      sub: `${formatAmount(todayMinutes)} de ${formatMinutes(goalMinutes)}`,
+      hint: todayMinutes >= goalMinutes ? "Meta de hoje cumprida" : `Faltam ${formatMinutes(goalMinutes - todayMinutes)} hoje`,
     },
     {
       title: "Meta semanal",
