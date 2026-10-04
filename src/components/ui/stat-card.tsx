@@ -10,23 +10,23 @@ type StatCardProps = {
 };
 
 const toneClasses = {
-  success: "bg-emerald-50 text-emerald-700",
-  warning: "bg-amber-50 text-amber-700",
-  danger: "bg-red-50 text-red-700",
-  neutral: "bg-slate-100 text-slate-600",
+  success: "bg-success-tint text-success",
+  warning: "bg-warning-tint text-warning",
+  danger: "bg-danger-tint text-danger",
+  neutral: "bg-surface-muted text-ink-muted",
 };
 
 export function StatCard({ title, value, change, icon: Icon, tone = "neutral" }: StatCardProps) {
   return (
-    <div className="rounded-[18px] border border-[#E2E8F0] bg-white p-5 shadow-[0_4px_20px_rgba(15,23,42,0.06)]">
+    <div className="rounded-2xl border border-border bg-surface p-4 shadow-card md:p-6">
       <div className="flex items-center justify-between">
-        <div className="rounded-[10px] bg-[#EEF2FF] p-2 text-[#4F46E5]">
-          <Icon className="size-5" />
+        <div className="grid size-10 place-items-center rounded-lg bg-brand-tint text-brand-strong">
+          <Icon className="size-5" aria-hidden="true" />
         </div>
-        <span className={cn("rounded-full px-2 py-1 text-xs", toneClasses[tone])}>{change}</span>
+        <span className={cn("rounded-full px-2 py-1 text-xs font-medium", toneClasses[tone])}>{change}</span>
       </div>
-      <p className="mt-5 text-sm text-slate-500">{title}</p>
-      <p className="mt-1 text-2xl font-bold text-[#0F172A]">{value}</p>
+      <p className="mt-5 text-[13px] text-ink-muted">{title}</p>
+      <p className="mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-ink">{value}</p>
     </div>
   );
 }

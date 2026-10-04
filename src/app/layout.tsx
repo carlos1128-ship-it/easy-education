@@ -1,23 +1,22 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { JetBrains_Mono, Lexend } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
+const lexend = Lexend({
+  variable: "--font-lexend",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "700", "800"],
+  display: "swap",
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning className={`${inter.variable} ${plusJakarta.variable} ${geistMono.variable} h-full`}>
+    <html lang="pt-BR" suppressHydrationWarning className={`${lexend.variable} ${jetbrainsMono.variable} h-full`}>
       <body className="min-h-full antialiased">
         <ThemeProvider>
           <TooltipProvider>

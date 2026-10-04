@@ -17,18 +17,14 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-[20px] border border-dashed border-[#CBD5E1] bg-white p-8 text-center shadow-sm">
-      <div className="mb-4 rounded-xl bg-[#EEF2FF] p-3 text-[#4F46E5]">
-        <Icon className="size-6" />
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border-strong bg-surface p-8 text-center">
+      <div className="mb-4 grid size-12 place-items-center rounded-lg bg-brand-tint text-brand-strong">
+        <Icon className="size-6" aria-hidden="true" />
       </div>
-      <h3 className="text-lg font-bold text-[#0F172A]">{title}</h3>
-      <p className="mt-2 max-w-md text-sm text-slate-500">{description}</p>
+      <h3 className="text-lg font-bold text-ink">{title}</h3>
+      <p className="mt-2 max-w-md text-sm text-ink-muted">{description}</p>
       {action ? (
-        <Button
-          className="mt-5 rounded-xl bg-[#4F46E5] text-white hover:bg-[#4338CA]"
-          onClick={onAction}
-          type="button"
-        >
+        <Button className="mt-5" onClick={onAction} type="button">
           {action}
         </Button>
       ) : null}
