@@ -3,7 +3,7 @@
  * Copiado de Landing.dc.html (versão aprovada, título "a").
  *
  * Itens marcados como TODO estão desligados por decisão pendente:
- * - Planos e preços: o app ainda não cobra. Não renderizar até o pagamento existir.
+ * - Planos: seção visível; botões levam ao cadastro até o pagamento existir; limites a preencher.
  * - Avaliações: só com depoimentos reais e autorizados.
  * - E-mail de contato: falta o endereço real.
  * - Termos de uso e Privacidade: as rotas ainda não existem.
@@ -17,7 +17,7 @@ export const landingLinks = {
 export const landingNav = [
   { label: "Recursos", href: "#recursos" },
   { label: "Como funciona", href: "#como-funciona" },
-  // TODO: "Planos" volta quando a seção de planos for liberada.
+  { label: "Planos", href: "#planos" },
   { label: "Perguntas", href: "#perguntas" },
 ] as const;
 
@@ -202,18 +202,30 @@ export const landingSteps = {
 } as const;
 
 /**
- * TODO: seção "Planos" desligada. O app ainda não cobra e os limites estão como "[X]".
- * Conteúdo do design guardado para quando o pagamento existir.
+ * Seção "Planos" (copiada do design). Os botões levam ao cadastro.
+ * TODO: ligar ao pagamento (Stripe) quando a cobrança existir.
+ * TODO: preencher os números de cada limite (`value`); no design estavam como "[X]".
+ * TODO: os recursos exclusivos do Completo estavam como marcadores no design; incluir quando definidos.
  */
 export const landingPlans = {
-  enabled: false,
+  enabled: true,
   eyebrow: "Planos",
   title: "Escolha o plano que cabe na sua rotina",
   text: "O Completo tem limites maiores de IA e recursos que o Básico não inclui.",
   basic: { name: "Básico", description: "Para praticar com IA em ritmo mais leve.", price: "R$ 26,90", period: "por mês" },
   full: { name: "Completo", description: "Para quem usa a IA todo dia.", price: "R$ 46,90", period: "por mês", badge: "Mais indicado" },
+  limits: [
+    { label: "Quizzes por mês", value: null as string | null },
+    { label: "Correções de redação por mês", value: null as string | null },
+    { label: "Mensagens no chat com IA por dia", value: null as string | null },
+  ],
+  fullExtra: "Limites maiores de IA que o Básico",
   cta: "Assinar plano",
   guarantee: "Garantia de 7 dias. Cancele quando quiser.",
+  images: [
+    { src: "/images/estudante-xadrez.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
+    { src: "/images/estudante-jeans.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
+  ],
 } as const;
 
 export const landingPerformance = {
@@ -268,8 +280,14 @@ export const landingFaq = {
   // TODO: "Não achou sua dúvida? Escreva para [e-mail de contato real]." volta quando houver o e-mail real.
   contactLine: null as string | null,
   items: [
-    // TODO: "Quanto custa o Easy Education?" e "Qual a diferença entre o Básico e o Completo?"
-    // ficam desligadas junto com a seção de planos.
+    {
+      q: "Quanto custa o Easy Education?",
+      a: "Os planos começam em R$ 26,90 por mês. Você cancela quando quiser e tem 7 dias de garantia.",
+    },
+    {
+      q: "Qual a diferença entre o Básico e o Completo?",
+      a: "O Completo tem limites maiores de quizzes, correções e mensagens no chat, além de recursos que o Básico não inclui. Os limites estão na seção de planos.",
+    },
     {
       q: "Serve para ENEM, vestibular e concursos?",
       a: "Sim. Você escolhe a matéria ou envia o próprio material, então as questões seguem o que você está estudando.",

@@ -14,6 +14,7 @@ import {
   IconFile,
   IconPen,
   IconRotate,
+  IconShield,
   IconSquareCheck,
   IconUpload,
 } from "@/components/landing/landing-icons";
@@ -27,6 +28,7 @@ import {
   landingLinks,
   landingNav,
   landingPerformance,
+  landingPlans,
   landingProblem,
   landingResources,
   landingSolution,
@@ -254,7 +256,7 @@ export function LandingPage() {
         </ol>
       </section>
 
-      {/* TODO: seção "Planos" desligada (preços, limites "[X]" e garantia). O app ainda não cobra. */}
+      {landingPlans.enabled ? <PlansSection /> : null}
 
       {/* Desempenho */}
       <section className={cn(container, sectionTop, "flex flex-col gap-10")}>
@@ -722,5 +724,111 @@ function PhonePanel() {
         </div>
       </div>
     </div>
+  );
+}
+
+function PlanFeature({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="mt-px grid size-[22px] flex-none place-items-center rounded-full bg-success-tint text-success">
+        <IconCheck size={13} strokeWidth={3} />
+      </span>
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function PlanLimits() {
+  return (
+    <>
+      {landingPlans.limits.map((limit) => (
+        <PlanFeature key={limit.label}>
+          {limit.value ? <strong className="font-medium">{limit.value} </strong> : null}
+          {limit.label}
+        </PlanFeature>
+      ))}
+    </>
+  );
+}
+
+function PlansSection() {
+  const p = landingPlans;
+  return (
+    <section id="planos" className={cn(container, sectionTop, "flex scroll-mt-6 flex-col gap-10")}>
+      <div className="flex max-w-[640px] flex-col gap-3">
+        <span className={eyebrow}>{p.eyebrow}</span>
+        <h2 className={h2}>{p.title}</h2>
+        <p className={lead}>{p.text}</p>
+      </div>
+      <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="relative flex min-h-[300px] items-end justify-center overflow-hidden rounded-3xl bg-brand-tint">
+          <div className="absolute left-1/2 top-10 size-[280px] -translate-x-1/2 rounded-full bg-brand-soft" />
+          <Image
+            src={p.images[0].src}
+            width={p.images[0].width}
+            height={p.images[0].height}
+            alt={p.images[0].alt}
+            sizes="200px"
+            className="relative -mr-6 block h-[92%] max-h-[440px] w-auto"
+          />
+          <Image
+            src={p.images[1].src}
+            width={p.images[1].width}
+            height={p.images[1].height}
+            alt={p.images[1].alt}
+            sizes="200px"
+            className="relative -ml-6 block h-[86%] max-h-[410px] w-auto"
+          />
+        </div>
+
+        <div className="flex flex-col gap-5 rounded-3xl border border-border bg-surface px-4 py-7 shadow-card lg:px-6">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-[22px] font-bold leading-7">{p.basic.name}</span>
+            <span className="text-ink-muted">{p.basic.description}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-4xl font-extrabold leading-[42px] tracking-[-0.5px]">{p.basic.price}</span>
+            <span className="text-ink-muted">{p.basic.period}</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            <PlanLimits />
+          </div>
+          <Link
+            href={landingLinks.signUp}
+            className="mt-auto grid h-12 place-items-center rounded-lg border-[1.5px] border-border-strong text-[15px] font-medium text-ink no-underline transition-colors hover:bg-surface-muted"
+          >
+            {p.cta}
+          </Link>
+        </div>
+
+        <div className="relative flex flex-col gap-5 rounded-3xl border-2 border-brand bg-surface px-4 py-7 shadow-pop lg:px-6">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[22px] font-bold leading-7">{p.full.name}</span>
+              <span className="text-ink-muted">{p.full.description}</span>
+            </div>
+            <span className="flex-none rounded-full bg-brand px-2.5 py-1 text-xs font-medium leading-4 text-on-brand">{p.full.badge}</span>
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-4xl font-extrabold leading-[42px] tracking-[-0.5px]">{p.full.price}</span>
+            <span className="text-ink-muted">{p.full.period}</span>
+          </div>
+          <div className="flex flex-col gap-3">
+            <PlanLimits />
+            <PlanFeature>{p.fullExtra}</PlanFeature>
+          </div>
+          <Link
+            href={landingLinks.signUp}
+            className="mt-auto grid h-12 place-items-center rounded-lg bg-brand text-[15px] font-medium text-on-brand no-underline transition-colors hover:bg-brand-strong"
+          >
+            {p.cta}
+          </Link>
+        </div>
+      </div>
+      <div className="flex items-center justify-center gap-2.5 text-center text-ink-muted">
+        <IconShield size={18} className="flex-none" />
+        <span>{p.guarantee}</span>
+      </div>
+    </section>
   );
 }
