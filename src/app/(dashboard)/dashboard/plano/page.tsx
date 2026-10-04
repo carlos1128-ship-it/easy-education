@@ -57,7 +57,7 @@ export default async function PlanoPage() {
                       <p className="text-xs font-medium text-brand-strong">{formatMinutes(item.durationMinutes)} · {item.method}</p>
                     </div>
                     <div className="mt-4">
-                      <StudySessionButton subject={item.subject} durationMinutes={item.durationMinutes} method={item.method} notes={item.topic} />
+                      <StudySessionButton subject={item.subject} durationMinutes={item.durationMinutes} method={item.method} notes={item.topic} type={item.type} />
                     </div>
                   </div>
                 ))}

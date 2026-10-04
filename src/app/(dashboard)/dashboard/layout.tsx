@@ -1,6 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { MobileBottomNav, Sidebar } from "@/components/layout/sidebar";
 import { RealtimeRefresh } from "@/components/realtime/realtime-refresh";
+import { StudyTimer } from "@/components/study-plan/study-timer";
 import { ensureProfileForUser } from "@/lib/profile";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
 
@@ -21,6 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8 md:pb-32 lg:pb-8">{children}</main>
       </div>
       <MobileBottomNav />
+      <StudyTimer />
     </div>
   );
 }

@@ -1,92 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Play, X } from "lucide-react";
+import { Loader2, Play, Timer } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useLocalStorageValue } from "@/lib/use-local-storage";
+import { readApiJson } from "@/lib/client-response";
+import { studyBlockId, useActiveStudy } from "@/lib/active-study";
 
-type Props = { subject: string; durationMinutes: number; method: string; notes?: string };
+type Props = {
+  subject: string;
+  durationMinutes: number;
+  method: string;
+  notes?: string;
+  type?: "estudo" | "revisao" | "simulado" | "redacao";
+};
 
-const MAX_MINUTES = 600;
-
-function storageKey({ subject, method, notes }: Props) {
-  return `ee-study-timer:${subject}:${method}:${notes ?? ""}`;
-}
+const activityLabel: Record<string, string> = {
+  redacao: "Abrindo a redação",
+  simulado: "Simulado pronto",
+  flashcards: "Flashcards prontos",
+  quiz: "Quiz pronto",
+};
 
 /**
- * Registra o tempo de estudo de verdade: "Iniciar" marca o começo e "Concluir"
- * envia os minutos que passaram (antes, "Concluir" gravava a duração planejada).
+ * "Iniciar" liga o cronômetro do canto e leva o aluno para a atividade do bloco:
+ * redação abre a tela de redação; os demais geram simulado, flashcards ou quiz.
+ * O tempo é registrado em "Concluir", no cronômetro.
  */
-export function StudySessionButton(props: Props) {
-  const { subject, durationMinutes, method, notes } = props;
+export function StudySessionButton({ subject, durationMinutes, method, notes, type = "estudo" }: Props) {
   const router = useRouter();
-  const key = storageKey(props);
-  // O início fica no localStorage: o cronômetro continua se a página for recarregada.
-  const [savedStart, setSavedStart] = useLocalStorageValue(key);
-  const startedAt = savedStart && Number.isFinite(Number(savedStart)) ? Number(savedStart) : null;
-  const [now, setNow] = useState(() => Date.now());
-  const [loading, setLoading] = useState(false);
+  const { active, setActive } = useActiveStudy();
+  const [preparing, setPreparing] = useState(false);
+  const topic = notes ?? "";
+  const isThisBlock = active ? studyBlockId(active) === studyBlockId({ subject, topic, method }) : false;
 
-  useEffect(() => {
-    if (!startedAt) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 15000);
-    return () => window.clearInterval(timer);
-  }, [startedAt]);
+  async function start() {
+    if (active && !isThisBlock && !window.confirm(`Você já está estudando ${active.subject}. Trocar para ${subject}? O tempo anterior não será registrado.`)) return;
 
-  const elapsedMinutes = startedAt ? Math.max(0, Math.floor((now - startedAt) / 60000)) : 0;
-
-  function start() {
-    const value = Date.now();
-    setNow(value);
-    setSavedStart(String(value));
-  }
-
-  function cancel() {
-    setSavedStart(null);
-  }
-
-  async function complete() {
-    if (!startedAt) return;
-    const minutes = Math.min(MAX_MINUTES, Math.max(1, Math.round((Date.now() - startedAt) / 60000)));
-    setLoading(true);
-    const response = await fetch("/api/study-sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, durationMinutes: minutes, method, notes }),
-    });
-    setLoading(false);
-    if (!response.ok) {
-      toast.error("Não foi possível registrar o estudo.");
-      return;
+    const base = { subject, topic, method, type, plannedMinutes: durationMinutes, startedAt: Date.now() };
+    setActive(base);
+    setPreparing(true);
+    try {
+      const response = await fetch("/api/study-plan/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, topic, method, type }),
+      });
+      const data = await readApiJson<{ href?: string; activity?: string; error?: string }>(response, "Não foi possível preparar a atividade.");
+      if (!response.ok || !data.href) {
+        toast.error(`${data.error ?? "Não foi possível preparar a atividade."} O cronômetro continua rodando.`);
+        return;
+      }
+      setActive({ ...base, href: data.href });
+      toast.success(activityLabel[data.activity ?? ""] ?? "Atividade pronta");
+      router.push(data.href);
+    } finally {
+      setPreparing(false);
     }
-    cancel();
-    toast.success(`Estudo registrado: ${minutes} min de ${subject}.`);
-    router.refresh();
   }
 
-  if (!startedAt) {
+  if (isThisBlock && !preparing) {
     return (
-      <Button variant="outline" size="sm" onClick={start} title={`Bloco planejado: ${durationMinutes} min`}>
-        <Play className="size-4" aria-hidden="true" />
-        Iniciar
+      <Button variant="outline" size="sm" onClick={() => active?.href && router.push(active.href)} disabled={!active?.href}>
+        <Timer className="size-4" aria-hidden="true" />
+        Em andamento
       </Button>
     );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs font-medium text-brand-strong" aria-live="polite">
-        Em andamento · {elapsedMinutes} min
-      </span>
-      <Button size="sm" disabled={loading} onClick={complete}>
-        <CheckCircle2 className="size-4" aria-hidden="true" />
-        {loading ? "Salvando..." : "Concluir"}
-      </Button>
-      <Button variant="ghost" size="icon-sm" disabled={loading} onClick={cancel} aria-label="Cancelar cronômetro">
-        <X className="size-4" aria-hidden="true" />
-      </Button>
-    </div>
+    <Button variant="outline" size="sm" onClick={start} disabled={preparing} title={`Bloco planejado: ${durationMinutes} min`}>
+      {preparing ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}
+      {preparing ? "Preparando…" : "Iniciar"}
+    </Button>
   );
 }
