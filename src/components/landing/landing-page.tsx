@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LogoMark } from "@/components/brand/logo";
+import { Logo } from "@/components/brand/logo";
 import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingHeader } from "@/components/landing/landing-header";
 import {
@@ -332,9 +332,8 @@ export function LandingPage() {
       {/* Rodapé */}
       <footer className={cn(container, "flex flex-col gap-6 pb-8 pt-12")}>
         <div className="flex flex-wrap items-center justify-between gap-5">
-          <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
-            <LogoMark size="xs" />
-            <span className="text-[15px] font-extrabold leading-none">Easy Education</span>
+          <Link href="/" className="flex items-center no-underline">
+            <Logo size="xs" />
           </Link>
           <nav aria-label="Rodapé" className="flex flex-wrap gap-x-6 gap-y-2">
             {landingNav.map((item) => (

@@ -32,7 +32,6 @@
   --elev-pop: 0 8px 32px rgba(15, 23, 42, 0.14);
   --track: #e2e8f0;
   --sidebar-surface: #ffffff;
-  --wordmark: #1e3a8a;
   --hero-panel: #f1f6ff;
   --hero-ring: #dbeafe;
   --cta-overlay: rgba(30, 58, 138, 0.85);
@@ -64,7 +63,6 @@
   --elev-pop: 0 8px 32px rgba(0, 0, 0, 0.6);
   --track: #1a2744;
   --sidebar-surface: #0a0e17;
-  --wordmark: #f1f5f9;
   --hero-panel: #070a13; /* igual ao fundo: sem moldura em volta do hero */
   --hero-ring: #142a52;
   --cta-overlay: rgba(30, 64, 175, 0.85);
@@ -166,7 +164,6 @@
   --color-danger: var(--danger);
   --color-danger-tint: var(--danger-tint);
   --color-track: var(--track);
-  --color-wordmark: var(--wordmark);
   --color-hero-panel: var(--hero-panel);
   --color-hero-ring: var(--hero-ring);
   --color-cta-overlay: var(--cta-overlay);
@@ -297,17 +294,6 @@
   --brand: #4f46e5;
   --brand-strong: #4f46e5;
   --brand-tint: rgba(99, 102, 241, 0.15);
-}
-
-/* O logo mantém o azul da marca mesmo dentro das telas legadas. */
-.legacy-auth .brand-scope {
-  --brand: #2563eb;
-  --on-brand: #ffffff;
-}
-
-.dark .legacy-auth .brand-scope {
-  --brand: #60a5fa;
-  --on-brand: #06142e;
 }
 
 @layer utilities {

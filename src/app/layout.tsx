@@ -19,9 +19,25 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+// Ícones (icon.png, apple-icon.png) e imagens de compartilhamento (opengraph-image.png,
+// twitter-image.png) vêm dos arquivos em src/app, gerados a partir do logo 4B.
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: "Easy Education",
   description: "Estude melhor, não apenas mais.",
+  applicationName: "Easy Education",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    siteName: "Easy Education",
+    title: "Easy Education",
+    description: "Estude melhor, não apenas mais.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Easy Education",
+    description: "Estude melhor, não apenas mais.",
+  },
 };
 
 export default function RootLayout({

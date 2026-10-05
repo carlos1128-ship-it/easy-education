@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogoMark } from "@/components/brand/logo";
+import { Logo } from "@/components/brand/logo";
 import { landingHeader, landingLinks, landingNav } from "@/content/landing";
 import { IconArrowUpRight, IconClose, IconMenu } from "@/components/landing/landing-icons";
 
@@ -11,9 +11,8 @@ export function LandingHeader() {
 
   return (
     <header className="relative z-[6] flex items-center justify-between gap-4 pl-4 pr-3 pt-3 lg:pl-14 lg:pr-8 lg:pt-5">
-      <Link href="/" className="flex items-center gap-2.5 text-ink no-underline">
-        <LogoMark size="sm" className="rounded-[10px]" />
-        <span className="whitespace-nowrap text-[17px] font-extrabold leading-none tracking-[-0.3px]">Easy Education</span>
+      <Link href="/" className="flex items-center no-underline">
+        <Logo size="sm" preload />
       </Link>
 
       <nav aria-label="Seções" className="hidden items-center gap-8 lg:flex">

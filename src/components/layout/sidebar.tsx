@@ -68,7 +68,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
   return (
     <aside className="flex h-full w-[248px] flex-shrink-0 flex-col border-r border-border bg-sidebar px-4 py-5 text-ink">
       <Link href="/dashboard" prefetch={false} onClick={onNavigate} className="px-2 pb-5 pt-1 no-underline">
-        <Logo size="md" />
+        <Logo size="md" preload />
       </Link>
 
       <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-3.5 shadow-card">

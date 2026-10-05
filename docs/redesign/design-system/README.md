@@ -55,3 +55,29 @@ Fallbacks de sistema no final: `system-ui, -apple-system, "Segoe UI", sans-serif
 - Landing: faixa completa de pesos. Dashboard e telas de estudo (quiz, flashcard, redação, chat): entre 400 e 800.
 - No máximo 4 a 5 pesos diferentes na mesma tela.
 
+
+## Logo
+
+Versão 4B (bico sólido), recortada sem redesenho de `docs/redesign/Easy Education Logo v4-selection.png`.
+
+Componente único: `Logo` em `src/components/brand/logo.tsx`.
+
+| Prop | Valores |
+|---|---|
+| `variant` | `horizontal` (símbolo + "Easy Education", padrão) ou `symbol` |
+| `size` | `xs` 18px, `sm` 22px, `md` 25px, `lg` 32px de altura |
+| `preload` | use no logo que aparece acima da dobra |
+
+- Tema claro: as cores originais (`brand` #2563eb no símbolo e `ink` #0f172a no texto).
+- Tema escuro: um filtro de CSS deixa o logo todo branco, como na versão escura da folha.
+
+| Arquivo | Uso |
+|---|---|
+| `public/brand/logo-horizontal.png` (632×80) | navbar, menu lateral, rodapé, login, cadastro |
+| `public/brand/logo-simbolo.png` (513×326) | símbolo sozinho |
+| `src/app/icon.png` (64×64) | favicon |
+| `src/app/apple-icon.png` (180×180) | apple-touch-icon |
+| `public/brand/icon-192.png` e `icon-512.png` | manifest (`src/app/manifest.ts`) |
+| `src/app/opengraph-image.png` e `twitter-image.png` (1200×630) | compartilhamento: logo branco sobre `brand-deep` |
+
+Os PNGs são suficientes para @2x/@3x nos tamanhos acima. Um SVG do logo deixaria tudo mais nítido em qualquer tamanho.

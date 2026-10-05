@@ -1,47 +1,42 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export const OWL_PATH =
-  "M4 2.5 9 6.6c1.9-.6 4.1-.6 6 0L20 2.5V13a8 8 0 0 1-16 0ZM5.6 12.4a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0-6.4 0ZM7.5 12.4a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0ZM12 12.4a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0-6.4 0ZM13.9 12.4a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0ZM11 16.8h2l-1 1.6Z";
-
-const sizes = {
-  xs: { box: "size-7 rounded-[9px]", owl: 19, text: "text-[15px]" },
-  sm: { box: "size-8 rounded-[8px]", owl: 22, text: "text-base" },
-  md: { box: "size-9 rounded-[9px]", owl: 24, text: "text-lg" },
-  lg: { box: "size-14 rounded-[14px]", owl: 38, text: "text-[22px]" },
+/* Logo 4B recortado de docs/redesign/Easy Education Logo v4-selection.png, sem redesenho.
+   Os PNGs têm resolução de sobra para @2x/@3x nos tamanhos abaixo. No tema escuro o filtro
+   deixa o logo todo branco, igual à versão escura da folha. */
+const files = {
+  horizontal: { src: "/brand/logo-horizontal.png", width: 632, height: 80 },
+  symbol: { src: "/brand/logo-simbolo.png", width: 513, height: 326 },
 } as const;
 
-export function LogoMark({ size = "md", className }: { size?: keyof typeof sizes; className?: string }) {
-  const s = sizes[size];
-  return (
-    <span className={cn("grid shrink-0 place-items-center bg-brand", s.box, className)} aria-hidden="true">
-      <svg width={s.owl} height={s.owl} viewBox="0 0 24 24">
-        <path fill="var(--on-brand)" fillRule="evenodd" d={OWL_PATH} />
-      </svg>
-    </span>
-  );
-}
+/** Altura do logo em px */
+const sizes = { xs: 18, sm: 22, md: 25, lg: 32 } as const;
 
 export function Logo({
   size = "md",
-  showWordmark = true,
+  variant = "horizontal",
   className,
-  wordmarkClassName,
+  preload = false,
 }: {
   size?: keyof typeof sizes;
-  showWordmark?: boolean;
+  variant?: keyof typeof files;
   className?: string;
-  wordmarkClassName?: string;
+  /** Logo acima da dobra: carrega antes */
+  preload?: boolean;
 }) {
+  const file = files[variant];
+  const height = variant === "symbol" ? Math.round(sizes[size] * 1.25) : sizes[size];
+  const width = Math.round((height * file.width) / file.height);
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark size={size} />
-      {showWordmark ? (
-        <span className={cn("whitespace-nowrap font-extrabold tracking-[-0.02em] text-wordmark", sizes[size].text, wordmarkClassName)}>
-          Easy Education
-        </span>
-      ) : (
-        <span className="sr-only">Easy Education</span>
-      )}
-    </span>
+    <Image
+      src={file.src}
+      alt="Easy Education"
+      width={width}
+      height={height}
+      unoptimized
+      preload={preload}
+      className={cn("block shrink-0 select-none dark:brightness-0 dark:invert", className)}
+      style={{ width, height }}
+    />
   );
 }
