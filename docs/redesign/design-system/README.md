@@ -58,26 +58,25 @@ Fallbacks de sistema no final: `system-ui, -apple-system, "Segoe UI", sans-serif
 
 ## Logo
 
-Versão 4B (bico sólido), recortada sem redesenho de `docs/redesign/Easy Education Logo v4-selection.png`.
+Versão 4B (bico sólido). Os SVGs oficiais vêm de `docs/redesign/Easy Education logo design.zip` (`svg/v4/*-B-*`).
 
 Componente único: `Logo` em `src/components/brand/logo.tsx`.
 
 | Prop | Valores |
 |---|---|
 | `variant` | `horizontal` (símbolo + "Easy Education", padrão) ou `symbol` |
-| `size` | `xs` 18px, `sm` 22px, `md` 25px, `lg` 32px de altura |
+| `size` | altura do símbolo: `xs` 16px, `sm` 19px, `md` 22px, `lg` 28px |
 | `preload` | use no logo que aparece acima da dobra |
 
-- Tema claro: as cores originais (`brand` #2563eb no símbolo e `ink` #0f172a no texto).
-- Tema escuro: um filtro de CSS deixa o logo todo branco, como na versão escura da folha.
+- Versão horizontal: o símbolo mais o texto "Easy Education" em Lexend 800, com espaçamento -0.02em,
+  nas proporções da folha (texto com 92% da altura do símbolo e espaço de 33% entre os dois).
+- Tema claro: símbolo azul (`simbolo-B-azul`) e texto `ink`.
+- Tema escuro: símbolo branco (`simbolo-B-branco`) e texto `ink` claro.
 
 | Arquivo | Uso |
 |---|---|
-| `public/brand/logo-horizontal.png` (632×80) | navbar, menu lateral, rodapé, login, cadastro |
-| `public/brand/logo-simbolo.png` (513×326) | símbolo sozinho |
-| `src/app/icon.png` (64×64) | favicon |
-| `src/app/apple-icon.png` (180×180) | apple-touch-icon |
+| `public/brand/logo-simbolo-azul.svg` / `logo-simbolo-branco.svg` | símbolo nos temas claro e escuro |
+| `src/app/icon.svg` (`icone-B-azul`) | favicon |
+| `src/app/apple-icon.png` (180×180) | apple-touch-icon, gerado do `icone-B-azul` |
 | `public/brand/icon-192.png` e `icon-512.png` | manifest (`src/app/manifest.ts`) |
 | `src/app/opengraph-image.png` e `twitter-image.png` (1200×630) | compartilhamento: logo branco sobre `brand-deep` |
-
-Os PNGs são suficientes para @2x/@3x nos tamanhos acima. Um SVG do logo deixaria tudo mais nítido em qualquer tamanho.
