@@ -135,7 +135,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
           <OwlMascot mood={result.mood} size={176} />
           <div>
             <h1 className="text-2xl font-bold text-ink">Resultado</h1>
-            <p className="mt-3 text-4xl font-bold text-brand-strong">{percent}%</p>
+            <p className="mt-3 text-4xl font-extrabold text-brand">{percent}%</p>
             <p className="mt-2 text-ink-muted">
               {score} de {questions.length} questões corretas.
             </p>

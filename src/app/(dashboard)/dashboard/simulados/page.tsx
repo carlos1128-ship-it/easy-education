@@ -32,7 +32,7 @@ export default async function SimuladosPage() {
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[10px] bg-brand-tint text-brand-strong">
               <Icon size={20} />
             </div>
-            <p className="text-[28px] font-bold leading-none text-ink">{value}</p>
+            <p className="text-[28px] font-extrabold leading-none text-brand">{value}</p>
             <p className="mt-1 text-[13px] font-medium text-ink-muted">{label}</p>
           </div>
         ))}

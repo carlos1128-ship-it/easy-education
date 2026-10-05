@@ -292,7 +292,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="flex flex-col gap-0.5">
-                <div className="text-[28px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink">{value}</div>
+                <div className="text-[28px] font-extrabold leading-[1.15] tracking-[-0.02em] text-brand">{value}</div>
                 <div className="text-[13px] text-ink-muted">{label}</div>
               </div>
             )}

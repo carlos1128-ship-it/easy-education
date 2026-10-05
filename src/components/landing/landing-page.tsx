@@ -38,13 +38,22 @@ import { cn } from "@/lib/utils";
 const container = "mx-auto max-w-[1520px] px-5 lg:px-12 2xl:px-16";
 const sectionTop = "pt-16 lg:pt-24";
 const eyebrow = "text-[13px] font-medium uppercase leading-4 tracking-[0.6px] text-brand-strong";
-const h2 = "m-0 text-[28px] font-extrabold leading-[34px] tracking-[-0.5px] [text-wrap:balance] lg:text-4xl lg:leading-[42px]";
+const h2 = "m-0 text-[28px] font-bold leading-[34px] tracking-[-0.5px] [text-wrap:balance] lg:text-4xl lg:leading-[42px]";
 const lead = "m-0 text-[15px] leading-[26px] text-ink-muted lg:text-[17px]";
+// Light 300 só a partir de 18px
+const leadLarge = "m-0 text-[15px] leading-[26px] lg:text-lg lg:font-light lg:leading-[28px]";
 const tagPill = "rounded-full bg-brand-tint px-3 py-1 text-[13px] font-medium leading-4 text-brand-strong";
 const h3 = "m-0 text-[28px] font-bold leading-[34px] [text-wrap:balance]";
 const mockPanel = "rounded-3xl bg-surface-muted p-4 lg:p-10";
 const mockCard = "flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-card lg:p-6";
 const smallBadge = "flex-none rounded-full px-2 py-[3px] text-[11px] font-medium leading-[14px] text-ink-muted";
+
+/** Separa o título em [antes, trecho, depois] para estilizar só o trecho. */
+function splitTitle(title: string, part: string) {
+  const index = title.indexOf(part);
+  if (index < 0) return [title, "", ""] as const;
+  return [title.slice(0, index), part, title.slice(index + part.length)] as const;
+}
 
 function IllustrativeBadge({ className }: { className?: string }) {
   return <span className={cn(smallBadge, "bg-surface-muted", className)}>{illustrativeLabel}</span>;
@@ -63,10 +72,19 @@ export function LandingPage() {
           <LandingHeader />
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
             <div className="relative z-[2] flex flex-col items-start gap-5 px-5 pb-2 pt-7 lg:pb-16 lg:pl-14 lg:pr-0 lg:pt-12">
-              <h1 className="m-0 max-w-[540px] text-4xl font-extrabold leading-[42px] tracking-[-1.2px] text-ink [text-wrap:balance] lg:text-[56px] lg:leading-[62px]">
-                {landingHero.title}
+              <h1 className="m-0 max-w-[540px] text-4xl font-black leading-[42px] tracking-[-1.2px] text-ink [text-wrap:balance] lg:text-[56px] lg:leading-[62px]">
+                {(() => {
+                  const [before, keyword, after] = splitTitle(landingHero.title, landingHero.titleKeyword);
+                  return (
+                    <>
+                      {before}
+                      <span className="text-brand">{keyword}</span>
+                      {after}
+                    </>
+                  );
+                })()}
               </h1>
-              <p className="m-0 max-w-[580px] text-[15px] leading-[26px] text-ink-muted lg:text-[17px]">{landingHero.subtitle}</p>
+              <p className={cn(leadLarge, "max-w-[580px] text-ink-muted")}>{landingHero.subtitle}</p>
               <div className="mt-2 box-border flex w-full max-w-[560px] flex-col items-stretch gap-2.5 rounded-2xl border border-border bg-surface p-1.5 shadow-card lg:flex-row lg:rounded-full">
                 <div className="flex flex-1 items-center gap-2.5 py-2 pl-3.5 pr-1.5 text-ink-muted">
                   <IconBook size={20} className="flex-none text-brand-strong" />
@@ -178,7 +196,18 @@ export function LandingPage() {
         <div className="grid grid-cols-1 items-center gap-7 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col items-start gap-4">
             <span className={eyebrow}>{landingSolution.eyebrow}</span>
-            <h2 className={h2}>{landingSolution.title}</h2>
+            <h2 className={cn(h2, "font-light")}>
+              {(() => {
+                const [before, strong, after] = splitTitle(landingSolution.title, landingSolution.titleStrong);
+                return (
+                  <>
+                    {before}
+                    <span className="font-black text-brand">{strong}</span>
+                    {after}
+                  </>
+                );
+              })()}
+            </h2>
             <p className={cn(lead, "max-w-[460px] [text-wrap:pretty]")}>{landingSolution.text}</p>
             <div className="mt-1 flex flex-col gap-3">
               {landingSolution.points.map((point) => (
@@ -246,7 +275,7 @@ export function LandingPage() {
           {landingSteps.steps.map((step) => (
             <li key={step.n} className="relative flex flex-col gap-3 overflow-hidden rounded-3xl border border-border bg-surface px-4 pb-4 pt-7 lg:px-6 lg:pb-6">
               <span className="absolute -right-6 -top-6 size-24 rounded-full bg-brand-tint" aria-hidden="true" />
-              <span className="relative grid size-11 place-items-center rounded-full bg-brand-deep text-lg font-extrabold leading-none text-white">
+              <span className="relative grid size-11 place-items-center rounded-full bg-brand-deep text-lg font-bold leading-none text-white">
                 {step.n}
               </span>
               <h3 className="m-0 mt-2 text-lg font-bold leading-[26px]">{step.title}</h3>
@@ -288,8 +317,8 @@ export function LandingPage() {
         <div className="relative mx-auto max-w-[1600px] overflow-hidden rounded-3xl">
           <Image src={landingFinalCta.image.src} alt="" fill sizes="(min-width: 1232px) 1232px, 100vw" className="object-cover object-[center_35%]" />
           <div className="relative flex flex-col items-center gap-4 bg-cta-overlay px-5 pb-7 pt-10 text-center lg:px-14 lg:py-16">
-            <h2 className={cn(h2, "max-w-[620px] text-white")}>{landingFinalCta.title}</h2>
-            <p className="m-0 max-w-[480px] text-[15px] leading-[26px] text-[#dbeafe] lg:text-[17px]">{landingFinalCta.text}</p>
+            <h2 className={cn(h2, "max-w-[620px] font-black text-white")}>{landingFinalCta.title}</h2>
+            <p className={cn(leadLarge, "max-w-[480px] text-[#dbeafe]")}>{landingFinalCta.text}</p>
             <Link
               href={landingLinks.signUp}
               className="mt-2 inline-flex h-12 items-center rounded-lg bg-[#ffffff] px-6 text-[15px] font-medium text-[#1e3a8a] no-underline focus-visible:outline-white"
@@ -480,7 +509,7 @@ function EssayFeature() {
               <div className="text-xs font-medium leading-4 text-ink-muted">{m.meta}</div>
             </div>
             <div className="flex-none text-right">
-              <div className="text-4xl font-extrabold leading-10 text-brand-strong">{m.score}</div>
+              <div className="text-4xl font-black leading-10 text-brand">{m.score}</div>
               <div className="text-xs font-medium leading-4 text-ink-muted">{m.scoreOf}</div>
             </div>
           </div>
@@ -520,7 +549,7 @@ function SimuladoCard() {
           <span className="text-[13px] font-medium leading-4">{m.name}</span>
           <IllustrativeBadge className="bg-surface" />
         </div>
-        <span className="flex items-center gap-1.5 self-start rounded-full bg-warning-tint px-2.5 py-1 font-mono text-xs font-semibold leading-4 text-warning">
+        <span className="flex items-center gap-1.5 self-start rounded-full bg-warning-tint px-2.5 py-1 font-mono text-xs font-medium leading-4 text-warning">
           <IconClock size={14} strokeWidth={2} />
           {m.timer}
         </span>
@@ -622,7 +651,7 @@ function PerformanceCard() {
           <div key={stat.label} className="rounded-2xl bg-surface-muted px-4 py-3.5">
             <div className="text-xs font-medium leading-4 text-ink-muted">{stat.label}</div>
             <div className="flex items-baseline gap-2">
-              <span className="text-[28px] font-extrabold leading-[34px]">{stat.value}</span>
+              <span className="text-[28px] font-black leading-[34px] text-brand">{stat.value}</span>
               {"delta" in stat ? <span className="text-xs font-medium leading-4 text-success">{stat.delta}</span> : null}
             </div>
           </div>
@@ -703,7 +732,7 @@ function PhonePanel() {
           </div>
           <div className="rounded-lg border border-border bg-surface p-2.5">
             <div className="text-[10px] font-medium leading-[14px] text-ink-muted">{p.weekLabel}</div>
-            <div className="text-2xl font-extrabold leading-7">{p.weekValue}</div>
+            <div className="text-2xl font-black leading-7 text-brand">{p.weekValue}</div>
             <div className="mt-1.5 flex h-11 items-end gap-1">
               {landingPerformance.card.weeks.map((week, index) => (
                 <span key={index} className="flex-1 rounded-[3px] bg-brand" style={{ height: `${week}%` }} />
@@ -761,7 +790,7 @@ function PricingCard({ tier }: { tier: "basic" | "full" }) {
       </div>
       <div className="flex flex-col gap-1">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-4xl font-extrabold leading-[42px] tracking-[-0.5px]">{plan.price}</span>
+          <span className="text-4xl font-black leading-[42px] tracking-[-0.5px]">{plan.price}</span>
           <span className="text-ink-muted">{plan.period}</span>
         </div>
         <span className="text-sm font-medium text-brand-strong">{plan.perDay}</span>

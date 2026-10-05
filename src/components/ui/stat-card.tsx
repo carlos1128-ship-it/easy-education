@@ -26,7 +26,7 @@ export function StatCard({ title, value, change, icon: Icon, tone = "neutral" }:
         <span className={cn("rounded-full px-2 py-1 text-xs font-medium", toneClasses[tone])}>{change}</span>
       </div>
       <p className="mt-5 text-[13px] text-ink-muted">{title}</p>
-      <p className="mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-ink">{value}</p>
+      <p className="mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-brand">{value}</p>
     </div>
   );
 }

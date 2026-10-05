@@ -5,10 +5,10 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
+// Fonte variável: um único arquivo cobre todos os pesos de 100 a 900.
 const lexend = Lexend({
   variable: "--font-lexend",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "700", "800"],
   display: "swap",
 });
 

@@ -25,7 +25,7 @@ export default async function RedaçãoPage() {
         {lastEssay ? (
           <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
             <p className="text-sm text-ink-muted">Ultimo resultado</p>
-            <p className="mt-2 text-4xl font-bold text-brand-strong">{Math.round(lastEssay.score ?? 0)}</p>
+            <p className="mt-2 text-4xl font-extrabold text-brand">{Math.round(lastEssay.score ?? 0)}</p>
             <p className="mt-2 text-sm font-medium text-ink">{lastEssay.title}</p>
             <p className="mt-1 text-sm text-ink-muted">
               {typeof lastEssay.feedback === "object" && lastEssay.feedback && "generalFeedback" in lastEssay.feedback

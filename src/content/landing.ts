@@ -31,6 +31,8 @@ export const landingHeader = {
 
 export const landingHero = {
   title: "Transforme qualquer material de estudo em treino",
+  // Trecho do título destacado em azul
+  titleKeyword: "treino",
   subtitle:
     "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
   boxText: "A partir de R$ 26,90/mês · 7 dias de garantia",
@@ -71,6 +73,8 @@ export const landingProblem = {
 export const landingSolution = {
   eyebrow: "Com o Easy Education",
   title: "Você abre o app e já sabe o que estudar",
+  // Trecho do título em peso Black; o resto fica em Light
+  titleStrong: "já sabe o que estudar",
   text: "Seu material vira prática. A revisão do dia já vem pronta, e cada erro vem explicado.",
   points: [
     "Quiz gerado da sua apostila, com explicação em cada alternativa.",
