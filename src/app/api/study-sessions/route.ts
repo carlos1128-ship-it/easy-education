@@ -7,9 +7,9 @@ import { getPrisma } from "@/lib/prisma";
 import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 
 const schema = z.object({
-  subject: z.string().min(2),
+  subject: z.string().min(2).max(120),
   durationMinutes: z.number().min(1).max(600),
-  method: z.string().min(2),
+  method: z.string().min(2).max(60),
   notes: z.string().max(1000).optional(),
 });
 

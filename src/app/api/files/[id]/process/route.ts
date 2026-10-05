@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
+import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { generateTextFromImage } from "@/lib/gemini";
 import { extractTextFromPDF } from "@/lib/pdf";
@@ -18,6 +19,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
   try {
     const { user, response } = await requireUser();
     if (response) return response;
+    await assertDailyAiQuota(user.id, "generation");
 
     const { id } = await context.params;
     const prisma = getPrisma();

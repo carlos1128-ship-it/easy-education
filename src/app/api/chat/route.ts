@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiErrorResponse } from "@/lib/api-error";
+import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { ChatActionError, chatSystemPrompt, chatTools, runChatTool, type ChatAction } from "@/lib/chat-agent";
 import { generateChatWithTools } from "@/lib/gemini";
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
+    await assertDailyAiQuota(user.id, "chat");
 
     const rateLimit = checkRateLimit(`chat:${user.id}`);
     if (!rateLimit.ok) return NextResponse.json({ error: "Limite de 20 mensagens por minuto atingido." }, { status: 429 });

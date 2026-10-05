@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { AiQuotaError } from "@/lib/ai-quota";
 import { isAiOverloadError } from "@/lib/gemini";
 
 type ApiErrorOptions = {
@@ -15,6 +16,8 @@ function publicErrorMessage(error: unknown, fallback: string) {
   if (!(error instanceof Error)) {
     return fallback;
   }
+
+  if (error instanceof AiQuotaError) return error.message;
 
   if (isDatabaseBusyError(error)) {
     return "Sistema temporariamente ocupado. Tente novamente em instantes.";
@@ -41,6 +44,7 @@ function publicErrorMessage(error: unknown, fallback: string) {
 
 function statusForError(error: unknown) {
   if (error instanceof ZodError) return 400;
+  if (error instanceof AiQuotaError) return 429;
   if (isDatabaseBusyError(error)) return 503;
   if (isAiUnavailableError(error)) return 503;
   if (error instanceof Error && error.message.includes("GEMINI_API_KEY")) return 503;

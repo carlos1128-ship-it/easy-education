@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
+import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
@@ -10,6 +11,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
+    await assertDailyAiQuota(user.id, "generation");
 
     const payload = onboardingSchema.parse(await request.json());
     const prisma = getPrisma();

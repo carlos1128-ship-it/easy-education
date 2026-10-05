@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
+import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { StudyStartError, startStudyBlockForUser } from "@/lib/study-start";
 
@@ -18,6 +19,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
+    await assertDailyAiQuota(user.id, "generation");
 
     const block = schema.parse(await request.json());
     const result = await startStudyBlockForUser(user.id, block);

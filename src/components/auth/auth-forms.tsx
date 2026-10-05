@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { readApiJson } from "@/lib/client-response";
 import { getPublicEnvErrorMessage } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
 
 function passwordStrength(password: string) {
@@ -50,6 +51,18 @@ type ProfileResponse = {
   };
   error?: string;
 };
+
+/** Mensagens que as rotas /auth/callback e /auth/confirm colocam na URL do login. */
+const KNOWN_AUTH_MESSAGES = new Set([
+  "Conta confirmada, mas nao foi possivel carregar seu perfil.",
+  "E-mail confirmado. Entre para continuar.",
+  "Link de autenticacao invalido ou expirado.",
+  "Link de confirmacao invalido.",
+  "Nao foi possivel concluir a autenticacao.",
+  "Nao foi possivel confirmar seu e-mail.",
+  "Nao foi possivel confirmar sua sessao. Tente entrar novamente.",
+  "Sessao nao encontrada apos confirmacao.",
+]);
 
 const authInput =
   "h-12 w-full rounded-xl border border-border bg-surface-muted px-4 text-[15px] text-ink placeholder:text-ink-muted/70 transition-colors focus-visible:border-brand focus-visible:bg-surface focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-focus-ring disabled:opacity-60";
@@ -244,7 +257,9 @@ export function SignUpForm() {
 export function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const initialMessage = params.get("auth_error") ?? params.get("message");
+  // Só mostra mensagens que o próprio site manda pela URL; um link de terceiros não escreve texto na tela.
+  const rawMessage = params.get("auth_error") ?? params.get("message");
+  const initialMessage = rawMessage && KNOWN_AUTH_MESSAGES.has(rawMessage) ? rawMessage : rawMessage ? "Não foi possível concluir a autenticação. Tente entrar novamente." : null;
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<FormStatus | null>(
@@ -301,7 +316,7 @@ export function LoginForm() {
     }
 
     toast.success("Login realizado.");
-    router.push(params.get("next") ?? (profileData.profile?.onboardingDone ? "/dashboard" : "/onboarding"));
+    router.push(safeInternalPath(params.get("next"), profileData.profile?.onboardingDone ? "/dashboard" : "/onboarding"));
     router.refresh();
   }
 

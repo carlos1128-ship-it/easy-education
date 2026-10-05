@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiErrorResponse } from "@/lib/api-error";
+import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { generateTextFromImage } from "@/lib/gemini";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
+    await assertDailyAiQuota(user.id, "generation");
     if (!checkRateLimit(`essay-transcribe:${user.id}`).ok) {
       return NextResponse.json({ error: "Muitas fotos em pouco tempo. Tente de novo em um minuto." }, { status: 429 });
     }

@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-export const emailSchema = z.string().email("Informe um e-mail valido.");
+export const emailSchema = z.string().trim().max(254, "E-mail muito longo.").email("Informe um e-mail valido.");
 
 export const signUpSchema = z.object({
-  name: z.string().min(3, "Informe seu nome completo."),
+  name: z.string().trim().min(3, "Informe seu nome completo.").max(80, "Nome muito longo."),
   email: emailSchema,
-  password: z.string().min(8, "Use pelo menos 8 caracteres."),
+  password: z.string().min(8, "Use pelo menos 8 caracteres.").max(128, "Senha muito longa."),
 });
 
 export const loginSchema = z.object({
@@ -14,12 +14,12 @@ export const loginSchema = z.object({
 });
 
 export const onboardingSchema = z.object({
-  goal: z.string().min(2),
-  targetDate: z.string().optional(),
-  level: z.string().min(2),
+  goal: z.string().min(2).max(120),
+  targetDate: z.string().max(40).optional(),
+  level: z.string().min(2).max(60),
   dailyMinutes: z.number().min(60).max(480),
-  studyMethod: z.string().min(2),
-  subjects: z.array(z.object({ name: z.string(), difficulty: z.number().min(1).max(5) })),
+  studyMethod: z.string().min(2).max(60),
+  subjects: z.array(z.object({ name: z.string().max(80), difficulty: z.number().min(1).max(5) })).max(30),
 });
 
 export const chatSchema = z.object({
@@ -28,30 +28,30 @@ export const chatSchema = z.object({
       role: z.enum(["user", "assistant"]),
       content: z.string().min(1).max(6000),
     }),
-  ),
-  fileId: z.string().optional(),
+  ).min(1).max(40),
+  fileId: z.string().max(64).optional(),
 });
 
 export const quizGenerateSchema = z.object({
-  topic: z.string().optional(),
-  fileId: z.string().optional(),
-  subject: z.string().min(2),
-  difficulty: z.string().min(2),
+  topic: z.string().max(500).optional(),
+  fileId: z.string().max(64).optional(),
+  subject: z.string().min(2).max(300),
+  difficulty: z.string().min(2).max(20),
   questionCount: z.number().min(5).max(20),
-  model: z.string().min(2).optional(),
+  model: z.string().min(2).max(60).optional(),
 });
 
 export const flashcardGenerateSchema = z.object({
-  title: z.string().min(2),
-  subject: z.string().min(2),
-  topic: z.string().optional(),
-  fileId: z.string().optional(),
+  title: z.string().min(2).max(160),
+  subject: z.string().min(2).max(300),
+  topic: z.string().max(500).optional(),
+  fileId: z.string().max(64).optional(),
   count: z.number().min(5).max(30),
 });
 
 export const essaySchema = z.object({
-  title: z.string().min(2),
-  theme: z.string().min(2),
+  title: z.string().min(2).max(160),
+  theme: z.string().min(2).max(300),
   model: z.enum(["ENEM", "SAT"]),
-  content: z.string().min(300, "Escreva pelo menos 300 caracteres."),
+  content: z.string().min(300, "Escreva pelo menos 300 caracteres.").max(12000, "Texto muito longo para uma redação."),
 });

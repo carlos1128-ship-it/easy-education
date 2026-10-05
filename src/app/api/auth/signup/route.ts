@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { ZodError } from "zod";
 import {
   getAuthRedirectUrl,
@@ -72,6 +73,12 @@ export async function POST(request: Request) {
     const message = getPublicEnvErrorMessage() ?? "Autenticacao indisponivel.";
     devWarn("Signup bloqueado por env Supabase ausente ou placeholder.");
     return NextResponse.json({ error: message }, { status: 503 });
+  }
+
+  // Limite por IP: evita criação de contas em massa e tentativas de senha pelo atalho de "conta já existe".
+  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  if (!checkRateLimit(`signup:${ip}`, 5, 10 * 60_000).ok) {
+    return NextResponse.json({ error: "Muitas tentativas de cadastro. Tente de novo em alguns minutos." }, { status: 429 });
   }
 
   try {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
+import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { generateJSON } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
+    await assertDailyAiQuota(user.id, "generation");
     if (!checkRateLimit(`essay:${user.id}`).ok) return NextResponse.json({ error: "Limite atingido." }, { status: 429 });
 
     const payload = essaySchema.parse(await request.json());
