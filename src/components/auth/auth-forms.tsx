@@ -3,13 +3,9 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Globe } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/auth/legacy-ui/button";
-import { Input } from "@/components/auth/legacy-ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/auth/legacy-ui/progress";
 import { readApiJson } from "@/lib/client-response";
 import { getPublicEnvErrorMessage } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
@@ -54,6 +50,20 @@ type ProfileResponse = {
   };
   error?: string;
 };
+
+const authInput =
+  "h-12 w-full rounded-xl border border-border bg-surface-muted px-4 text-[15px] text-ink placeholder:text-ink-muted/70 transition-colors focus-visible:border-brand focus-visible:bg-surface focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-focus-ring disabled:opacity-60";
+
+function GoogleIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
+    </svg>
+  );
+}
 
 export function SignUpForm() {
   const router = useRouter();
@@ -154,7 +164,7 @@ export function SignUpForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {status ? (
         <Alert variant={status.type === "error" ? "destructive" : "default"}>
           {status.type === "error" ? <AlertCircle className="size-4" /> : <CheckCircle2 className="size-4" />}
@@ -162,66 +172,72 @@ export function SignUpForm() {
           <AlertDescription>{status.message}</AlertDescription>
         </Alert>
       ) : null}
-      <div className="space-y-2">
-        <Label htmlFor="name">Nome completo</Label>
-        <Input id="name" name="name" required placeholder="Seu nome" disabled={loading} />
+      <div className="flex flex-col gap-2">
+        <label htmlFor="name" className="text-sm font-medium text-ink">Nome</label>
+        <input id="name" name="name" required autoComplete="name" placeholder="Seu nome" disabled={loading} className={authInput} />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="email">E-mail</Label>
-        <Input id="email" name="email" required type="email" placeholder="voce@email.com" disabled={loading} />
+      <div className="flex flex-col gap-2">
+        <label htmlFor="email" className="text-sm font-medium text-ink">E-mail</label>
+        <input id="email" name="email" required type="email" autoComplete="email" placeholder="voce@exemplo.com" disabled={loading} className={authInput} />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Senha</Label>
+      <div className="flex flex-col gap-2">
+        <label htmlFor="password" className="text-sm font-medium text-ink">Senha</label>
         <div className="relative">
-          <Input
+          <input
             id="password"
             name="password"
             required
             type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
             minLength={8}
+            placeholder="Crie uma senha"
             value={password}
             disabled={loading}
             onChange={(event) => setPassword(event.target.value)}
+            className={cn(authInput, "pr-24")}
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500"
             onClick={() => setShowPassword((value) => !value)}
-            aria-label="Alternar visibilidade da senha"
+            aria-pressed={showPassword}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[13px] font-medium text-brand-strong hover:underline"
           >
-            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            {showPassword ? "Ocultar" : "Mostrar"}
           </button>
         </div>
-        <Progress value={strength} className="h-2" />
+        <div className="h-1.5 overflow-hidden rounded-full bg-track" aria-hidden="true">
+          <div className={cn("h-full rounded-full transition-all", strength >= 75 ? "bg-success" : strength >= 50 ? "bg-brand" : "bg-warning")} style={{ width: `${strength}%` }} />
+        </div>
+        <p className="m-0 text-xs text-ink-muted">Use 8 caracteres ou mais, com letras, números e símbolos.</p>
       </div>
-      <Button type="submit" className="w-full bg-[#1B4FD8] text-white hover:bg-[#0F2B8A]" disabled={loading}>
+      <button
+        type="submit"
+        disabled={loading}
+        className="h-12 w-full rounded-xl bg-brand text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-strong disabled:opacity-60 dark:bg-[#2563eb] dark:text-white dark:hover:bg-[#1d4ed8]"
+      >
         {loading ? "Criando..." : "Criar conta"}
-      </Button>
-      <Button type="button" variant="outline" className="w-full gap-2" onClick={handleGoogle} disabled={loading}>
-        <Globe className="size-4" />
+      </button>
+      <div className="flex items-center gap-4 text-xs font-medium uppercase tracking-[0.08em] text-ink-muted" aria-hidden="true">
+        <span className="h-px flex-1 bg-border" />
+        ou
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <button
+        type="button"
+        onClick={handleGoogle}
+        disabled={loading}
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface text-[15px] font-medium text-ink transition-colors hover:bg-surface-muted disabled:opacity-60"
+      >
+        <GoogleIcon />
         Entrar com Google
-      </Button>
-      <p className="text-center text-sm text-slate-500">
-        Ja tenho conta{" "}
-        <Link className="text-[#1B4FD8]" href="/login">
-          Login
+      </button>
+      <p className="m-0 text-center text-sm text-ink-muted">
+        Já tem conta?{" "}
+        <Link className="font-semibold text-brand-strong underline underline-offset-2" href="/login">
+          Entrar
         </Link>
       </p>
     </form>
-  );
-}
-
-const authInput =
-  "h-12 w-full rounded-xl border border-border bg-surface-muted px-4 text-[15px] text-ink placeholder:text-ink-muted/70 transition-colors focus-visible:border-brand focus-visible:bg-surface focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-focus-ring disabled:opacity-60";
-
-function GoogleIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
-      <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
-      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" />
-    </svg>
   );
 }
 
