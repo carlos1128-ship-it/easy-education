@@ -51,7 +51,7 @@ Regras obrigatorias:
 - Aponte pelo menos 2 pontos fortes e 2 melhorias acionaveis.
 - Se o modelo for ENEM, considere norma culta, compreensao do tema, argumentacao, coesao e proposta de intervencao.
 Retorne APENAS JSON valido nesta estrutura: {"totalScore": number, "criteria": {"normasCultas": {"score": number, "feedback": string}, "compreensao": {"score": number, "feedback": string}, "argumentacao": {"score": number, "feedback": string}, "coesao": {"score": number, "feedback": string}, "proposta": {"score": number, "feedback": string}}, "strengths": [string], "improvements": [string], "generalFeedback": string}.`;
-    const feedback = normalizeEssayFeedback(await generateJSON<EssayFeedback>(prompt));
+    const feedback = normalizeEssayFeedback(await generateJSON<EssayFeedback>(prompt, { thinkingBudget: 2048 }));
     const prisma = getPrisma();
     const essay = await prisma.essay.create({
       data: {

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { readApiJson } from "@/lib/client-response";
+import { useMountedRef } from "@/lib/use-mounted";
 
 type FileOption = {
   id: string;
@@ -18,6 +19,7 @@ type FileOption = {
 };
 
 export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
+  const mounted = useMountedRef();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [difficulty, setDifficulty] = useState("medio");
@@ -29,21 +31,31 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
     const formData = new FormData(event.currentTarget);
     const selectedSubjects = subjects.length ? subjects : ["Conhecimentos gerais"];
     setLoading(true);
-    const response = await fetch("/api/quiz/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        topic: String(formData.get("topic") ?? "").trim() || undefined,
-        fileId: fileId !== "none" ? fileId : undefined,
-        subject: selectedSubjects.join(", "),
-        difficulty,
-        questionCount: Number(formData.get("questionCount") ?? 10),
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/quiz/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: String(formData.get("topic") ?? "").trim() || undefined,
+          fileId: fileId !== "none" ? fileId : undefined,
+          subject: selectedSubjects.join(", "),
+          difficulty,
+          questionCount: Number(formData.get("questionCount") ?? 10),
+        }),
+      });
+    } catch {
+      if (mounted.current) {
+        setLoading(false);
+        toast.error("Sem conexão com o servidor. Verifique a internet e tente de novo.");
+      }
+      return;
+    }
     const data = await readApiJson<{ quizId?: string; error?: string }>(
       response,
       "Não foi possível gerar o quiz.",
     );
+    if (!mounted.current) return;
     setLoading(false);
 
     if (!response.ok || !data.quizId) {

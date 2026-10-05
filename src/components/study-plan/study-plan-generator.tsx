@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { readApiJson } from "@/lib/client-response";
+import { useMountedRef } from "@/lib/use-mounted";
 import { DEFAULT_SELECTED_SUBJECTS } from "@/lib/subjects";
 
 type GeneratorProps = {
@@ -19,6 +20,7 @@ type GeneratorProps = {
 };
 
 export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: GeneratorProps) {
+  const mounted = useMountedRef();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selectedSubjects, setSelectedSubjects] = useState<Record<string, number>>(DEFAULT_SELECTED_SUBJECTS);
@@ -36,21 +38,31 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
     }
 
     setLoading(true);
-    const response = await fetch("/api/study-plan/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        goal: String(formData.get("goal") ?? goal),
-        targetDate: String(formData.get("targetDate") ?? "") || undefined,
-        dailyHours: Number(formData.get("dailyHours") ?? 1),
-        subjects,
-        method,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/study-plan/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          goal: String(formData.get("goal") ?? goal),
+          targetDate: String(formData.get("targetDate") ?? "") || undefined,
+          dailyHours: Number(formData.get("dailyHours") ?? 1),
+          subjects,
+          method,
+        }),
+      });
+    } catch {
+      if (mounted.current) {
+        setLoading(false);
+        toast.error("Sem conexão com o servidor. Verifique a internet e tente de novo.");
+      }
+      return;
+    }
     const data = await readApiJson<{ error?: string }>(
       response,
       "Não foi possível gerar o plano.",
     );
+    if (!mounted.current) return;
     setLoading(false);
 
     if (!response.ok) {

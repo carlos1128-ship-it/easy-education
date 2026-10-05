@@ -9,8 +9,8 @@ import { truncateForContext } from "@/lib/text";
 import { chatSchema } from "@/lib/validators";
 import type { ChatInputMessage } from "@/types";
 
-// Criar quiz/plano pela IA pode levar alguns segundos.
-export const maxDuration = 120;
+// O chat faz até duas chamadas à IA em sequência (entender o pedido e gerar o quiz/plano).
+export const maxDuration = 300;
 
 /** Remove marcações de markdown que escapem do prompt (asteriscos, títulos com #). */
 function toPlainText(value: string) {

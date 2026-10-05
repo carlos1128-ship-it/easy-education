@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { isAiOverloadError } from "@/lib/gemini";
 
 type ApiErrorOptions = {
   fallback: string;
@@ -69,15 +70,7 @@ function isDatabaseBusyError(error: unknown) {
 }
 
 function isAiUnavailableError(error: unknown) {
-  if (!(error instanceof Error)) return false;
-  const message = error.message.toLowerCase();
-  return (
-    message.includes("high demand") ||
-    message.includes("unavailable") ||
-    message.includes('"code":503') ||
-    message.includes("status: 503") ||
-    message.includes("status 503")
-  );
+  return isAiOverloadError(error);
 }
 
 export function apiErrorResponse(error: unknown, options: ApiErrorOptions) {

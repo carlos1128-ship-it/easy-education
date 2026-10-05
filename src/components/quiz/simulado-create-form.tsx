@@ -8,8 +8,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { readApiJson } from "@/lib/client-response";
+import { useMountedRef } from "@/lib/use-mounted";
 
 export function SimuladoCreateForm() {
+  const mounted = useMountedRef();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [subjects, setSubjects] = useState(["Matematica", "Portugues", "Biologia", "Historia"]);
@@ -20,20 +22,30 @@ export function SimuladoCreateForm() {
     const selectedSubjects = subjects.length ? subjects : ["Conhecimentos gerais"];
     const subject = selectedSubjects.join(", ");
     setLoading(true);
-    const response = await fetch("/api/quiz/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        topic: `Simulado de ${subject}, com questoes contextualizadas e nivel de prova`,
-        subject,
-        difficulty: "simulado",
-        questionCount: Number(formData.get("questionCount") ?? 20),
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/quiz/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: `Simulado de ${subject}, com questoes contextualizadas e nivel de prova`,
+          subject,
+          difficulty: "simulado",
+          questionCount: Number(formData.get("questionCount") ?? 20),
+        }),
+      });
+    } catch {
+      if (mounted.current) {
+        setLoading(false);
+        toast.error("Sem conexão com o servidor. Verifique a internet e tente de novo.");
+      }
+      return;
+    }
     const data = await readApiJson<{ quizId?: string; error?: string }>(
       response,
       "Não foi possível gerar o simulado.",
     );
+    if (!mounted.current) return;
     setLoading(false);
 
     if (!response.ok || !data.quizId) {

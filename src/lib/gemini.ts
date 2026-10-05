@@ -6,6 +6,9 @@ const defaultFallbackModels = ["gemini-2.5-flash-lite"];
 
 let geminiClient: GoogleGenAI | null = null;
 
+/** Raciocínio curto no chat: respostas mais rápidas sem cortar o texto (limite de 2048 tokens). */
+const CHAT_THINKING_BUDGET = 512;
+
 function getGeminiApiKey() {
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -59,30 +62,70 @@ function parseJSON<T>(text: string): T {
   }
 }
 
-export async function generateJSON<T>(prompt: string): Promise<T> {
+/** IA sobrecarregada ou sem cota (429/503): não adianta repetir no mesmo modelo. */
+export function isAiOverloadError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("429") ||
+    message.includes("503") ||
+    message.includes("resource_exhausted") ||
+    message.includes("quota") ||
+    message.includes("rate limit") ||
+    message.includes("overloaded") ||
+    message.includes("high demand") ||
+    message.includes("unavailable")
+  );
+}
+
+/** Tempo máximo somando todas as tentativas; fica abaixo do limite das funções (120 s). */
+const AI_DEADLINE_MS = Number(process.env.GEMINI_DEADLINE_MS ?? 95_000);
+
+/**
+ * Tenta cada modelo configurado. Se o modelo estiver sobrecarregado, passa direto para o próximo;
+ * em outro erro (ex.: JSON incompleto), tenta mais uma vez no mesmo modelo. Para no prazo total.
+ */
+async function withModels<T>(run: (model: string, attempt: number) => Promise<T>, attemptsPerModel = 2): Promise<T> {
+  const started = Date.now();
   let lastError: unknown;
 
   for (const model of configuredModels()) {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
+    for (let attempt = 0; attempt < attemptsPerModel; attempt += 1) {
+      if (Date.now() - started > AI_DEADLINE_MS) {
+        throw lastError instanceof Error ? lastError : new Error("A IA demorou demais para responder.");
+      }
       try {
-        const response = await getGemini().models.generateContent({
-          model,
-          contents: `${prompt}\n\nImportante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
-          config: {
-            maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
-            responseMimeType: "application/json",
-            temperature: attempt === 0 ? 0.2 : 0,
-          },
-        });
-
-        return parseJSON<T>(response.text ?? "");
+        return await run(model, attempt);
       } catch (error) {
         lastError = error;
+        if (isAiOverloadError(error)) break;
       }
     }
   }
 
-  throw lastError instanceof Error ? lastError : new Error("Falha ao interpretar resposta da IA.");
+  throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
+}
+
+/**
+ * Gera JSON com a IA. Sem raciocínio interno por padrão: ele gasta o mesmo limite de tokens
+ * da resposta, deixa a geração lenta e pode cortar o JSON no meio.
+ */
+export async function generateJSON<T>(prompt: string, options: { thinkingBudget?: number } = {}): Promise<T> {
+  return withModels(async (model, attempt) => {
+    const response = await getGemini().models.generateContent({
+      model,
+      contents: `${prompt}
+
+Importante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
+      config: {
+        maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
+        responseMimeType: "application/json",
+        temperature: attempt === 0 ? 0.2 : 0,
+        thinkingConfig: { thinkingBudget: options.thinkingBudget ?? 0 },
+      },
+    });
+    return parseJSON<T>(response.text ?? "");
+  });
 }
 
 function toGeminiContents(messages: ChatInputMessage[]): Content[] {
@@ -105,30 +148,21 @@ export async function streamChat(messages: ChatInputMessage[], systemPrompt: str
 }
 
 export async function generateChatText(messages: ChatInputMessage[], systemPrompt: string) {
-  let lastError: unknown;
-
-  for (const model of configuredModels()) {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        const response = await getGemini().models.generateContent({
-          model,
-          contents: toGeminiContents(messages),
-          config: {
-            maxOutputTokens: 2048,
-            systemInstruction: systemPrompt,
-            temperature: attempt === 0 ? 0.6 : 0.2,
-          },
-        });
-        const text = response.text?.trim();
-        if (!text) throw new Error("A IA retornou resposta vazia.");
-        return text;
-      } catch (error) {
-        lastError = error;
-      }
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
+  return withModels(async (model, attempt) => {
+    const response = await getGemini().models.generateContent({
+      model,
+      contents: toGeminiContents(messages),
+      config: {
+        maxOutputTokens: 2048,
+        systemInstruction: systemPrompt,
+        temperature: attempt === 0 ? 0.6 : 0.2,
+        thinkingConfig: { thinkingBudget: CHAT_THINKING_BUDGET },
+      },
+    });
+    const text = response.text?.trim();
+    if (!text) throw new Error("A IA retornou resposta vazia.");
+    return text;
+  });
 }
 
 export type ChatToolResult =
@@ -144,61 +178,44 @@ export async function generateChatWithTools(
   systemPrompt: string,
   functionDeclarations: FunctionDeclaration[],
 ): Promise<ChatToolResult> {
-  let lastError: unknown;
+  return withModels(async (model, attempt) => {
+    const response = await getGemini().models.generateContent({
+      model,
+      contents: toGeminiContents(messages),
+      config: {
+        maxOutputTokens: 2048,
+        systemInstruction: systemPrompt,
+        temperature: attempt === 0 ? 0.5 : 0.2,
+        thinkingConfig: { thinkingBudget: CHAT_THINKING_BUDGET },
+        tools: [{ functionDeclarations }],
+        toolConfig: { functionCallingConfig: { mode: FunctionCallingConfigMode.AUTO } },
+      },
+    });
 
-  for (const model of configuredModels()) {
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        const response = await getGemini().models.generateContent({
-          model,
-          contents: toGeminiContents(messages),
-          config: {
-            maxOutputTokens: 2048,
-            systemInstruction: systemPrompt,
-            temperature: attempt === 0 ? 0.5 : 0.2,
-            tools: [{ functionDeclarations }],
-            toolConfig: { functionCallingConfig: { mode: FunctionCallingConfigMode.AUTO } },
-          },
-        });
+    const call = response.functionCalls?.[0];
+    if (call?.name) return { kind: "call", name: call.name, args: (call.args ?? {}) as Record<string, unknown> };
 
-        const call = response.functionCalls?.[0];
-        if (call?.name) return { kind: "call", name: call.name, args: (call.args ?? {}) as Record<string, unknown> };
-
-        const text = response.text?.trim();
-        if (!text) throw new Error("A IA retornou resposta vazia.");
-        return { kind: "text", text };
-      } catch (error) {
-        lastError = error;
-      }
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
+    const text = response.text?.trim();
+    if (!text) throw new Error("A IA retornou resposta vazia.");
+    return { kind: "text", text };
+  });
 }
 
 /** Lê uma imagem (foto de caderno, redação, apostila) e devolve o texto extraído. */
 export async function generateTextFromImage(image: Buffer, mimeType: string, instruction: string) {
-  let lastError: unknown;
-
-  for (const model of configuredModels()) {
-    try {
-      const response = await getGemini().models.generateContent({
-        model,
-        contents: [
-          {
-            role: "user",
-            parts: [{ inlineData: { mimeType, data: image.toString("base64") } }, { text: instruction }],
-          },
-        ],
-        config: { maxOutputTokens: 8192, temperature: 0 },
-      });
-      const text = response.text?.trim();
-      if (!text) throw new Error("A IA não encontrou texto na imagem.");
-      return text;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error("Falha ao ler a imagem.");
+  return withModels(async (model) => {
+    const response = await getGemini().models.generateContent({
+      model,
+      contents: [
+        {
+          role: "user",
+          parts: [{ inlineData: { mimeType, data: image.toString("base64") } }, { text: instruction }],
+        },
+      ],
+      config: { maxOutputTokens: 8192, temperature: 0, thinkingConfig: { thinkingBudget: 0 } },
+    });
+    const text = response.text?.trim();
+    if (!text) throw new Error("A IA não encontrou texto na imagem.");
+    return text;
+  }, 1);
 }
