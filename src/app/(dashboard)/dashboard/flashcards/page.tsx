@@ -18,7 +18,7 @@ export default async function FlashcardsPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Flashcards</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Decks de revisão</h1>
@@ -29,7 +29,7 @@ export default async function FlashcardsPage() {
       {decks.length === 0 ? (
         <EmptyState icon={BookOpen} title="Nenhum deck criado ainda." description="Gere flashcards com IA e revise com repeticao espacada." />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {decks.map((deck) => (
             <Link
               href={`/dashboard/flashcards/${deck.id}`}

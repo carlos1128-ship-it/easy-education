@@ -186,27 +186,28 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
   }
 
   return (
-    <div className="mx-auto max-w-5xl rounded-2xl border border-border bg-surface p-6 shadow-card">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="grid w-full gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-10">
+      <aside className="flex flex-wrap items-center justify-between gap-4 lg:sticky lg:top-0 lg:flex-col lg:items-start lg:self-start">
         <OwlMascot mood={mood} message={message} size={120} />
-        <div className="ml-auto flex items-center gap-3">
-          <div className="flex flex-col items-end gap-2">
+        <div className="ml-auto flex items-center gap-3 lg:ml-0 lg:w-full">
+          <div className="flex flex-col items-end gap-2 lg:flex-1 lg:items-start">
             <span className="text-sm text-ink-muted">
               {mode === "simulado" ? `Questões ${index + 1}-${Math.min(index + pageSize, questions.length)}` : `Questão ${index + 1}`} de {questions.length}
             </span>
-            <Progress value={(answeredCount / questions.length) * 100} className="w-40" />
+            <Progress value={(answeredCount / questions.length) * 100} className="w-40 lg:w-full" />
           </div>
           <SoundToggle />
         </div>
-      </div>
+      </aside>
 
+      <div className="min-w-0">
       <div className="space-y-6">
         {pageQuestions.map((question, questionIndex) => {
           const options = question.options;
           const confirmed = answers[question.id];
           const selected = confirmed ?? drafts[question.id];
           return (
-            <section key={question.id} className="rounded-2xl border border-border bg-surface-muted p-4">
+            <section key={question.id} className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">
               <h2 className="text-[17px] font-medium leading-[26px] text-ink">
                 {index + questionIndex + 1}. {question.question}
               </h2>
@@ -242,7 +243,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
                 })}
               </div>
               {confirmed ? (
-                <div className="mt-5 rounded-lg bg-surface p-4 text-[13px] leading-5">
+                <div className={cn("mt-5 border-l-4 pl-4 text-[13px] leading-5", confirmed === question.correctAnswer ? "border-success" : "border-danger")}>
                   <p className={cn("flex items-center gap-1.5 font-medium", confirmed === question.correctAnswer ? "text-success" : "text-danger")}>
                     {confirmed === question.correctAnswer ? (
                       <Check className="size-4" strokeWidth={2.5} aria-hidden="true" />
@@ -279,6 +280,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
             {isLastPage ? "Finalizar" : "Próxima"}
           </Button>
         </div>
+      </div>
       </div>
     </div>
   );

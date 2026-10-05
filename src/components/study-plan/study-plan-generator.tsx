@@ -63,7 +63,7 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 grid gap-3 rounded-lg border border-border bg-surface-muted p-4 md:grid-cols-4">
+    <form onSubmit={submit} className="grid gap-3 rounded-2xl border border-border bg-surface p-4 shadow-card md:grid-cols-4 lg:p-5">
       <div className="space-y-1.5">
         <Label htmlFor="plan-goal">Objetivo</Label>
         <Input id="plan-goal" name="goal" defaultValue={goal} />

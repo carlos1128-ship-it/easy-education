@@ -14,7 +14,7 @@ export default async function FlashcardDeckPage({ params }: { params: Promise<{ 
   if (!deck) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Revisão</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{deck.title}</h1>

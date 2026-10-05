@@ -145,7 +145,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto flex max-w-[1160px] flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-5">
       <section className={cn("flex flex-col items-stretch gap-6 rounded-3xl border border-border bg-hero-panel p-5 shadow-card lg:flex-row lg:p-8")}>
         <div className="flex min-w-0 flex-1 flex-col gap-2.5">
           <p className="m-0 text-[15px] font-medium text-ink-muted">{name ? `Olá, ${name}` : "Olá"}</p>
@@ -168,9 +168,9 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
-        <div className="grid w-full grid-cols-1 gap-3 self-center lg:w-[500px] lg:grid-cols-2">
+        <div className="grid w-full grid-cols-1 gap-x-8 gap-y-5 self-center sm:grid-cols-2 lg:w-[520px] xl:w-[600px]">
           {metas.map((meta) => (
-            <div key={meta.title} className="flex items-center gap-3.5 rounded-2xl border border-border bg-surface p-4">
+            <div key={meta.title} className="flex items-center gap-3.5">
               <div className="relative size-[52px] flex-shrink-0 lg:size-[60px]">
                 <svg width="100%" height="100%" viewBox="0 0 64 64" className="-rotate-90" aria-hidden="true">
                   <circle cx="32" cy="32" r="26" fill="none" stroke="var(--track)" strokeWidth="6" />
@@ -239,20 +239,25 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      {trail.currentUnit && trail.current ? (
+      {trail.currentUnit ? (
         <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-8 lg:p-6")} aria-label="Sua trilha">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="m-0 text-[13px] font-bold uppercase tracking-[0.6px] text-brand-strong">
-              Trilha · Seção {trail.currentUnit.section}, unidade {trail.currentUnit.index + 1}
+              Trilha · Seção {trail.currentUnit.section} · Nível {Math.min(63, trail.doneCount + (trail.todayDone ? 0 : 1))}
             </p>
             <h2 className={h2}>{trail.currentUnit.title}</h2>
             <p className="m-0 text-sm text-ink-muted">
-              Próxima etapa: <span className="font-medium text-ink">{trail.current.title}</span>
-              {trail.current.progress ? ` · ${trail.current.progress.label}` : ""}
+              {trail.current ? (
+                <>
+                  Hoje: <span className="font-medium text-ink">{trail.current.progress?.label}</span> ou a atividade do plano
+                </>
+              ) : (
+                "Dia de hoje concluído. Volte amanhã para o próximo nível."
+              )}
             </p>
           </div>
-          <ol className="m-0 flex list-none items-center gap-1.5 p-0" aria-label="Etapas da unidade">
-            {trail.currentUnit.nodes.map((node) => (
+          <ol className="m-0 flex list-none items-center gap-1.5 p-0" aria-label="Dias da seção">
+            {trail.currentUnit.nodes.filter((node) => node.kind === "dia").map((node) => (
               <li
                 key={node.id}
                 className={cn(
@@ -300,7 +305,7 @@ export default async function DashboardPage() {
         ))}
       </section>
 
-      <section className="grid grid-cols-1 items-start gap-5 pb-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <section className="grid grid-cols-1 items-start gap-5 pb-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-6">
         <div className="flex min-w-0 flex-col gap-5">
           <div className={cn(card, "overflow-hidden")}>
             <div className="flex items-center justify-between border-b border-border px-4 py-[18px] lg:px-6">
@@ -341,8 +346,8 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          <div className={cn(card, "flex flex-col gap-3 p-4 lg:p-6")}>
-            <h2 className={cn(h2, "mb-1")}>Atividade recente</h2>
+          <div className={cn(card, "flex flex-col p-4 lg:p-6")}>
+            <h2 className={cn(h2, "mb-2")}>Atividade recente</h2>
             {activity.length ? (
               activity.map((item) => {
                 const tone = badgeTone(item.badge);
@@ -350,7 +355,7 @@ export default async function DashboardPage() {
                   <Link
                     key={`${item.href}-${item.title}`}
                     href={item.href}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-surface-muted px-4 py-3.5 no-underline transition-colors hover:border-border-strong"
+                    className="-mx-2 flex items-center gap-3 rounded-lg border-b border-border px-2 py-3.5 no-underline transition-colors last-of-type:border-b-0 hover:bg-surface-muted"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="m-0 truncate text-[15px] font-medium text-ink" title={item.title}>{item.title}</p>
@@ -379,7 +384,7 @@ export default async function DashboardPage() {
                 </Link>
               </div>
             )}
-            <div className="flex justify-end">
+            <div className="mt-3 flex justify-end">
               <Link href="/dashboard/desempenho" className="flex items-center gap-1 text-sm font-medium text-brand-strong no-underline hover:underline">
                 Ver tudo <ArrowRight size={16} strokeWidth={2} aria-hidden="true" />
               </Link>
@@ -418,19 +423,19 @@ export default async function DashboardPage() {
           <div className={cn(card, "flex flex-col gap-4 p-4 lg:p-6")}>
             <h2 className={h2}>Próximas revisões</h2>
             {dueCards.length ? (
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <div className="-mx-2 flex flex-col">
                 {dueCards.map((item) => (
                   <Link
                     key={item.id}
                     href={`/dashboard/flashcards/${item.deckId}`}
                     title={item.deck.title}
-                    className="flex min-w-0 flex-col gap-2.5 rounded-lg border border-border bg-surface-muted p-3.5 no-underline transition-colors hover:border-border-strong"
+                    className="flex min-w-0 items-center gap-3 rounded-lg border-b border-border px-2 py-3 no-underline transition-colors last:border-b-0 hover:bg-surface-muted"
                   >
-                    <span className="grid size-8 place-items-center rounded-[8px] bg-brand-tint text-brand-strong">
+                    <span className="grid size-8 flex-none place-items-center rounded-[8px] bg-brand-tint text-brand-strong">
                       <BookOpen size={16} strokeWidth={1.75} aria-hidden="true" />
                     </span>
-                    <span className="line-clamp-2 break-words text-sm font-medium leading-[1.4] text-ink">{item.deck.title}</span>
-                    <span className="flex items-center gap-[5px] self-start whitespace-nowrap rounded-full bg-warning-tint px-[9px] py-1.5 text-xs font-medium leading-none text-warning">
+                    <span className="line-clamp-2 min-w-0 flex-1 break-words text-sm font-medium leading-[1.4] text-ink">{item.deck.title}</span>
+                    <span className="flex flex-none items-center gap-[5px] whitespace-nowrap rounded-full bg-warning-tint px-[9px] py-1.5 text-xs font-medium leading-none text-warning">
                       <Clock size={14} strokeWidth={2} aria-hidden="true" />
                       Vence hoje
                     </span>

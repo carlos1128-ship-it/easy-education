@@ -71,7 +71,7 @@ export function EssayCorrectionForm() {
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 grid gap-4">
+    <form onSubmit={submit} className="grid gap-4">
       <Input name="title" required placeholder="Título da redação" />
       <Input name="theme" required placeholder="Tema" />
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-border-strong p-3">

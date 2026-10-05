@@ -16,7 +16,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
   });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Arquivos</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Meus Arquivos</h1>
@@ -25,7 +25,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
       <FileUploader />
 
       {files.length ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {files.map((file) => (
             <div
               key={file.id}

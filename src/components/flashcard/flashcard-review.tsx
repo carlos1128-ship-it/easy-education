@@ -77,17 +77,17 @@ export function FlashcardReview({ cards }: { cards: Flashcard[] }) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-5xl">
       <div className="mb-3 text-center text-sm font-medium text-ink-muted">
         Card {index + 1} de {cards.length}
       </div>
-      <button type="button" onClick={toggleCard} disabled={saving} className="h-80 w-full [perspective:1000px] disabled:cursor-wait">
+      <button type="button" onClick={toggleCard} disabled={saving} className="h-80 w-full [perspective:1000px] disabled:cursor-wait lg:h-[440px]">
         <div className={`relative h-full rounded-2xl border border-border bg-surface p-8 shadow-card transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? "[transform:rotateY(180deg)]" : ""}`}>
           <div className="absolute inset-0 grid place-items-center p-8 [backface-visibility:hidden]">
-            <h1 className="text-center text-2xl font-bold text-ink">{card.front}</h1>
+            <h1 className="text-center text-2xl font-bold text-ink lg:text-[32px] lg:leading-tight">{card.front}</h1>
           </div>
           <div className="absolute inset-0 grid place-items-center p-8 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-            <p className="text-center text-lg leading-8 text-ink-muted">{card.back}</p>
+            <p className="text-center text-lg leading-8 text-ink-muted lg:text-xl lg:leading-9">{card.back}</p>
           </div>
         </div>
       </button>

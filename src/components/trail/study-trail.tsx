@@ -2,23 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Check, ClipboardCheck, Flame, Layers, Lock, PenTool, Target, Trophy, type LucideIcon } from "lucide-react";
+import { Check, Lock, Star } from "lucide-react";
 import { OwlMascot, type OwlMood } from "@/components/mascot/owl-mascot";
+import { Trophy } from "@/components/trail/trophy";
 import { cn } from "@/lib/utils";
-import type { Trail, TrailNode, TrailNodeKind, TrailUnit } from "@/lib/study-trail";
+import type { Trail, TrailNode, TrailUnit } from "@/lib/study-trail";
 
-const icons: Record<TrailNodeKind, LucideIcon> = {
-  estudo: BookOpen,
-  quiz: Target,
-  flashcards: Layers,
-  ofensiva: Flame,
-  simulado: ClipboardCheck,
-  redacao: PenTool,
-  trofeu: Trophy,
-};
-
-/** Curva da trilha: deslocamento horizontal de cada etapa, em px. */
-const WAVE = [0, 52, 84, 52, 0, -52, -84, -52];
+/** Curva da trilha: deslocamento horizontal de cada nível, em px. */
+const WAVE = [0, 56, 92, 56, 0, -56, -92, 0];
 const RING = 2 * Math.PI * 44;
 
 function shortDate(iso: string) {
@@ -28,51 +19,42 @@ function shortDate(iso: string) {
 function unitMood(unit: TrailUnit, trail: Trail): OwlMood {
   if (unit.status === "done") return "comemorando";
   if (unit.status === "locked") return "sonolenta";
-  if (trail.studiedToday) return "cantando";
+  if (trail.todayDone || trail.studiedToday) return "cantando";
   return trail.doneCount > 0 && trail.streak === 0 ? "sonolenta" : "atenta";
 }
 
-function NodeButton({ node, open, onToggle }: { node: TrailNode; open: boolean; onToggle: () => void }) {
-  const Icon = node.status === "locked" && node.kind !== "trofeu" ? Lock : node.status === "done" && node.kind !== "trofeu" ? Check : icons[node.kind];
-  const trophy = node.kind === "trofeu";
+function DayButton({ node, open, onToggle }: { node: TrailNode; open: boolean; onToggle: () => void }) {
   const progress = node.progress && node.progress.target > 0 ? node.progress.value / node.progress.target : 0;
+  const Icon = node.status === "done" ? Check : node.status === "locked" ? Lock : Star;
 
   return (
     <div className="relative grid size-[100px] place-items-center">
       {node.status === "current" ? (
         <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90" aria-hidden="true">
           <circle cx="50" cy="50" r="44" fill="none" stroke="var(--track)" strokeWidth="7" />
-          <circle
-            cx="50"
-            cy="50"
-            r="44"
-            fill="none"
-            stroke="var(--brand)"
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeDasharray={`${RING * progress} ${RING}`}
-          />
+          <circle cx="50" cy="50" r="44" fill="none" stroke="var(--brand)" strokeWidth="7" strokeLinecap="round" strokeDasharray={`${RING * progress} ${RING}`} />
         </svg>
       ) : null}
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        aria-label={`${node.title}${node.status === "done" ? " (concluída)" : node.status === "locked" ? " (bloqueada)" : " (etapa atual)"}`}
+        aria-label={`${node.title}${node.status === "done" ? " (concluído)" : node.status === "locked" ? " (bloqueado)" : " (hoje)"}`}
         className={cn(
           "relative grid size-[70px] place-items-center rounded-full transition-transform active:translate-y-[5px] focus-visible:outline-offset-4",
           node.status === "locked"
             ? "bg-track text-ink-muted shadow-[0_6px_0_var(--border-strong)] active:shadow-[0_1px_0_var(--border-strong)]"
-            : trophy
-              ? "bg-[#F5B400] text-white shadow-[0_6px_0_#C68A00] active:shadow-[0_1px_0_#C68A00]"
-              : "bg-brand text-on-brand shadow-[0_6px_0_var(--brand-strong)] active:shadow-[0_1px_0_var(--brand-strong)]",
+            : "bg-brand text-on-brand shadow-[0_6px_0_var(--brand-strong)] active:shadow-[0_1px_0_var(--brand-strong)]",
         )}
       >
         <Icon className="size-7" strokeWidth={2.5} aria-hidden="true" />
       </button>
+      <span className="pointer-events-none absolute -bottom-1 right-1 grid min-w-7 place-items-center rounded-full border-2 border-bg bg-surface px-1.5 text-xs font-extrabold leading-5 text-ink">
+        {node.level}
+      </span>
       {node.status === "current" && !open ? (
         <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-xl border-2 border-border bg-surface px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.6px] text-brand-strong shadow-card motion-safe:animate-bounce">
-          {node.completedAt === null && node.progress?.value ? "Continuar" : "Começar"}
+          Hoje
           <span className="absolute -bottom-[7px] left-1/2 size-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 border-border bg-surface" />
         </span>
       ) : null}
@@ -80,20 +62,36 @@ function NodeButton({ node, open, onToggle }: { node: TrailNode; open: boolean; 
   );
 }
 
+function TrophyButton({ node, tier, open, onToggle }: { node: TrailNode; tier: number; open: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-label={`${node.title}${node.status === "done" ? " (conquistado)" : " (bloqueado)"}`}
+      className="grid place-items-center rounded-2xl p-1 transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4"
+    >
+      <Trophy tier={tier} locked={node.status !== "done"} size={88} />
+    </button>
+  );
+}
+
 function NodePopover({ node }: { node: TrailNode }) {
   const current = node.status === "current";
+  const trophy = node.kind === "trofeu";
   return (
     <div
       role="dialog"
       aria-label={node.title}
       className={cn(
-        "absolute left-1/2 top-[104px] z-20 w-72 -translate-x-1/2 animate-owl-pop rounded-2xl p-4 shadow-pop",
+        "absolute left-1/2 top-[108px] z-20 w-72 -translate-x-1/2 animate-owl-pop rounded-2xl p-4 shadow-pop",
         current ? "bg-brand text-on-brand" : node.status === "done" ? "border border-border bg-surface text-ink" : "border border-border bg-surface-muted text-ink",
       )}
     >
       <p className="m-0 text-[17px] font-bold leading-6">{node.title}</p>
       <p className={cn("m-0 mt-1 text-[13px] leading-5", current ? "text-on-brand/85" : "text-ink-muted")}>
-        {node.status === "locked" ? "Conclua as etapas anteriores para liberar esta." : node.status === "done" ? `Concluída${node.completedAt ? ` em ${shortDate(node.completedAt)}` : ""}.` : node.hint}
+        {node.status === "done" && node.completedAt && !trophy ? `Concluído em ${shortDate(node.completedAt)}. ` : ""}
+        {node.hint}
       </p>
       {current && node.progress ? (
         <div className="mt-3">
@@ -103,53 +101,63 @@ function NodePopover({ node }: { node: TrailNode }) {
           <p className="m-0 mt-1.5 text-xs font-medium text-on-brand/85">{node.progress.label}</p>
         </div>
       ) : null}
-      {current && node.kind !== "trofeu" ? (
+      {current || (trophy && node.status === "done") ? (
         <Link
           href={node.href}
-          className="mt-4 grid h-11 place-items-center rounded-lg bg-surface text-[15px] font-bold uppercase tracking-[0.4px] text-brand-strong no-underline shadow-[0_4px_0_var(--brand-strong)] active:translate-y-[3px] active:shadow-none"
+          className={cn(
+            "mt-4 grid h-11 place-items-center rounded-lg text-[15px] font-bold uppercase tracking-[0.4px] no-underline active:translate-y-[3px] active:shadow-none",
+            current ? "bg-surface text-brand-strong shadow-[0_4px_0_var(--brand-strong)]" : "bg-brand text-on-brand shadow-[0_4px_0_var(--brand-strong)]",
+          )}
         >
-          Começar
+          {current ? "Abrir o plano de hoje" : "Ver na sala de troféus"}
         </Link>
       ) : null}
     </div>
   );
 }
 
-function UnitBlock({ unit, trail, openId, setOpenId }: { unit: TrailUnit; trail: Trail; openId: string | null; setOpenId: (id: string | null) => void }) {
+function SectionBlock({ unit, trail, openId, setOpenId }: { unit: TrailUnit; trail: Trail; openId: string | null; setOpenId: (id: string | null) => void }) {
   const mirror = unit.index % 2 === 1 ? -1 : 1;
   const locked = unit.status === "locked";
+  const days = unit.nodes.filter((node) => node.kind === "dia");
 
   return (
-    <section aria-label={`Unidade ${unit.index + 1}: ${unit.title}`} className="flex flex-col gap-6">
+    <section aria-label={`Seção ${unit.section}: ${unit.title}`} className="flex flex-col gap-6">
       <div
         className={cn(
-          "flex items-center justify-between gap-4 rounded-2xl px-5 py-4 shadow-[0_4px_0_var(--unit-shadow)]",
+          "flex items-center justify-between gap-4 rounded-2xl px-5 py-4 shadow-[0_4px_0_var(--unit-shadow)] lg:px-7",
           locked ? "bg-surface-muted text-ink-muted [--unit-shadow:var(--border)]" : "bg-brand text-on-brand [--unit-shadow:var(--brand-strong)]",
         )}
       >
         <div className="min-w-0">
           <p className={cn("m-0 text-[13px] font-bold uppercase tracking-[0.6px]", locked ? "text-ink-muted" : "text-on-brand/80")}>
-            Seção {unit.section}, unidade {unit.index + 1}
+            Seção {unit.section} · níveis {days[0].level} a {days.at(-1)!.level}
           </p>
           <p className="m-0 mt-0.5 text-xl font-extrabold leading-7">{unit.title}</p>
         </div>
         <span className={cn("flex-none rounded-full px-2.5 py-1 text-xs font-bold", locked ? "bg-surface text-ink-muted" : "bg-on-brand/20")}>
-          {unit.nodes.filter((node) => node.status === "done").length}/{unit.nodes.length}
+          {days.filter((node) => node.status === "done").length}/{days.length} dias
         </span>
       </div>
 
       <div className="relative flex flex-col items-center gap-4 py-4">
-        <div
-          className={cn("pointer-events-none absolute top-[150px] hidden sm:block", mirror === 1 ? "left-[2%]" : "right-[2%]", locked && "opacity-50 grayscale")}
-          aria-hidden="true"
-        >
+        <div className={cn("pointer-events-none absolute top-[150px] hidden md:block", mirror === 1 ? "left-[4%]" : "right-[4%]", locked && "opacity-50 grayscale")} aria-hidden="true">
           <OwlMascot mood={unitMood(unit, trail)} size={150} />
         </div>
         {unit.nodes.map((node, index) => {
           const open = openId === node.id;
           return (
-            <div key={node.id} className={cn("relative", node.status === "current" && "mt-8", open && "z-20")} style={{ transform: `translateX(${WAVE[index % WAVE.length] * mirror}px)` }}>
-              <NodeButton node={node} open={open} onToggle={() => setOpenId(open ? null : node.id)} />
+            <div
+              key={node.id}
+              data-current={node.status === "current" ? "" : undefined}
+              className={cn("relative", node.status === "current" && "mt-8", open && "z-20")}
+              style={{ transform: `translateX(${WAVE[index % WAVE.length] * mirror}px)` }}
+            >
+              {node.kind === "trofeu" ? (
+                <TrophyButton node={node} tier={unit.index} open={open} onToggle={() => setOpenId(open ? null : node.id)} />
+              ) : (
+                <DayButton node={node} open={open} onToggle={() => setOpenId(open ? null : node.id)} />
+              )}
               {open ? <NodePopover node={node} /> : null}
             </div>
           );
@@ -179,17 +187,15 @@ export function StudyTrail({ trail }: { trail: Trail }) {
     };
   }, [openId]);
 
-  // Abre a página já na etapa atual.
+  // Abre a página já no nível de hoje.
   useEffect(() => {
     rootRef.current?.querySelector("[data-current]")?.scrollIntoView({ block: "center" });
   }, []);
 
   return (
-    <div ref={rootRef} className="mx-auto flex w-full max-w-[640px] flex-col gap-10 pb-16">
+    <div ref={rootRef} className="flex w-full flex-col gap-10 pb-16">
       {trail.units.map((unit) => (
-        <div key={unit.index} data-current={unit.status === "current" ? "" : undefined}>
-          <UnitBlock unit={unit} trail={trail} openId={openId} setOpenId={setOpenId} />
-        </div>
+        <SectionBlock key={unit.index} unit={unit} trail={trail} openId={openId} setOpenId={setOpenId} />
       ))}
     </div>
   );

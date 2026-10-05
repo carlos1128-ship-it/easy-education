@@ -27,7 +27,7 @@ export default async function QuizDetailPage({ params }: { params: Promise<{ id:
   if (!quiz) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">{quiz.subject}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{quiz.title}</h1>

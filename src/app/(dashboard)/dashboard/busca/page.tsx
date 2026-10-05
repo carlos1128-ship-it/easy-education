@@ -69,7 +69,7 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
   ];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Busca</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">
@@ -90,7 +90,7 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
         </form>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">
         {groups.map(({ title, icon: Icon, items }) => (
           <section key={title} className="rounded-2xl border border-border bg-surface p-5 shadow-card">
             <div className="mb-4 flex items-center gap-2">
@@ -98,9 +98,9 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
               <h2 className="font-bold text-ink">{title}</h2>
             </div>
             {items.length ? (
-              <div className="space-y-2">
+              <div className="-mx-2 divide-y divide-border">
                 {items.map((item) => (
-                  <Link key={`${item.href}-${item.title}`} href={item.href} className="block rounded-lg border border-border p-3 transition-colors hover:border-border-strong">
+                  <Link key={`${item.href}-${item.title}`} href={item.href} className="block rounded-lg px-2 py-3 no-underline transition-colors hover:bg-surface-muted">
                     <p className="font-medium text-ink">{item.title}</p>
                     <p className="mt-1 text-sm text-ink-muted">{item.sub}</p>
                   </Link>

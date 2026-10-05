@@ -74,13 +74,14 @@ export default async function DesempenhoPage({ searchParams }: { searchParams: P
   const weakTopics = [...new Set(incorrectQuestions.map((item) => item.quiz.subject))].slice(0, 8);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
+      <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
       <div>
         <p className="text-sm font-medium text-brand-strong">Desempenho</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Evolução dos estudos</h1>
       </div>
 
-      <form className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 shadow-card sm:flex-row sm:items-end">
+      <form className="flex flex-col gap-3 sm:flex-row sm:items-end xl:w-[560px]">
         <div className="flex-1">
           <label htmlFor="from" className="text-sm font-medium text-ink">Início</label>
           <input id="from" name="from" type="date" defaultValue={from ?? ""} className="mt-1 h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm" />
@@ -93,8 +94,9 @@ export default async function DesempenhoPage({ searchParams }: { searchParams: P
           Filtrar
         </button>
       </form>
+      </header>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
         <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
           <h2 className="text-xl font-bold text-ink">Evolução geral</h2>
           <div className="mt-4">

@@ -14,12 +14,14 @@ export default async function RedaçãoPage() {
   const lastEssay = essays[0];
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 xl:grid-cols-[1fr_360px]">
-      <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">
-        <p className="text-sm font-medium text-brand-strong">Redação</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Enviar para correção</h1>
-        <EssayCorrectionForm />
-      </section>
+    <div className="mx-auto grid w-full max-w-[1680px] gap-6 xl:grid-cols-[minmax(0,1fr)_380px] 2xl:grid-cols-[minmax(0,1fr)_440px] xl:gap-8">
+      <div className="flex min-w-0 flex-col gap-2">
+        <p className="m-0 text-sm font-medium text-brand-strong">Redação</p>
+        <h1 className="m-0 text-3xl font-bold tracking-tight text-ink">Enviar para correção</h1>
+        <section className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">
+          <EssayCorrectionForm />
+        </section>
+      </div>
 
       <aside className="space-y-4">
         {lastEssay ? (
@@ -38,9 +40,9 @@ export default async function RedaçãoPage() {
         )}
         <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
           <h2 className="font-bold text-ink">Histórico</h2>
-          <div className="mt-4 space-y-3">
+          <div className="mt-2 divide-y divide-border">
             {essays.map((essay) => (
-              <div key={essay.id} className="rounded-lg bg-surface-muted p-3">
+              <div key={essay.id} className="py-3">
                 <p className="text-sm font-bold text-ink">{essay.title}</p>
                 <p className="text-xs text-ink-muted">{essay.theme} · {Math.round(essay.score ?? 0)} pts</p>
               </div>

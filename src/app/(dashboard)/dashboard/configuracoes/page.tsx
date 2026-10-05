@@ -8,7 +8,7 @@ export default async function ConfiguraçõesPage() {
   const profile = await getPrisma().profile.findUnique({ where: { userId: user.id } });
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Configurações</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Preferências da conta</h1>

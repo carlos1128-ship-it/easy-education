@@ -1,6 +1,6 @@
 export default function DashboardLoading() {
   return (
-    <div className="mx-auto flex max-w-[1160px] flex-col gap-5" role="status" aria-live="polite">
+    <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-5" role="status" aria-live="polite">
       <span className="sr-only">Carregando…</span>
       <div className="h-48 animate-pulse rounded-3xl border border-border bg-surface-muted" />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

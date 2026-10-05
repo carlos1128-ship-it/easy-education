@@ -14,7 +14,7 @@ export default async function SimuladosPage() {
   const average = completed.length ? Math.round(completed.reduce((sum, quiz) => sum + (quiz.score ?? 0), 0) / completed.length) : 0;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Simulados</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Prática em ritmo de prova</h1>

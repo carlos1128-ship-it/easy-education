@@ -14,7 +14,7 @@ export default async function QuizzesPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Quizzes</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Seus quizzes</h1>
@@ -25,7 +25,7 @@ export default async function QuizzesPage() {
       {quizzes.length === 0 ? (
         <EmptyState icon={HelpCircle} title="Você ainda não gerou nenhum quiz." description="Use a IA acima para criar questões e salvar seu progresso." />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {quizzes.map((quiz) => (
             <Link
               href={`/dashboard/quizzes/${quiz.id}`}

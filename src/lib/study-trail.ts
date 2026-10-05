@@ -1,17 +1,22 @@
 import { getPrisma } from "@/lib/prisma";
+import { parseStudyPlan } from "@/lib/study-plan";
+import type { GeneratedStudyPlan, StudyPlanBlock } from "@/types";
 
 /**
- * Trilha de estudos: etapas em sequência que só liberam com dedicação real.
- * Tudo é calculado a partir do histórico (sessões, quizzes, flashcards, redações);
- * cada etapa só conta o que foi feito depois da etapa anterior, então não dá para pular.
+ * Trilha de estudos ligada ao plano semanal: cada dia concluído do plano vale um nível.
+ * São 9 seções de 7 dias (63 níveis). Cada seção concluída dá um troféu; depois da última
+ * a trilha recomeça e os troféus ficam guardados. Tudo sai do histórico (sessões, quizzes,
+ * flashcards, redações), sem tabela nova.
  */
 
-export type TrailNodeKind = "estudo" | "quiz" | "flashcards" | "ofensiva" | "simulado" | "redacao" | "trofeu";
+export type TrailNodeKind = "dia" | "trofeu";
 export type TrailStatus = "done" | "current" | "locked";
 
 export type TrailNode = {
   id: string;
   kind: TrailNodeKind;
+  /** Nível dentro do ciclo, de 1 a 63 (troféu: 0) */
+  level: number;
   title: string;
   hint: string;
   href: string;
@@ -28,249 +33,224 @@ export type TrailUnit = {
   nodes: TrailNode[];
 };
 
+export type TrailTrophy = {
+  section: number;
+  name: string;
+  sectionTitle: string;
+  /** Quantas vezes já foi conquistado (um por ciclo completo) */
+  earned: number;
+  firstEarnedAt: string | null;
+};
+
 export type Trail = {
   units: TrailUnit[];
   current: TrailNode | null;
   currentUnit: TrailUnit | null;
+  /** Níveis concluídos no ciclo atual */
   doneCount: number;
+  /** Dias concluídos no total, somando todos os ciclos */
+  totalDays: number;
+  cycle: number;
   streak: number;
   studiedToday: boolean;
+  todayDone: boolean;
+  trophies: TrailTrophy[];
 };
-
-type Requirement =
-  | { kind: "estudo"; minutes: number }
-  | { kind: "quiz"; minScore: number }
-  | { kind: "flashcards"; count: number }
-  | { kind: "ofensiva"; days: number }
-  | { kind: "simulado"; minScore: number }
-  | { kind: "redacao" }
-  | { kind: "trofeu" };
 
 export type TrailHistory = {
   goalMinutes: number;
-  includeEssay: boolean;
+  plan: GeneratedStudyPlan | null;
   sessions: Array<{ date: Date; durationMinutes: number }>;
-  quizzes: Array<{ completedAt: Date; score: number; simulado: boolean }>;
+  quizzes: Array<{ completedAt: Date; simulado: boolean }>;
   essays: Array<{ createdAt: Date }>;
   flashcardReviews: Date[];
   now?: Date;
 };
 
-const UNIT_TITLES = [
-  "Primeiros passos",
-  "Pegando o ritmo",
-  "Constância",
-  "Revisão em dia",
-  "Mais acertos",
-  "Treino de prova",
-  "Reta firme",
-  "Domínio",
-];
-const UNITS_PER_SECTION = 4;
-const MAX_UNITS = 60;
+export const DAYS_PER_SECTION = 7;
+export const SECTION_COUNT = 9;
+const CYCLE = DAYS_PER_SECTION * SECTION_COUNT;
+const MIN_MINUTES = 15;
+const REVIEW_CARDS = 10;
 
-const pick = <T,>(list: T[], index: number) => list[Math.min(index, list.length - 1)];
+const SECTIONS = [
+  { title: "Primeiros passos", trophy: "Bronze" },
+  { title: "Pegando o ritmo", trophy: "Prata" },
+  { title: "Constância", trophy: "Ouro" },
+  { title: "Revisão em dia", trophy: "Esmeralda" },
+  { title: "Mais acertos", trophy: "Safira" },
+  { title: "Treino de prova", trophy: "Rubi" },
+  { title: "Reta firme", trophy: "Ametista" },
+  { title: "Domínio", trophy: "Diamante" },
+  { title: "Mestre dos estudos", trophy: "Lendário" },
+];
+
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+const WEEKDAY_LABELS: Record<string, string> = {
+  sunday: "Domingo",
+  monday: "Segunda",
+  tuesday: "Terça",
+  wednesday: "Quarta",
+  thursday: "Quinta",
+  friday: "Sexta",
+  saturday: "Sábado",
+};
+const TYPE_LABELS: Record<StudyPlanBlock["type"], string> = { estudo: "Estudo", revisao: "Revisão", simulado: "Simulado", redacao: "Redação" };
 
 const dayFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
-/** Dia no fuso de Brasília, como número sequencial (para achar dias seguidos). */
+/** Dia no fuso de Brasília, como número sequencial. */
 function dayNumber(date: Date) {
   const [y, m, d] = dayFormatter.format(date).split("-").map(Number);
   return Math.round(Date.UTC(y, m - 1, d) / 86_400_000);
 }
+/** Dia da semana (sunday…saturday) de um número de dia. */
+const weekdayOf = (day: number) => WEEKDAYS[(((day + 4) % 7) + 7) % 7];
+const dateOf = (day: number) => new Date(day * 86_400_000 + 15 * 3_600_000).toISOString();
 
-function unitRequirements(unit: number, goalMinutes: number, includeEssay: boolean): Requirement[] {
-  const minutes = Math.min(goalMinutes, pick([15, 20, 25, 30, 40, 45, 50, 60], unit));
-  const quizScore = pick([60, 60, 70, 70, 75, 80, 80, 85, 90], unit);
-  const cards = pick([5, 10, 10, 15, 20, 20, 25, 30], unit);
-  const streakDays = pick([2, 3, 4, 5, 7, 7, 10, 14], unit);
-  const simuladoScore = pick([50, 55, 60, 65, 70, 75], unit);
-  const challenge: Requirement =
-    unit % 2 === 1 ? { kind: "simulado", minScore: simuladoScore } : includeEssay && unit > 0 ? { kind: "redacao" } : { kind: "quiz", minScore: Math.min(95, quizScore + 10) };
-
-  return [
-    unit === 0 ? { kind: "quiz", minScore: 0 } : { kind: "estudo", minutes },
-    { kind: "quiz", minScore: quizScore },
-    { kind: "flashcards", count: cards },
-    { kind: "estudo", minutes },
-    { kind: "ofensiva", days: streakDays },
-    challenge,
-    { kind: "estudo", minutes },
-    { kind: "trofeu" },
-  ];
-}
-
-function describe(req: Requirement, unit: number): Pick<TrailNode, "title" | "hint" | "href"> {
-  switch (req.kind) {
-    case "estudo":
-      return { title: `Estude ${req.minutes} min em um dia`, hint: "Use o plano de estudos ou registre o tempo no cronômetro. Cada etapa de estudo pede um dia diferente.", href: "/dashboard/plano" };
-    case "quiz":
-      return req.minScore > 0
-        ? { title: `Acerte ${req.minScore}% em um quiz`, hint: "Termine um quiz com esse acerto ou mais. Errou? Gere outro e tente de novo.", href: "/dashboard/quizzes" }
-        : { title: "Termine seu primeiro quiz", hint: "Gere um quiz da matéria que está estudando e responda até o fim.", href: "/dashboard/quizzes" };
-    case "flashcards":
-      return { title: `Revise ${req.count} flashcards`, hint: "Abra um deck e responda os cartões. Cada cartão revisado conta.", href: "/dashboard/flashcards" };
-    case "ofensiva":
-      return { title: `${req.days} dias seguidos de estudo`, hint: "Estude um pouco todos os dias. Se pular um dia, a contagem recomeça.", href: "/dashboard/plano" };
-    case "simulado":
-      return { title: `Faça ${req.minScore}% em um simulado`, hint: "Termine um simulado com esse acerto ou mais.", href: "/dashboard/simulados" };
-    case "redacao":
-      return { title: "Corrija uma redação", hint: "Escreva ou mande a foto de uma redação e receba a correção.", href: "/dashboard/redacao" };
-    case "trofeu":
-      return { title: `Unidade ${unit + 1} concluída`, hint: "Você completou todas as etapas desta unidade.", href: "/dashboard/trilha" };
-  }
+function planBlocks(plan: GeneratedStudyPlan | null, weekday: string) {
+  return plan?.days.find((day) => day.dayOfWeek.toLowerCase() === weekday)?.blocks ?? [];
 }
 
 export function buildTrail(history: TrailHistory): Trail {
-  const now = history.now ?? new Date();
-  const today = dayNumber(now);
+  const today = dayNumber(history.now ?? new Date());
+  const goal = Math.max(MIN_MINUTES, history.goalMinutes);
 
-  // Atividade por dia: minutos e último horário (quiz concluído também gera sessão).
-  const days = new Map<number, { minutes: number; last: number }>();
-  const touch = (date: Date, minutes: number) => {
+  type DayActivity = { minutes: number; quiz: number; simulado: number; essay: number; cards: number };
+  const days = new Map<number, DayActivity>();
+  const at = (date: Date) => {
     const key = dayNumber(date);
-    const entry = days.get(key) ?? { minutes: 0, last: 0 };
-    entry.minutes += minutes;
-    entry.last = Math.max(entry.last, date.getTime());
-    days.set(key, entry);
+    let entry = days.get(key);
+    if (!entry) days.set(key, (entry = { minutes: 0, quiz: 0, simulado: 0, essay: 0, cards: 0 }));
+    return entry;
   };
-  history.sessions.forEach((session) => touch(session.date, session.durationMinutes));
-  history.flashcardReviews.forEach((date) => touch(date, 0));
-  history.essays.forEach((essay) => touch(essay.createdAt, 0));
-  const dayKeys = [...days.keys()].sort((a, b) => a - b);
+  history.sessions.forEach((session) => (at(session.date).minutes += session.durationMinutes));
+  history.quizzes.forEach((quiz) => (quiz.simulado ? at(quiz.completedAt).simulado++ : at(quiz.completedAt).quiz++));
+  history.essays.forEach((essay) => at(essay.createdAt).essay++);
+  history.flashcardReviews.forEach((date) => at(date).cards++);
 
-  const quizzes = [...history.quizzes].sort((a, b) => a.completedAt.getTime() - b.completedAt.getTime());
-  const essays = history.essays.map((essay) => essay.createdAt.getTime()).sort((a, b) => a - b);
-  const reviews = history.flashcardReviews.map((date) => date.getTime()).sort((a, b) => a - b);
-  const usedStudyDays = new Set<number>();
+  const targetMinutes = (weekday: string) => {
+    const planned = planBlocks(history.plan, weekday).reduce((sum, block) => sum + (block.durationMinutes || 0), 0);
+    return Math.max(MIN_MINUTES, Math.min(goal, planned || goal));
+  };
 
-  let cursor = 0; // momento em que a etapa anterior foi concluída
-  const firstDayAfter = (time: number) => (time ? dayNumber(new Date(time)) : -Infinity);
-
-  function complete(req: Requirement): number | null {
-    const fromDay = firstDayAfter(cursor);
-    switch (req.kind) {
-      case "trofeu":
-        return cursor;
-      case "estudo": {
-        const day = dayKeys.find((key) => key >= fromDay && !usedStudyDays.has(key) && (days.get(key)?.minutes ?? 0) >= req.minutes);
-        if (day === undefined) return null;
-        usedStudyDays.add(day);
-        return Math.max(cursor, days.get(day)!.last);
-      }
-      case "quiz":
-      case "simulado": {
-        const quiz = quizzes.find(
-          (item) => item.completedAt.getTime() > cursor && item.simulado === (req.kind === "simulado") && item.score >= req.minScore,
-        );
-        return quiz ? quiz.completedAt.getTime() : null;
-      }
-      case "flashcards": {
-        const after = reviews.filter((time) => time > cursor);
-        return after.length >= req.count ? after[req.count - 1] : null;
-      }
-      case "redacao": {
-        const essay = essays.find((time) => time > cursor);
-        return essay ?? null;
-      }
-      case "ofensiva": {
-        for (const end of dayKeys) {
-          if (end < fromDay) continue;
-          let run = 0;
-          while (run < req.days && days.has(end - run)) run += 1;
-          if (run >= req.days) return Math.max(cursor, days.get(end)!.last);
-        }
-        return null;
-      }
-    }
+  /** Dia concluído: fez a atividade que o plano pede para aquele dia ou estudou os minutos planejados. */
+  function isDone(day: number) {
+    const activity = days.get(day);
+    if (!activity) return false;
+    const weekday = weekdayOf(day);
+    if (activity.minutes >= targetMinutes(weekday)) return true;
+    const types = new Set(planBlocks(history.plan, weekday).map((block) => block.type));
+    if (!types.size) types.add("estudo");
+    return (
+      (types.has("estudo") && activity.quiz > 0) ||
+      (types.has("revisao") && activity.cards >= REVIEW_CARDS) ||
+      (types.has("simulado") && activity.simulado > 0) ||
+      (types.has("redacao") && activity.essay > 0)
+    );
   }
 
-  function currentStreak() {
-    let start = days.has(today) ? today : today - 1;
-    let run = 0;
-    while (days.has(start)) {
-      run += 1;
-      start -= 1;
-    }
-    return run;
-  }
+  const doneDays = [...days.keys()].filter(isDone).sort((a, b) => a - b);
+  const totalDays = doneDays.length;
+  const todayDone = doneDays.at(-1) === today;
+  const cycleStart = totalDays - (totalDays % CYCLE);
+  const doneCount = totalDays % CYCLE;
+  const cycle = Math.floor(totalDays / CYCLE) + 1;
 
-  function progressFor(req: Requirement): TrailNode["progress"] {
-    switch (req.kind) {
-      case "estudo": {
-        const minutes = usedStudyDays.has(today) ? 0 : (days.get(today)?.minutes ?? 0);
-        return { value: Math.min(minutes, req.minutes), target: req.minutes, label: `${Math.min(minutes, req.minutes)} de ${req.minutes} min hoje` };
-      }
-      case "flashcards": {
-        const count = reviews.filter((time) => time > cursor).length;
-        return { value: count, target: req.count, label: `${count} de ${req.count} cartões` };
-      }
-      case "ofensiva": {
-        const streak = Math.min(currentStreak(), req.days);
-        return { value: streak, target: req.days, label: `${streak} de ${req.days} dias` };
-      }
-      default:
-        return null;
-    }
-  }
+  let streak = 0;
+  for (let day = days.has(today) ? today : today - 1; days.has(day); day -= 1) streak += 1;
+
+  // Dia de hoje: o que o plano pede e quanto já foi feito.
+  const todayWeekday = weekdayOf(today);
+  const todayBlocks = planBlocks(history.plan, todayWeekday);
+  const todayTarget = targetMinutes(todayWeekday);
+  const todayMinutes = Math.min(days.get(today)?.minutes ?? 0, todayTarget);
+  const todayPlan = todayBlocks.length
+    ? todayBlocks.map((block) => `${TYPE_LABELS[block.type] ?? "Estudo"} de ${block.subject}`).join(" + ")
+    : `Estude ${todayTarget} min`;
 
   const units: TrailUnit[] = [];
   let current: TrailNode | null = null;
   let currentUnit: TrailUnit | null = null;
-  let doneCount = 0;
 
-  for (let u = 0; u < MAX_UNITS; u += 1) {
-    const requirements = unitRequirements(u, Math.max(15, history.goalMinutes), history.includeEssay);
-    const unit: TrailUnit = {
-      index: u,
-      section: Math.floor(u / UNITS_PER_SECTION) + 1,
-      title: UNIT_TITLES[u] ?? `Unidade ${u + 1}`,
-      status: "locked",
-      nodes: [],
-    };
-
-    requirements.forEach((req, n) => {
-      const text = describe(req, u);
-      const node: TrailNode = { id: `${u}-${n}`, kind: req.kind, ...text, status: "locked", completedAt: null, progress: null };
-      if (!current) {
-        const doneAt = complete(req);
-        if (doneAt !== null) {
-          cursor = doneAt;
-          node.status = "done";
-          node.completedAt = doneAt ? new Date(doneAt).toISOString() : null;
-          doneCount += 1;
-        } else {
-          node.status = "current";
-          node.progress = progressFor(req);
-          current = node;
-          currentUnit = unit;
-        }
+  for (let s = 0; s < SECTION_COUNT; s += 1) {
+    const unit: TrailUnit = { index: s, section: s + 1, title: SECTIONS[s].title, status: "locked", nodes: [] };
+    for (let d = 0; d < DAYS_PER_SECTION; d += 1) {
+      const position = s * DAYS_PER_SECTION + d; // 0-based dentro do ciclo
+      const level = position + 1;
+      const node: TrailNode = {
+        id: `${s}-${d}`,
+        kind: "dia",
+        level,
+        title: `Nível ${level}`,
+        hint: "Conclua os dias anteriores para chegar aqui.",
+        href: "/dashboard/plano",
+        status: "locked",
+        completedAt: null,
+        progress: null,
+      };
+      if (position < doneCount) {
+        const day = doneDays[cycleStart + position];
+        node.status = "done";
+        node.completedAt = dateOf(day);
+        node.hint = day === today ? "Dia de hoje concluído. Volte amanhã para o próximo nível." : "Dia concluído.";
+      } else if (position === doneCount && !todayDone) {
+        node.status = "current";
+        node.title = `Nível ${level} · Hoje`;
+        node.hint = `${WEEKDAY_LABELS[todayWeekday]}: ${todayPlan}. Faça a atividade do plano ou estude ${todayTarget} min para passar de nível.`;
+        node.progress = { value: todayMinutes, target: todayTarget, label: `${todayMinutes} de ${todayTarget} min hoje` };
+        current = node;
+        currentUnit = unit;
+      } else if (position === doneCount) {
+        node.hint = "Libera amanhã, com o próximo dia do plano.";
       }
       unit.nodes.push(node);
+    }
+    const sectionDone = doneCount >= (s + 1) * DAYS_PER_SECTION;
+    unit.nodes.push({
+      id: `${s}-trofeu`,
+      kind: "trofeu",
+      level: 0,
+      title: `Troféu ${SECTIONS[s].trophy}`,
+      hint: sectionDone ? "Conquistado! Ele já está na sala de troféus." : `Conclua os 7 dias da seção ${s + 1} para ganhar.`,
+      href: "/dashboard/trilha/trofeus",
+      status: sectionDone ? "done" : "locked",
+      completedAt: sectionDone ? dateOf(doneDays[cycleStart + (s + 1) * DAYS_PER_SECTION - 1]) : null,
+      progress: null,
     });
-
-    unit.status = unit.nodes.every((node) => node.status === "done") ? "done" : unit === currentUnit ? "current" : "locked";
+    unit.status = sectionDone ? "done" : doneCount >= s * DAYS_PER_SECTION ? "current" : "locked";
     units.push(unit);
-    // Mostra a unidade atual e a próxima, ainda bloqueada.
-    if (currentUnit && u > (currentUnit as TrailUnit).index) break;
   }
+  if (!currentUnit) currentUnit = units.find((unit) => unit.status === "current") ?? null;
 
-  return { units, current, currentUnit, doneCount, streak: currentStreak(), studiedToday: days.has(today) };
+  const fullCycles = Math.floor(totalDays / CYCLE);
+  const trophies: TrailTrophy[] = SECTIONS.map((section, s) => {
+    const needed = (s + 1) * DAYS_PER_SECTION;
+    const earned = fullCycles + (doneCount >= needed ? 1 : 0);
+    return {
+      section: s + 1,
+      name: section.trophy,
+      sectionTitle: section.title,
+      earned,
+      firstEarnedAt: earned ? dateOf(doneDays[needed - 1]) : null,
+    };
+  });
+
+  return { units, current, currentUnit, doneCount, totalDays, cycle, streak, studiedToday: days.has(today), todayDone, trophies };
 }
-
-const ESSAY_GOALS = ["enem", "vestibular", "provas escolares"];
 
 export async function getTrailForUser(userId: string) {
   const prisma = getPrisma();
-  const [profile, sessions, quizzes, essays, cards] = await Promise.all([
-    prisma.profile.findUnique({ where: { userId }, select: { dailyMinutes: true, studyGoal: true } }),
-    prisma.studySession.findMany({ where: { userId }, select: { date: true, durationMinutes: true }, orderBy: { date: "desc" }, take: 3000 }),
+  const [profile, plan, sessions, quizzes, essays, cards] = await Promise.all([
+    prisma.profile.findUnique({ where: { userId }, select: { dailyMinutes: true } }),
+    prisma.studyPlan.findFirst({ where: { userId }, orderBy: { createdAt: "desc" }, select: { planData: true } }),
+    prisma.studySession.findMany({ where: { userId }, select: { date: true, durationMinutes: true }, orderBy: { date: "desc" }, take: 5000 }),
     prisma.quiz.findMany({
-      where: { userId, completedAt: { not: null }, score: { not: null } },
-      select: { completedAt: true, score: true, difficulty: true },
+      where: { userId, completedAt: { not: null } },
+      select: { completedAt: true, difficulty: true },
       orderBy: { completedAt: "desc" },
-      take: 2000,
+      take: 3000,
     }),
-    prisma.essay.findMany({ where: { userId, score: { not: null } }, select: { createdAt: true }, take: 500 }),
+    prisma.essay.findMany({ where: { userId, score: { not: null } }, select: { createdAt: true }, take: 1000 }),
     prisma.flashcard.findMany({
       where: { deck: { userId }, repetitions: { gt: 0 } },
       select: { nextReview: true, interval: true },
@@ -278,12 +258,11 @@ export async function getTrailForUser(userId: string) {
     }),
   ]);
 
-  const goal = profile?.studyGoal?.toLowerCase() ?? "";
   return buildTrail({
     goalMinutes: profile?.dailyMinutes ?? 60,
-    includeEssay: ESSAY_GOALS.some((item) => goal.includes(item)),
+    plan: parseStudyPlan(plan?.planData),
     sessions,
-    quizzes: quizzes.map((quiz) => ({ completedAt: quiz.completedAt!, score: quiz.score!, simulado: quiz.difficulty === "simulado" })),
+    quizzes: quizzes.map((quiz) => ({ completedAt: quiz.completedAt!, simulado: quiz.difficulty === "simulado" })),
     essays,
     // A revisão não guarda data; a última fica em "próxima revisão − intervalo".
     flashcardReviews: cards.map((card) => new Date(card.nextReview.getTime() - card.interval * 86_400_000)),
