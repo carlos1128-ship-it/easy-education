@@ -84,7 +84,11 @@ export function isAiOverloadError(error: unknown) {
     message.includes("rate limit") ||
     message.includes("overloaded") ||
     message.includes("high demand") ||
-    message.includes("unavailable")
+    message.includes("unavailable") ||
+    message.includes("demorou demais") ||
+    message.includes("aborted") ||
+    message.includes("timed out") ||
+    message.includes("timeout")
   );
 }
 

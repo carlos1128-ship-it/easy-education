@@ -7,7 +7,7 @@ import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { readApiJson } from "@/lib/client-response";
-import { getPublicEnvErrorMessage } from "@/lib/env";
+import { getPublicEnvErrorMessage, getPublicSupabaseConfig } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
 import { safeInternalPath } from "@/lib/safe-redirect";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ function passwordStrength(password: string) {
 function publicAuthMessage(message?: string) {
   const normalized = message?.toLowerCase() ?? "";
 
+  if (normalized === "google_disabled") return "O login com Google ainda não está disponível. Use e-mail e senha.";
   if (normalized.includes("invalid")) return "E-mail ou senha invalidos.";
   if (normalized.includes("rate") || normalized.includes("too many")) return "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
   if (normalized.includes("email")) return "Confira seu e-mail e tente novamente.";
@@ -67,6 +68,38 @@ const KNOWN_AUTH_MESSAGES = new Set([
 const authInput =
   "h-12 w-full rounded-xl border border-border bg-surface-muted px-4 text-[15px] text-ink placeholder:text-ink-muted/70 transition-colors focus-visible:border-brand focus-visible:bg-surface focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-focus-ring disabled:opacity-60";
 
+/** Plano escolhido na landing (?plano=basico|completo); segue junto até a tela de pagamento. */
+function planQuery(params: URLSearchParams) {
+  const plan = params.get("plano");
+  return plan === "basico" || plan === "completo" ? `?plano=${plan}` : "";
+}
+
+async function isGoogleEnabled() {
+  try {
+    const { url, key } = getPublicSupabaseConfig();
+    const response = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } });
+    const settings = (await response.json()) as { external?: { google?: boolean } };
+    return settings.external?.google === true;
+  } catch {
+    return true;
+  }
+}
+
+/** Login com Google; depois do retorno, o callback leva para `next` (sempre um caminho interno). */
+async function signInWithGoogle(next: string | null) {
+  // Com o Google desligado no Supabase, o redirecionamento cairia numa página de erro crua.
+  if (!(await isGoogleEnabled())) {
+    return { error: { message: "google_disabled" } };
+  }
+  const supabase = createClient();
+  const callback = new URL("/auth/callback", window.location.origin);
+  if (next) callback.searchParams.set("next", next);
+  return supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: callback.toString(), queryParams: { prompt: "select_account" } },
+  });
+}
+
 function GoogleIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
@@ -80,6 +113,8 @@ function GoogleIcon() {
 
 export function SignUpForm() {
   const router = useRouter();
+  const params = useSearchParams();
+  const checkoutPath = `/assinar${planQuery(params)}`;
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -139,13 +174,14 @@ export function SignUpForm() {
         setStatus({ type: "success", title: "Confirme seu e-mail", message });
         toast.success(message);
         if (data.redirectTo) {
-          router.push(data.redirectTo);
+          router.push(data.redirectTo === "/login" ? `/login?next=${encodeURIComponent(checkoutPath)}` : data.redirectTo);
         }
         return;
       }
 
       toast.success(data.message ?? "Conta criada com sucesso.");
-      router.push(data.redirectTo ?? "/onboarding");
+      // Conta criada: próximo passo é escolher o plano e pagar (sem cobrança ativa, a tela segue direto para o app).
+      router.push(checkoutPath);
       router.refresh();
     } catch {
       const message = "Não foi possível falar com o servidor de autenticação.";
@@ -163,16 +199,14 @@ export function SignUpForm() {
       return;
     }
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    setLoading(true);
+    const { error } = await signInWithGoogle(checkoutPath);
 
     if (error) {
       const message = publicAuthMessage(error.message);
-      setStatus({ type: "error", title: "Google indisponivel", message });
+      setStatus({ type: "error", title: "Google indisponível", message });
       toast.error(message);
+      setLoading(false);
     }
   }
 
@@ -352,16 +386,15 @@ export function LoginForm() {
       return;
     }
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    setLoading(true);
+    const next = params.get("next");
+    const { error } = await signInWithGoogle(next ? safeInternalPath(next, "/dashboard") : null);
 
     if (error) {
       const message = publicAuthMessage(error.message);
-      setStatus({ type: "error", title: "Google indisponivel", message });
+      setStatus({ type: "error", title: "Google indisponível", message });
       toast.error(message);
+      setLoading(false);
     }
   }
 

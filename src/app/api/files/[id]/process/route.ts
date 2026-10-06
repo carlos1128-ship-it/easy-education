@@ -19,7 +19,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user.id, "generation");
+    await assertDailyAiQuota(user, "generation");
 
     const { id } = await context.params;
     const prisma = getPrisma();

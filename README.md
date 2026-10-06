@@ -63,6 +63,21 @@ Fluxo esperado:
 - Com confirmacao de e-mail ativada, o signup mostra `Conta criada. Verifique seu e-mail para confirmar o cadastro.`
 - Depois do callback OAuth/e-mail, o app faz upsert do `Profile` e redireciona para `/onboarding` ou `/dashboard`.
 
+## Pagamentos (Stripe)
+
+Fluxo: landing (`/cadastro?plano=basico|completo`) -> cadastro (e-mail ou Google) -> `/assinar` -> Stripe Checkout -> `/assinar/sucesso` -> onboarding -> dashboard. Sem assinatura ativa, o dashboard, o onboarding e todas as rotas de IA ficam bloqueados.
+
+- Produtos/precos no Stripe com lookup keys `easy_basic_monthly` (R$ 26,90) e `easy_full_monthly` (R$ 46,90). Trocar o preco no Stripe nao exige deploy.
+- Webhook: `POST /api/stripe/webhook` (eventos de checkout, assinatura e fatura). Cada evento e processado uma vez (`stripe_events`).
+- Portal do cliente (cartao, troca de plano, cancelamento, faturas): `/dashboard/assinatura`.
+- Garantia de 7 dias: botao em `/dashboard/assinatura` reembolsa tudo e encerra na hora.
+- Limites diarios de IA por plano: Basico 25 geracoes / 60 mensagens; Completo 60 / 150 (variaveis `AI_DAILY_*`).
+- A assinatura fica na tabela `subscriptions` (RLS: o aluno so le a propria; so o servidor grava).
+
+Variaveis: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, opcionais `BILLING_EXEMPT_EMAILS` e `BILLING_REQUIRED=false`. Sem `STRIPE_SECRET_KEY` a cobranca fica desligada e o app funciona como antes.
+
+Teste local do webhook: `stripe listen --forward-to localhost:3000/api/stripe/webhook` (use o `whsec_` mostrado pela CLI). O retorno do checkout tambem confirma o pagamento sem depender do webhook.
+
 ## Banco
 
 ```bash

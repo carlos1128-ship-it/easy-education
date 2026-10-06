@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user.id, "generation");
+    await assertDailyAiQuota(user, "generation");
     if (!checkRateLimit(`essay:${user.id}`).ok) return NextResponse.json({ error: "Limite atingido." }, { status: 429 });
 
     const payload = essaySchema.parse(await request.json());

@@ -1,6 +1,11 @@
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
+import { getPaidUserOrRedirect } from "@/lib/server-user";
 
-export default function OnboardingPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OnboardingPage() {
+  await getPaidUserOrRedirect();
+
   return (
     <main className="legacy-auth min-h-screen bg-[#F8FAFD] dark:bg-[#070A13] px-4 py-10">
       <div className="mx-auto max-w-3xl">

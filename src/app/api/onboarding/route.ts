@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user.id, "generation");
+    await assertDailyAiQuota(user, "generation");
 
     const payload = onboardingSchema.parse(await request.json());
     const prisma = getPrisma();

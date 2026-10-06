@@ -12,6 +12,7 @@ const protectedPaths = [
   "/redacao",
   "/desempenho",
   "/onboarding",
+  "/assinar",
 ];
 
 export async function updateSession(request: NextRequest) {

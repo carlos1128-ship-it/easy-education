@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user.id, "generation");
+    await assertDailyAiQuota(user, "generation");
     if (!checkRateLimit(`quiz:${user.id}`).ok) return NextResponse.json({ error: "Limite atingido." }, { status: 429 });
 
     const payload = quizGenerateSchema.parse(await request.json());

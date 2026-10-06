@@ -3,6 +3,7 @@ import { devWarn } from "@/lib/dev-log";
 import { ensureProfileForUser } from "@/lib/profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getPrisma } from "@/lib/prisma";
+import { safeInternalPath } from "@/lib/safe-redirect";
 
 function redirectWithError(request: NextRequest, message: string) {
   const url = request.nextUrl.clone();
@@ -56,8 +57,8 @@ export async function GET(request: NextRequest) {
 
   const prisma = getPrisma();
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
-  const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = profile?.onboardingDone ? "/dashboard" : "/onboarding";
-  redirectTo.search = "";
-  return NextResponse.redirect(redirectTo);
+  const fallback = profile?.onboardingDone ? "/dashboard" : "/onboarding";
+  // `next` vem do botão do Google (ex.: /assinar?plano=completo); só caminhos internos são aceitos.
+  const next = safeInternalPath(searchParams.get("next"), fallback);
+  return NextResponse.redirect(new URL(next, request.nextUrl.origin));
 }

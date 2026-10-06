@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { getAccessState } from "@/lib/billing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 /** Uma chamada ao Supabase Auth por request, mesmo com layout e página pedindo o usuário. */
@@ -19,4 +20,12 @@ export async function getCurrentUserOrRedirect() {
   }
 
   return user;
+}
+
+/** Usuário logado e com assinatura ativa; sem assinatura, vai para a escolha do plano. */
+export async function getPaidUserOrRedirect() {
+  const user = await getCurrentUserOrRedirect();
+  const access = await getAccessState(user);
+  if (!access.hasAccess) redirect("/assinar");
+  return { user, access };
 }

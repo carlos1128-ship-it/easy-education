@@ -3,12 +3,12 @@ import { MobileBottomNav, Sidebar } from "@/components/layout/sidebar";
 import { RealtimeRefresh } from "@/components/realtime/realtime-refresh";
 import { StudyTimer } from "@/components/study-plan/study-timer";
 import { ensureProfileForUser } from "@/lib/profile";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { getPaidUserOrRedirect } from "@/lib/server-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUserOrRedirect();
+  const { user } = await getPaidUserOrRedirect();
   const profile = await ensureProfileForUser(user);
 
   return (

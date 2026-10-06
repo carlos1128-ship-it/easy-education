@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user.id, "generation");
+    await assertDailyAiQuota(user, "generation");
 
     const block = schema.parse(await request.json());
     const result = await startStudyBlockForUser(user.id, block);

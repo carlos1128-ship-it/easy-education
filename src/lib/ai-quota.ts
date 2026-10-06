@@ -1,23 +1,39 @@
+import type { User } from "@supabase/supabase-js";
+import { assertActiveSubscription } from "@/lib/billing";
 import { getPrisma } from "@/lib/prisma";
 import { startOfToday } from "@/lib/study-stats";
+import type { PlanId } from "@/lib/stripe";
 
 /**
  * Limite diário de uso da IA por aluno, contado no banco (vale para todas as instâncias da Vercel,
  * diferente do limite por minuto, que fica na memória). Protege o custo da API contra abuso.
+ * O plano Completo tem os limites maiores; o Básico, o limite padrão.
  */
-const DAILY_GENERATIONS = Number(process.env.AI_DAILY_GENERATIONS ?? 60);
-const DAILY_CHAT_MESSAGES = Number(process.env.AI_DAILY_CHAT_MESSAGES ?? 150);
+const LIMITS: Record<PlanId, { generation: number; chat: number }> = {
+  basic: {
+    generation: Number(process.env.AI_DAILY_GENERATIONS_BASIC ?? 25),
+    chat: Number(process.env.AI_DAILY_CHAT_MESSAGES_BASIC ?? 60),
+  },
+  full: {
+    generation: Number(process.env.AI_DAILY_GENERATIONS ?? 60),
+    chat: Number(process.env.AI_DAILY_CHAT_MESSAGES ?? 150),
+  },
+};
 
 export class AiQuotaError extends Error {
   readonly status = 429;
 }
 
-export async function assertDailyAiQuota(userId: string, kind: "generation" | "chat") {
+/** Exige assinatura ativa e confere o limite do dia do plano do aluno. */
+export async function assertDailyAiQuota(user: Pick<User, "id" | "email">, kind: "generation" | "chat") {
+  const access = await assertActiveSubscription(user);
+  const limits = LIMITS[access.plan ?? "full"];
+  const userId = user.id;
   const prisma = getPrisma();
   const since = startOfToday();
   if (kind === "chat") {
     const messages = await prisma.chatMessage.count({ where: { userId, role: "user", createdAt: { gte: since } } });
-    if (messages >= DAILY_CHAT_MESSAGES) throw new AiQuotaError("Você chegou ao limite de mensagens do chat por hoje. Volte amanhã!");
+    if (messages >= limits.chat) throw new AiQuotaError(quotaMessage("mensagens do chat", access.plan));
     return;
   }
   const [quizzes, decks, essays, plans] = await Promise.all([
@@ -26,7 +42,12 @@ export async function assertDailyAiQuota(userId: string, kind: "generation" | "c
     prisma.essay.count({ where: { userId, createdAt: { gte: since } } }),
     prisma.studyPlan.count({ where: { userId, createdAt: { gte: since } } }),
   ]);
-  if (quizzes + decks + essays + plans >= DAILY_GENERATIONS) {
-    throw new AiQuotaError("Você chegou ao limite de gerações com IA por hoje. Volte amanhã!");
+  if (quizzes + decks + essays + plans >= limits.generation) {
+    throw new AiQuotaError(quotaMessage("gerações com IA", access.plan));
   }
+}
+
+function quotaMessage(what: string, plan: PlanId | null) {
+  const upgrade = plan === "basic" ? " Para usar mais, mude para o plano Completo em Assinatura." : "";
+  return `Você chegou ao limite de ${what} por hoje. Volte amanhã!${upgrade}`;
 }

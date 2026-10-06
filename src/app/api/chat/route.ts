@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user.id, "chat");
+    await assertDailyAiQuota(user, "chat");
 
     const rateLimit = checkRateLimit(`chat:${user.id}`);
     if (!rateLimit.ok) return NextResponse.json({ error: "Limite de 20 mensagens por minuto atingido." }, { status: 429 });

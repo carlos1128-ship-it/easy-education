@@ -3,14 +3,16 @@
  * Copiado de Landing.dc.html (versão aprovada, título "a").
  *
  * Itens marcados como TODO estão desligados por decisão pendente:
- * - Planos: seção visível; botões levam ao cadastro até o pagamento existir; números dos limites a preencher.
+ * - Planos: seção visível; botões levam ao cadastro com o plano escolhido e dali ao pagamento; números dos limites a preencher.
  * - Avaliações: só com depoimentos reais e autorizados.
  * - E-mail de contato: falta o endereço real.
  * - Termos de uso e Privacidade: as rotas ainda não existem.
  */
 
 export const landingLinks = {
-  signUp: "/cadastro", // TODO: o app ainda não cobra; "Assinar" leva ao cadastro existente.
+  signUp: "/cadastro", // Cadastro -> escolha do plano -> pagamento no Stripe.
+  signUpBasic: "/cadastro?plano=basico",
+  signUpFull: "/cadastro?plano=completo",
   login: "/login",
 } as const;
 
@@ -213,7 +215,7 @@ export const landingSteps = {
 } as const;
 
 /**
- * Seção "Planos". Os botões levam ao cadastro até a cobrança (Stripe) existir.
+ * Seção "Planos". Cada botão leva ao cadastro já com o plano escolhido e dali ao pagamento (Stripe).
  * Empacotamento: os dois planos têm todas as ferramentas; o Completo tem limites maiores de IA.
  * TODO: preencher os números de cada limite (`value`); linhas sem número não aparecem.
  */

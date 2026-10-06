@@ -4,6 +4,7 @@ import {
   Calendar,
   CalendarCheck,
   ClipboardCheck,
+  CreditCard,
   FileEdit,
   Folder,
   Layers,
@@ -36,6 +37,7 @@ export const navItems: NavItem[] = [
   { href: "/dashboard/redacao", label: "Redação", icon: PenTool, group: "Meus Estudos" },
   { href: "/dashboard/simulados", label: "Simulados", icon: ClipboardCheck, group: "Meus Estudos" },
   { href: "/dashboard/desempenho", label: "Desempenho", icon: BarChart, group: "Meus Estudos" },
+  { href: "/dashboard/assinatura", label: "Assinatura", icon: CreditCard, group: "Footer" },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings, group: "Footer" },
 ] ;
 

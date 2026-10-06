@@ -29,6 +29,7 @@ model Profile {
   essays         Essay[]
   chatMessages   ChatMessage[]
   studySessions  StudySession[]
+  subscription   Subscription?
 
   @@map("profiles")
 }
@@ -188,4 +189,34 @@ model ChatMessage {
   profile Profile @relation(fields: [userId], references: [userId])
 
   @@map("chat_messages")
+}
+
+/// Assinatura Stripe do aluno. Só o servidor grava (webhook e retorno do checkout); o aluno só lê.
+model Subscription {
+  id                   String    @id @default(uuid())
+  userId               String    @unique @map("user_id")
+  stripeCustomerId     String    @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
+  stripePriceId        String?   @map("stripe_price_id")
+  plan                 String?
+  status               String    @default("none")
+  currentPeriodEnd     DateTime? @map("current_period_end")
+  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
+  firstPaidAt          DateTime? @map("first_paid_at")
+  refundedAt           DateTime? @map("refunded_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [userId], references: [userId])
+
+  @@map("subscriptions")
+}
+
+/// Eventos do webhook já processados (o Stripe pode reenviar o mesmo evento).
+model StripeEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("stripe_events")
 }

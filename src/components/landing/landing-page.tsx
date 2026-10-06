@@ -810,7 +810,7 @@ function PricingCard({ tier }: { tier: "basic" | "full" }) {
         ))}
       </div>
       <Link
-        href={landingLinks.signUp}
+        href={tier === "full" ? landingLinks.signUpFull : landingLinks.signUpBasic}
         className={cn(
           "mt-auto grid h-12 place-items-center rounded-lg text-[15px] font-medium no-underline transition-colors",
           featured ? "bg-brand text-on-brand hover:bg-brand-strong" : "border-[1.5px] border-border-strong text-ink hover:bg-surface-muted",
