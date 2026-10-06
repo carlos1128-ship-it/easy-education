@@ -1,10 +1,12 @@
-import { FileText } from "lucide-react";
+import { CirclePlay, FileText } from "lucide-react";
 import { FileActions } from "@/components/files/file-actions";
 import { FileUploader } from "@/components/files/file-uploader";
+import { YouTubeLinkForm } from "@/components/files/youtube-link-form";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatBytes } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { parseVideoSourceKey, watchUrl, YOUTUBE_FILE_TYPE } from "@/lib/youtube";
 
 export default async function ArquivosPage({ searchParams }: { searchParams: Promise<{ busca?: string }> }) {
   const user = await getCurrentUserOrRedirect();
@@ -12,39 +14,66 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
   const files = await getPrisma().uploadedFile.findMany({
     where: { userId: user.id, name: busca ? { contains: busca, mode: "insensitive" } : undefined },
     orderBy: { createdAt: "desc" },
-    select: { id: true, name: true, type: true, sizeBytes: true, processed: true },
+    select: { id: true, name: true, type: true, sizeBytes: true, processed: true, sourceUrl: true, processingError: true },
   });
 
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
         <p className="text-sm font-medium text-brand-strong">Arquivos</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Meus Arquivos</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Meus materiais</h1>
       </div>
 
-      <FileUploader />
+      <div className="grid gap-4 xl:grid-cols-2">
+        <FileUploader />
+        <YouTubeLinkForm />
+      </div>
 
       {files.length ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {files.map((file) => (
-            <div
-              key={file.id}
-              className="rounded-2xl border border-border bg-surface p-5 shadow-card transition-colors hover:border-border-strong"
-            >
-              <FileText className="size-6 text-brand-strong" />
-              <h2 className="mt-4 font-bold text-ink">{file.name}</h2>
-              <p className="mt-1 text-sm text-ink-muted">
-                {file.type || "arquivo"} · {formatBytes(file.sizeBytes)}
-              </p>
-              <span className="mt-4 inline-flex rounded-md bg-brand-tint px-3 py-1 text-xs font-bold text-brand-strong">
-                {file.processed ? "Pronto" : "Aguardando processamento"}
-              </span>
-              <FileActions fileId={file.id} fileName={file.name} processed={file.processed} />
-            </div>
-          ))}
+          {files.map((file) => {
+            const isVideo = file.type === YOUTUBE_FILE_TYPE;
+            const video = isVideo ? parseVideoSourceKey(file.sourceUrl) : null;
+            const failed = Boolean(file.processingError);
+            const status = file.processed
+              ? "Pronto"
+              : failed
+                ? "Não foi possível ler"
+                : isVideo
+                  ? "A IA está assistindo o vídeo…"
+                  : "Aguardando processamento";
+            return (
+              <div
+                key={file.id}
+                className="flex flex-col rounded-2xl border border-border bg-surface p-5 shadow-card transition-colors hover:border-border-strong"
+              >
+                {isVideo ? <CirclePlay className="size-6 text-brand-strong" aria-hidden="true" /> : <FileText className="size-6 text-brand-strong" aria-hidden="true" />}
+                <h2 className="mt-4 line-clamp-2 font-bold text-ink" title={file.name}>{file.name}</h2>
+                <p className="mt-1 text-sm text-ink-muted">
+                  {isVideo && video ? (
+                    <a href={watchUrl(video.id, video.startSeconds)} target="_blank" rel="noopener noreferrer" className="font-medium text-brand-strong hover:underline">
+                      Vídeo do YouTube ↗
+                    </a>
+                  ) : (
+                    <>{file.type || "arquivo"} · {formatBytes(file.sizeBytes)}</>
+                  )}
+                </p>
+                <span
+                  className={`mt-4 inline-flex self-start rounded-md px-3 py-1 text-xs font-bold ${
+                    failed ? "bg-danger-tint text-danger" : file.processed ? "bg-success-tint text-success" : "bg-brand-tint text-brand-strong"
+                  }`}
+                  role="status"
+                >
+                  {status}
+                </span>
+                {failed ? <p className="m-0 mt-2 text-sm text-ink-muted">{file.processingError}</p> : null}
+                <FileActions fileId={file.id} fileName={file.name} processed={file.processed} isVideo={isVideo} failed={failed} />
+              </div>
+            );
+          })}
         </div>
       ) : (
-        <EmptyState icon={FileText} title="Nenhum arquivo enviado." description="Envie materiais reais para gerar quizzes e flashcards com base no seu conteúdo." />
+        <EmptyState icon={FileText} title="Nenhum material ainda." description="Envie um PDF, uma foto ou cole o link de uma aula do YouTube para gerar quizzes, flashcards e simulados com base no seu conteúdo." />
       )}
     </div>
   );

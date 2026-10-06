@@ -37,10 +37,16 @@ export type GeneratedFlashcard = {
 
 export type EssayFeedback = {
   totalScore: number;
-  criteria: Record<string, { score: number; feedback: string }>;
+  criteria: Record<string, { score: number; feedback: string; evidence?: string; nextLevel?: string; level?: string }>;
   strengths: string[];
   improvements: string[];
   generalFeedback: string;
+  /** Campos da grade oficial do INEP (correções antigas não têm). */
+  zeroReason?: string | null;
+  tangency?: boolean;
+  humanRightsViolation?: boolean;
+  interventionElements?: Record<string, boolean>;
+  promptVersion?: string;
 };
 
 export type ChatInputMessage = {

@@ -29,6 +29,7 @@ export async function POST(request: Request) {
         subject: payload.subject,
         topic: payload.topic,
         questionCount: payload.questionCount,
+        fileId: payload.fileId,
       });
       revalidateQuizPages();
       return NextResponse.json({ quizId: quiz.id });

@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { Type, type FunctionDeclaration } from "@google/genai";
 import { z } from "zod";
 import { createFlashcardDeckForUser } from "@/lib/flashcard-generation";
+import { buildLearnerContext, parsePersonalization } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 import { createQuizForUser } from "@/lib/quiz-generation";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -164,6 +165,9 @@ export async function runChatTool(userId: string, name: string, args: Record<str
       dailyHours,
       subjects: subjects.length ? subjects : [{ name: "Matematica", difficulty: 3 }],
       method: text(args.metodo) ?? profile?.studyMethod ?? "Active Recall",
+      studyDays: parsePersonalization(profile?.personalization)?.studyDays,
+      period: parsePersonalization(profile?.personalization)?.period,
+      learnerContext: buildLearnerContext(profile),
     });
     revalidateAll();
     const blocks = plan.days.reduce((sum, day) => sum + day.blocks.length, 0);

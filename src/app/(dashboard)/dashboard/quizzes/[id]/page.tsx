@@ -3,6 +3,7 @@ import { QuizRunner } from "@/components/quiz/quiz-runner";
 import { getPrisma } from "@/lib/prisma";
 import { toQuizRunnerQuestions } from "@/lib/quiz-questions";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { parseVideoSourceKey } from "@/lib/youtube";
 
 export default async function QuizDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUserOrRedirect();
@@ -11,7 +12,7 @@ export default async function QuizDetailPage({ params }: { params: Promise<{ id:
   try {
     quiz = await getPrisma().quiz.findFirst({
       where: { id, userId: user.id },
-      include: { questions: { orderBy: { order: "asc" } } },
+      include: { questions: { orderBy: { order: "asc" } }, file: { select: { sourceUrl: true } } },
     });
   } catch (error) {
     console.error("[quiz.detail]", error);
@@ -32,7 +33,7 @@ export default async function QuizDetailPage({ params }: { params: Promise<{ id:
         <p className="text-sm font-medium text-brand-strong">{quiz.subject}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{quiz.title}</h1>
       </div>
-      <QuizRunner quizId={quiz.id} questions={toQuizRunnerQuestions(quiz.questions)} mode={quiz.difficulty === "simulado" ? "simulado" : "quiz"} />
+      <QuizRunner quizId={quiz.id} questions={toQuizRunnerQuestions(quiz.questions)} mode={quiz.difficulty === "simulado" ? "simulado" : "quiz"} videoId={parseVideoSourceKey(quiz.file?.sourceUrl)?.id ?? null} />
     </div>
   );
 }

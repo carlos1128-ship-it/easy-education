@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { personalizationSchema } from "@/lib/learner-profile";
 
 export const emailSchema = z.string().trim().max(254, "E-mail muito longo.").email("Informe um e-mail valido.");
 
@@ -14,12 +15,15 @@ export const loginSchema = z.object({
 });
 
 export const onboardingSchema = z.object({
-  goal: z.string().min(2).max(120),
+  goal: z.string().min(2).max(160),
   targetDate: z.string().max(40).optional(),
   level: z.string().min(2).max(60),
-  dailyMinutes: z.number().min(60).max(480),
+  dailyMinutes: z.number().min(30).max(480),
   studyMethod: z.string().min(2).max(60),
   subjects: z.array(z.object({ name: z.string().max(80), difficulty: z.number().min(1).max(5) })).max(30),
+  personalization: personalizationSchema.optional(),
+  /** Refazendo a personalização: arquiva o plano atual e monta outro. */
+  regeneratePlan: z.boolean().optional(),
 });
 
 export const chatSchema = z.object({
@@ -52,6 +56,7 @@ export const flashcardGenerateSchema = z.object({
 export const essaySchema = z.object({
   title: z.string().min(2).max(160),
   theme: z.string().min(2).max(300),
-  model: z.enum(["ENEM", "SAT"]),
+  // O SAT não tem redação desde 2021: a correção segue a grade do Enem.
+  model: z.literal("ENEM").catch("ENEM"),
   content: z.string().min(300, "Escreva pelo menos 300 caracteres.").max(12000, "Texto muito longo para uma redação."),
 });

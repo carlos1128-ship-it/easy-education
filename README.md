@@ -78,6 +78,13 @@ Variaveis: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, opcionais `BILLING_EXEM
 
 Teste local do webhook: `stripe listen --forward-to localhost:3000/api/stripe/webhook` (use o `whsec_` mostrado pela CLI). O retorno do checkout tambem confirma o pagamento sem depender do webhook.
 
+## Personalização, vídeos e redação
+
+- **Onboarding em 5 etapas** (`/onboarding`, refazível em Configurações): motivo do estudo (escola, ENEM/vestibular, concurso, faculdade, intercâmbio/idioma, certificação, conhecimento livre), detalhes de cada caso (série, prova, banca, curso, idioma e nível QECR), rotina (dias, horário), matérias ou habilidades, dificuldades e jeito preferido de explicação. Fica em `profiles.personalization` e alimenta quiz, simulado, flashcards, plano, chat e redação (`src/lib/learner-profile.ts`, `src/lib/exam-style.ts`).
+- **Vídeos do YouTube** (`/dashboard/arquivos`): o aluno cola o link (vídeo público, trecho de até 60 min); a IA assiste em segundo plano e gera anotações com marcas de tempo. Quiz, flashcards e simulado do vídeo apontam o minuto de origem, que vira link. Mesmo vídeo/trecho é reaproveitado sem nova leitura (`src/lib/youtube.ts`, `POST /api/videos`).
+- **Redação pela grade oficial do Enem** (cartilha do INEP): níveis 0/40/80/120/160/200 por competência, nota zero, tangenciamento, direitos humanos e os 5 elementos da proposta (`src/lib/enem-essay.ts`).
+- Custo de IA por aluno: `docs/consumo-ia.md`.
+
 ## Banco
 
 ```bash

@@ -1,8 +1,10 @@
+import { buildLearnerContext, examStyleFromPersonalization, explanationGuidance, parsePersonalization } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 
 /**
  * Estilo das questões geradas pela IA, a partir do objetivo escolhido no onboarding.
  * Um universitário recebe questões de graduação; um concurseiro, no padrão de banca.
+ * Com a personalização detalhada, o estilo considera série, banca, curso, idioma e nível.
  */
 const styles: Record<string, string> = {
   "provas escolares": "prova escolar do ensino médio, com linguagem clara e cobrança do conteúdo visto em sala",
@@ -24,7 +26,35 @@ export function examStyleFor(goal?: string | null) {
   return styles[normalize(goal)] ?? `${goal.trim()}, com enunciados contextualizados e nível adequado ao assunto`;
 }
 
+export type LearnerPromptProfile = {
+  /** Estilo da prova para as questões. */
+  style: string;
+  /** Resumo do aluno para incluir nos prompts. */
+  context: string;
+  /** Regras de tom das explicações (pode ser vazio). */
+  guidance: string;
+};
+
+/** Tudo o que os geradores precisam saber do aluno, numa consulta só. */
+export async function getLearnerPromptProfile(userId: string): Promise<LearnerPromptProfile> {
+  const profile = await getPrisma().profile.findUnique({
+    where: { userId },
+    select: { studyGoal: true, level: true, targetDate: true, dailyMinutes: true, personalization: true },
+  });
+  const personalization = parsePersonalization(profile?.personalization);
+  return {
+    style: personalization ? examStyleFromPersonalization(personalization) : examStyleFor(profile?.studyGoal),
+    context: buildLearnerContext(profile),
+    guidance: explanationGuidance(profile),
+  };
+}
+
 export async function getExamStyleForUser(userId: string) {
-  const profile = await getPrisma().profile.findUnique({ where: { userId }, select: { studyGoal: true } });
-  return examStyleFor(profile?.studyGoal);
+  return (await getLearnerPromptProfile(userId)).style;
+}
+
+/** Bloco de texto padrão para anexar aos prompts de geração. */
+export function learnerPromptBlock(learner: LearnerPromptProfile) {
+  if (!learner.context && !learner.guidance) return "";
+  return `\nPerfil do aluno (personalize o conteúdo, os exemplos e a dificuldade para ele):\n${learner.context}${learner.guidance ? `\n${learner.guidance}` : ""}`;
 }

@@ -3,6 +3,7 @@ import { QuizRunner } from "@/components/quiz/quiz-runner";
 import { getPrisma } from "@/lib/prisma";
 import { toQuizRunnerQuestions } from "@/lib/quiz-questions";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { parseVideoSourceKey } from "@/lib/youtube";
 
 export default async function SimuladoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUserOrRedirect();
@@ -11,7 +12,7 @@ export default async function SimuladoDetailPage({ params }: { params: Promise<{
   try {
     simulado = await getPrisma().quiz.findFirst({
       where: { id, userId: user.id, difficulty: "simulado" },
-      include: { questions: { orderBy: { order: "asc" } } },
+      include: { questions: { orderBy: { order: "asc" } }, file: { select: { sourceUrl: true } } },
     });
   } catch (error) {
     console.error("[simulado.detail]", error);
@@ -32,7 +33,7 @@ export default async function SimuladoDetailPage({ params }: { params: Promise<{
         <p className="text-sm font-medium text-brand-strong">{simulado.subject}</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{simulado.title}</h1>
       </div>
-      <QuizRunner quizId={simulado.id} questions={toQuizRunnerQuestions(simulado.questions)} mode="simulado" />
+      <QuizRunner quizId={simulado.id} questions={toQuizRunnerQuestions(simulado.questions)} mode="simulado" videoId={parseVideoSourceKey(simulado.file?.sourceUrl)?.id ?? null} />
     </div>
   );
 }

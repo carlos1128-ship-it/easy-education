@@ -47,7 +47,7 @@ export const features = [
   { title: "Plano personalizado", icon: CalendarCheck, text: "Receba uma agenda semanal baseada no seu objetivo e tempo real." },
   { title: "Quiz e simulados", icon: Target, text: "Pratique com questões no estilo da sua prova: escola, faculdade, vestibular ou concurso." },
   { title: "Flashcards", icon: BookOpen, text: "Revise com repetição espaçada e foco no que você ainda esquece." },
-  { title: "Correção de redação", icon: FileEdit, text: "Veja nota, critérios e melhorias seguindo rubricas ENEM ou SAT." },
+  { title: "Correção de redação", icon: FileEdit, text: "Veja a nota de 0 a 1000 e o nível de cada competência, pela grade oficial do Enem." },
 ] as const;
 
 export const quickSuggestions = [

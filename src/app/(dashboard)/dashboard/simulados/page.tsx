@@ -6,10 +6,11 @@ import { getCurrentUserOrRedirect } from "@/lib/server-user";
 
 export default async function SimuladosPage() {
   const user = await getCurrentUserOrRedirect();
-  const simulados = await getPrisma().quiz.findMany({
-    where: { userId: user.id, difficulty: "simulado" },
-    orderBy: { createdAt: "desc" },
-  });
+  const prisma = getPrisma();
+  const [simulados, files] = await Promise.all([
+    prisma.quiz.findMany({ where: { userId: user.id, difficulty: "simulado" }, orderBy: { createdAt: "desc" } }),
+    prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, select: { id: true, name: true, processed: true } }),
+  ]);
   const completed = simulados.filter((item) => item.score !== null);
   const average = completed.length ? Math.round(completed.reduce((sum, quiz) => sum + (quiz.score ?? 0), 0) / completed.length) : 0;
 
@@ -20,7 +21,7 @@ export default async function SimuladosPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Prática em ritmo de prova</h1>
       </div>
 
-      <SimuladoCreateForm />
+      <SimuladoCreateForm files={files} />
 
       <section className="grid gap-4 md:grid-cols-3">
         {[

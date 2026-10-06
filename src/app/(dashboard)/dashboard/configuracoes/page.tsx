@@ -1,4 +1,6 @@
-import { Shield, UserRound } from "lucide-react";
+import Link from "next/link";
+import { Shield, Sparkles, UserRound } from "lucide-react";
+import { goalLabel, parsePersonalization, PURPOSES } from "@/lib/learner-profile";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
@@ -6,6 +8,7 @@ import { getCurrentUserOrRedirect } from "@/lib/server-user";
 export default async function ConfiguraçõesPage() {
   const user = await getCurrentUserOrRedirect();
   const profile = await getPrisma().profile.findUnique({ where: { userId: user.id } });
+  const personalization = parsePersonalization(profile?.personalization);
 
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
@@ -35,6 +38,24 @@ export default async function ConfiguraçõesPage() {
         </section>
 
         <aside className="space-y-4">
+          <section className="rounded-2xl border border-border bg-surface p-5 shadow-card">
+            <div className="mb-3 flex items-center gap-3">
+              <Sparkles className="size-5 text-brand-strong" />
+              <h2 className="font-bold text-ink">Personalização</h2>
+            </div>
+            <p className="text-sm text-ink-muted">
+              {personalization
+                ? `${PURPOSES.find((item) => item.id === personalization.purpose)?.label ?? "Objetivo"}: ${goalLabel(personalization)}. A IA usa isso para escolher o estilo das questões, o jeito de explicar e o seu plano.`
+                : "Responda algumas perguntas sobre o que e por que você estuda para a IA ajustar questões, explicações e plano para você."}
+            </p>
+            <Link
+              href="/onboarding"
+              prefetch={false}
+              className="mt-4 inline-flex h-10 items-center rounded-lg bg-brand px-4 text-sm font-semibold text-on-brand no-underline transition-colors hover:bg-brand-strong"
+            >
+              {personalization ? "Atualizar personalização" : "Personalizar meu estudo"}
+            </Link>
+          </section>
           <section className="rounded-2xl border border-border bg-surface p-5 shadow-card">
             <div className="mb-3 flex items-center gap-3">
               <Shield className="size-5 text-brand-strong" />

@@ -1,4 +1,5 @@
-import { getExamStyleForUser } from "@/lib/exam-style";
+import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
+import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
 import { generateJSONList } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import {
@@ -20,22 +21,28 @@ export async function createSimuladoForUser({
   topic,
   title,
   questionCount = 20,
+  fileId,
 }: {
   userId: string;
   subject: string;
   topic?: string;
   title?: string;
   questionCount?: number;
+  /** Material base (arquivo ou vídeo), opcional. */
+  fileId?: string;
 }) {
   const prisma = getPrisma();
-  const promptScope = describeSubjectForPrompt(subject, topic);
-  const style = await getExamStyleForUser(userId);
+  const file = fileId ? await prisma.uploadedFile.findFirst({ where: { id: fileId, userId } }) : null;
+  const video = isVideoFile(file);
+  const promptScope = describeSubjectForPrompt(subject, topic ?? file?.textContent?.slice(0, video ? 14000 : 5000));
+  const learner = await getLearnerPromptProfile(userId);
+  const style = learner.style;
   const buildPrompt = (count: number, part: number, parts: number) => `Crie exatamente ${count} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
 Regras obrigatorias:
 - Siga o estilo de ${style}, com contexto concreto em cada enunciado.
 - Nao use placeholders como "Alternativa correta", "Distrator plausivel" ou "resolva a situacao-problema proposta" sem apresentar a situacao.
 - Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
-- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.${partInstruction(part, parts)}
+- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${learnerPromptBlock(learner)}
 Retorne APENAS um array JSON valido com question, options (4 strings), correctAnswer (A, B, C ou D) e explanation.`;
   const rawQuestions = await generateJSONList<GeneratedQuizQuestion>({
     total: questionCount,
@@ -50,6 +57,7 @@ Retorne APENAS um array JSON valido com question, options (4 strings), correctAn
   return prisma.quiz.create({
     data: {
       userId,
+      fileId: file?.id,
       title: title ?? `Simulado de ${subject}`,
       subject,
       difficulty: "simulado",

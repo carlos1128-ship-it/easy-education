@@ -19,6 +19,8 @@ model Profile {
   level           String   @default("beginner")
   studyMethod     String   @default("pomodoro") @map("study_method")
   onboardingDone  Boolean  @default(false) @map("onboarding_done")
+  /// Respostas detalhadas do onboarding (motivo, prova, série, idioma, dificuldades, preferências).
+  personalization Json?
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -90,11 +92,16 @@ model UploadedFile {
   storagePath String   @map("storage_path")
   processed   Boolean  @default(false)
   textContent String?  @map("text_content") @db.Text
+  /// Link de origem (vídeo do YouTube); vazio para arquivos enviados.
+  sourceUrl   String?  @map("source_url")
+  /// Motivo da última falha de processamento, mostrado ao aluno.
+  processingError String? @map("processing_error")
   createdAt   DateTime @default(now()) @map("created_at")
 
   profile Profile @relation(fields: [userId], references: [userId])
   quizzes Quiz[]
 
+  @@index([sourceUrl])
   @@map("uploaded_files")
 }
 

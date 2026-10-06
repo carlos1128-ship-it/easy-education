@@ -38,13 +38,16 @@ export function SubjectSelect({
 export function SubjectChecklist({
   value,
   onChange,
+  options = SUBJECTS,
 }: {
   value: Record<string, number>;
   onChange: (value: Record<string, number>) => void;
+  /** Lista própria (ex.: habilidades de idioma ou matérias digitadas pelo aluno). */
+  options?: readonly { name: string; color: string }[];
 }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      {SUBJECTS.map((subject) => {
+      {options.map((subject) => {
         const checked = subject.name in value;
         return (
           <div key={subject.name} className="rounded-lg border border-border bg-card p-4">

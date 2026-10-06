@@ -1,6 +1,7 @@
 import {
   FunctionCallingConfigMode,
   GoogleGenAI,
+  MediaResolution,
   ThinkingLevel,
   type Content,
   type FunctionDeclaration,
@@ -139,7 +140,7 @@ function attemptSignal(ms: number, parent?: AbortSignal) {
  */
 export async function generateJSON<T>(
   prompt: string,
-  options: { thinkingBudget?: number; attemptTimeoutMs?: number } = {},
+  options: { thinkingBudget?: number; attemptTimeoutMs?: number; schema?: Schema; temperature?: number } = {},
 ): Promise<T> {
   return withModels(async (model, attempt) => {
     const response = await getGemini().models.generateContent({
@@ -150,7 +151,8 @@ Importante: responda somente JSON valido, compacto, sem markdown e sem campos ex
       config: {
         maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
         responseMimeType: "application/json",
-        temperature: attempt === 0 ? 0.2 : 0,
+        temperature: attempt === 0 ? (options.temperature ?? 0.2) : 0,
+        ...(options.schema ? { responseSchema: options.schema } : {}),
         thinkingConfig: thinkingFor(model, options.thinkingBudget ?? 0),
         abortSignal: attemptSignal(options.attemptTimeoutMs ?? 45_000),
       },
@@ -384,4 +386,55 @@ export async function generateTextFromImage(image: Buffer, mimeType: string, ins
     if (!text) throw new Error("A IA não encontrou texto na imagem.");
     return text;
   }, 1);
+}
+
+/**
+ * Lê um vídeo público do YouTube (entrada nativa de URL do Gemini, em resolução baixa: ~100 tokens/s)
+ * e devolve o texto pedido. Isolado aqui para trocar de estratégia sem mexer no resto do app.
+ */
+export async function generateTextFromYouTube(
+  url: string,
+  range: { startSeconds: number; endSeconds: number },
+  instruction: string,
+  options: { deadlineMs?: number } = {},
+) {
+  const deadline = Date.now() + (options.deadlineMs ?? 270_000);
+  let lastError: unknown;
+  for (const model of fastModels()) {
+    const remaining = deadline - Date.now();
+    if (remaining < 20_000) break;
+    try {
+      const response = await getGemini().models.generateContent({
+        model,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                fileData: { fileUri: url, mimeType: "video/mp4" },
+                videoMetadata: { startOffset: `${range.startSeconds}s`, endOffset: `${range.endSeconds}s` },
+              },
+              { text: instruction },
+            ],
+          },
+        ],
+        config: {
+          maxOutputTokens: 12_288,
+          temperature: 0.2,
+          mediaResolution: MediaResolution.MEDIA_RESOLUTION_LOW,
+          thinkingConfig: thinkingFor(model, 0),
+          abortSignal: attemptSignal(remaining),
+        },
+      });
+      const text = response.text?.trim();
+      if (!text) throw new Error("A IA retornou resposta vazia.");
+      return { text, model, inputTokens: response.usageMetadata?.promptTokenCount ?? 0, outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0 };
+    } catch (error) {
+      lastError = error;
+      // Vídeo privado, removido ou sem permissão: outro modelo não resolve.
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (message.includes("permission") || message.includes("private") || message.includes("not found") || message.includes("invalid_argument")) break;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("A IA demorou demais para responder.");
 }

@@ -1,4 +1,4 @@
-import { getExamStyleForUser } from "@/lib/exam-style";
+import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
 import { generateJSONList } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import {
@@ -11,6 +11,7 @@ import {
   sanitizeGeneratedQuizQuestions,
 } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
+import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
 
 export type QuizGenerationInput = {
   userId: string;
@@ -27,16 +28,19 @@ export type QuizGenerationInput = {
 export async function createQuizForUser(input: QuizGenerationInput) {
   const prisma = getPrisma();
   const file = input.fileId ? await prisma.uploadedFile.findFirst({ where: { id: input.fileId, userId: input.userId } }) : null;
-  const topic = input.topic ?? file?.textContent?.slice(0, 5000);
+  const video = isVideoFile(file);
+  // Anotação de vídeo é mais longa e tem as marcas de tempo: manda mais texto.
+  const topic = input.topic ?? file?.textContent?.slice(0, video ? 14000 : 5000);
   const promptScope = describeSubjectForPrompt(input.subject, topic);
-  const style = input.model ?? (await getExamStyleForUser(input.userId));
+  const learner = await getLearnerPromptProfile(input.userId);
+  const style = input.model ?? learner.style;
   const buildPrompt = (count: number, part: number, parts: number) => `Gere exatamente ${count} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${input.difficulty} no estilo de ${style}.
 Regras obrigatorias:
 - Cada enunciado deve conter uma situacao, dado, texto curto, fenomeno ou contexto real; nao use "resolva a situacao-problema proposta" sem apresentar a situacao.
 - As alternativas devem ser conteudos concretos, nunca "Alternativa correta", "Distrator plausivel", "Distrator comum" ou placeholders.
 - Se houver mais de uma materia, distribua as questoes entre elas e cite a materia no enunciado de forma natural.
 - A explicacao deve justificar a alternativa correta e mencionar por que ao menos um distrator esta errado.
-- Explicacao objetiva, em ate 3 frases.${partInstruction(part, parts)}
+- Explicacao objetiva, em ate 3 frases.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${learnerPromptBlock(learner)}
 Retorne APENAS um array JSON valido com exatamente estes campos: question (string), options (array de exatamente 4 strings A-D), correctAnswer (apenas A, B, C ou D), explanation (string).`;
   const rawQuestions = await generateJSONList<GeneratedQuizQuestion>({
     total: input.questionCount,

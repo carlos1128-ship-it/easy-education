@@ -9,6 +9,12 @@ type StudyPlanInput = {
   dailyHours: number;
   subjects: StudySubject[];
   method: string;
+  /** Dias da semana em que o aluno pode estudar (sunday…saturday). Sem isso, todos. */
+  studyDays?: string[];
+  /** Período preferido (manha, tarde, noite, variado). */
+  period?: string;
+  /** Resumo do aluno (objetivo, série, dificuldades, preferências) para personalizar o plano. */
+  learnerContext?: string;
 };
 
 const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
@@ -68,7 +74,15 @@ function normalizePlan(plan: GeneratedStudyPlan | null, input: StudyPlanInput) {
 }
 
 export async function generateStudyPlanData(input: StudyPlanInput) {
-  const prompt = `Monte um plano de estudo semanal compacto para um estudante com o seguinte perfil: Objetivo: ${input.goal}. Data da prova: ${input.targetDate ?? "nao informada"}. Horas por dia: ${input.dailyHours}. Materias e dificuldades: ${JSON.stringify(input.subjects)}. Metodo: ${input.method}. Retorne exatamente 7 dias, com no maximo 2 blocos por dia, textos curtos e esta estrutura {"days":[{"dayOfWeek":"monday","blocks":[{"subject":string,"topic":string,"durationMinutes":number,"method":string,"type":"estudo|revisao|simulado|redacao"}]}],"weeklyGoals":[string],"tips":[string]}. Use dayOfWeek em ingles: sunday, monday, tuesday, wednesday, thursday, friday, saturday. Responda APENAS com JSON valido.`;
+  const prompt = `Monte um plano de estudo semanal compacto para um estudante com o seguinte perfil: Objetivo: ${input.goal}. Data da prova: ${input.targetDate ?? "nao informada"}. Horas por dia: ${input.dailyHours}. Materias e dificuldades: ${JSON.stringify(input.subjects)}. Metodo: ${input.method}.${
+    input.studyDays?.length && input.studyDays.length < 7
+      ? ` Dias disponiveis: ${input.studyDays.join(", ")}; nos outros dias deixe "blocks" vazio ou so uma revisao curta de 15 minutos.`
+      : ""
+  }${input.period ? ` Periodo preferido: ${input.period}.` : ""}${
+    input.learnerContext ? ` Perfil do aluno (use para escolher temas, tipos de bloco e a proporcao entre estudo, revisao, simulado e redacao; so inclua redacao se fizer sentido para o objetivo):
+${input.learnerContext}
+` : ""
+  } Retorne exatamente 7 dias, com no maximo 2 blocos por dia, textos curtos e esta estrutura {"days":[{"dayOfWeek":"monday","blocks":[{"subject":string,"topic":string,"durationMinutes":number,"method":string,"type":"estudo|revisao|simulado|redacao"}]}],"weeklyGoals":[string],"tips":[string]}. Use dayOfWeek em ingles: sunday, monday, tuesday, wednesday, thursday, friday, saturday. Responda APENAS com JSON valido.`;
 
   try {
     return normalizePlan(await generateJSON<GeneratedStudyPlan>(prompt), input);

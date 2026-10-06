@@ -1,5 +1,6 @@
 import { FileEdit } from "lucide-react";
 import { EssayCorrectionForm } from "@/components/essay/essay-correction-form";
+import { EssayResult } from "@/components/essay/essay-result";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
@@ -25,18 +26,9 @@ export default async function RedaçãoPage() {
 
       <aside className="space-y-4">
         {lastEssay ? (
-          <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
-            <p className="text-sm text-ink-muted">Ultimo resultado</p>
-            <p className="mt-2 text-4xl font-extrabold text-brand">{Math.round(lastEssay.score ?? 0)}</p>
-            <p className="mt-2 text-sm font-medium text-ink">{lastEssay.title}</p>
-            <p className="mt-1 text-sm text-ink-muted">
-              {typeof lastEssay.feedback === "object" && lastEssay.feedback && "generalFeedback" in lastEssay.feedback
-                ? String(lastEssay.feedback.generalFeedback)
-                : "Feedback salvo."}
-            </p>
-          </div>
+          <EssayResult title={lastEssay.title} score={lastEssay.score ?? 0} feedback={lastEssay.feedback} />
         ) : (
-          <EmptyState icon={FileEdit} title="Sua primeira redacao esta te esperando." description="Envie um texto e receba nota por critério." />
+          <EmptyState icon={FileEdit} title="Sua primeira redação está te esperando." description="Envie um texto e receba a nota de cada competência pela grade oficial do Enem." />
         )}
         <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
           <h2 className="font-bold text-ink">Histórico</h2>

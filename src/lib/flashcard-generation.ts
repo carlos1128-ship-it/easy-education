@@ -1,6 +1,8 @@
 import { Type, type Schema } from "@google/genai";
 import { generateJSONList } from "@/lib/gemini";
+import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
 import { getPrisma } from "@/lib/prisma";
+import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
 import type { GeneratedFlashcard } from "@/types";
 
 function cleanText(value: unknown) {
@@ -68,13 +70,16 @@ export type FlashcardGenerationInput = {
 export async function createFlashcardDeckForUser(input: FlashcardGenerationInput) {
   const prisma = getPrisma();
   const file = input.fileId ? await prisma.uploadedFile.findFirst({ where: { id: input.fileId, userId: input.userId } }) : null;
-  const topic = input.topic ?? file?.textContent?.slice(0, 6000) ?? input.subject;
+  const video = isVideoFile(file);
+  const topic = input.topic ?? file?.textContent?.slice(0, video ? 14000 : 6000) ?? input.subject;
+  const learner = await getLearnerPromptProfile(input.userId);
   const buildPrompt = (count: number, part: number, parts: number) => `Crie exatamente ${count} flashcards de estudo ativo sobre "${topic}" para a materia ${input.subject}.
 Regras obrigatorias:
 - O front deve ser uma pergunta objetiva que o aluno consiga tentar responder sem ver o verso.
 - O back deve responder diretamente a pergunta, com explicacao curta e concreta.
 - Nao use comandos como "revise", "anote", "pesquise" ou frases genericas; gere pergunta e resposta prontas.
-- Nao repita cards nem mude apenas poucas palavras.${parts > 1 ? `\n- Esta e a parte ${part} de ${parts} do mesmo deck: cubra a ${part}a fatia do conteudo (do mais basico ao mais avancado), sem repetir outras partes.` : ""}
+- Nao repita cards nem mude apenas poucas palavras.
+- Linguagem e nivel adequados a ${learner.style}.${video ? videoMaterialInstruction("flashcards") : ""}${learnerPromptBlock(learner)}${parts > 1 ? `\n- Esta e a parte ${part} de ${parts} do mesmo deck: cubra a ${part}a fatia do conteudo (do mais basico ao mais avancado), sem repetir outras partes.` : ""}
 Retorne APENAS um array JSON valido com front e back.`;
   const rawCards = await generateJSONList<GeneratedFlashcard>({
     total: input.count,

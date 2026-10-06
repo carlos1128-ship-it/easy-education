@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuizOption, type QuizOptionState } from "@/components/ui/quiz-option";
+import { ExplanationText } from "@/components/quiz/explanation-text";
 import { OwlMascot, usePreloadOwls, type OwlMood } from "@/components/mascot/owl-mascot";
 import { Check, Volume2, VolumeX, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,8 @@ type QuizRunnerProps = {
   quizId: string;
   questions: QuizRunnerQuestion[];
   mode?: "quiz" | "simulado";
+  /** Quiz gerado de um vídeo do YouTube: os minutos citados na explicação viram links. */
+  videoId?: string | null;
 };
 
 const IDLE_MS = 30_000;
@@ -44,7 +47,7 @@ function SoundToggle() {
   );
 }
 
-export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps) {
+export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }: QuizRunnerProps) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(
     Object.fromEntries(questions.filter((item) => item.userAnswer).map((item) => [item.id, item.userAnswer as string])),
@@ -252,7 +255,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz" }: QuizRunnerProps
                     )}
                     {confirmed === question.correctAnswer ? "Você acertou." : `Errou. Resposta correta: ${question.correctAnswer}`}
                   </p>
-                  <p className="mt-2 text-ink-muted">{question.explanation}</p>
+                  <p className="mt-2 text-ink-muted"><ExplanationText text={question.explanation} videoId={videoId} /></p>
                 </div>
               ) : null}
             </section>

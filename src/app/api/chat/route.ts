@@ -3,6 +3,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { ChatActionError, chatSystemPrompt, chatTools, runChatTool, type ChatAction } from "@/lib/chat-agent";
+import { getLearnerPromptProfile } from "@/lib/exam-style";
 import { generateChatWithTools } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -48,7 +49,16 @@ export async function POST(request: Request) {
       content: index === payload.messages.length - 1 ? `${message.content}${context}` : message.content,
     }));
 
-    const result = await generateChatWithTools(messages, chatSystemPrompt, chatTools);
+    // O chat conhece o objetivo, a série/curso/idioma, as dificuldades e o jeito preferido de explicar.
+    const learner = await getLearnerPromptProfile(user.id);
+    const systemPrompt = learner.context
+      ? `${chatSystemPrompt}
+
+Quem é o aluno (adapte exemplos, nível e tom; para idioma, pratique no idioma estudado quando fizer sentido):
+${learner.context}${learner.guidance ? `
+${learner.guidance}` : ""}`
+      : chatSystemPrompt;
+    const result = await generateChatWithTools(messages, systemPrompt, chatTools);
     let content: string;
     let action: ChatAction | undefined;
 
