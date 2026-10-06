@@ -1,7 +1,15 @@
 import { getExamStyleForUser } from "@/lib/exam-style";
-import { generateJSON } from "@/lib/gemini";
+import { generateJSONList } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
-import { describeSubjectForPrompt, fillQuestionCount, sanitizeGeneratedQuizQuestions } from "@/lib/quiz-questions";
+import {
+  describeSubjectForPrompt,
+  fillQuestionCount,
+  partInstruction,
+  QUIZ_CHUNK_SIZE,
+  questionDedupeKey,
+  quizQuestionsSchema,
+  sanitizeGeneratedQuizQuestions,
+} from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -22,14 +30,20 @@ export async function createSimuladoForUser({
   const prisma = getPrisma();
   const promptScope = describeSubjectForPrompt(subject, topic);
   const style = await getExamStyleForUser(userId);
-  const prompt = `Crie exatamente ${questionCount} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
+  const buildPrompt = (count: number, part: number, parts: number) => `Crie exatamente ${count} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
 Regras obrigatorias:
 - Siga o estilo de ${style}, com contexto concreto em cada enunciado.
 - Nao use placeholders como "Alternativa correta", "Distrator plausivel" ou "resolva a situacao-problema proposta" sem apresentar a situacao.
 - Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
-- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta.
-Retorne APENAS um array JSON valido com question, options, correctAnswer e explanation.`;
-  const rawQuestions = await generateJSON<GeneratedQuizQuestion[]>(prompt);
+- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.${partInstruction(part, parts)}
+Retorne APENAS um array JSON valido com question, options (4 strings), correctAnswer (A, B, C ou D) e explanation.`;
+  const rawQuestions = await generateJSONList<GeneratedQuizQuestion>({
+    total: questionCount,
+    chunkSize: QUIZ_CHUNK_SIZE,
+    schema: quizQuestionsSchema,
+    buildPrompt,
+    dedupeKey: questionDedupeKey,
+  });
   const questions = sanitizeGeneratedQuizQuestions(rawQuestions, questionCount, subject);
   const safeQuestions = fillQuestionCount(questions, questionCount);
 

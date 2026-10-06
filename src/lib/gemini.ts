@@ -1,8 +1,18 @@
-import { FunctionCallingConfigMode, GoogleGenAI, type Content, type FunctionDeclaration } from "@google/genai";
+import {
+  FunctionCallingConfigMode,
+  GoogleGenAI,
+  ThinkingLevel,
+  type Content,
+  type FunctionDeclaration,
+  type Schema,
+  type ThinkingConfig,
+} from "@google/genai";
 import type { ChatInputMessage } from "@/types";
 
 const defaultModel = "gemini-2.5-flash";
 const defaultFallbackModels = ["gemini-2.5-flash-lite"];
+/** Modelos das listas (quiz, simulado, flashcards): os mais rápidos primeiro, com reserva de outra família. */
+const defaultFastModels = ["gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
 let geminiClient: GoogleGenAI | null = null;
 
@@ -106,11 +116,27 @@ async function withModels<T>(run: (model: string, attempt: number) => Promise<T>
   throw lastError instanceof Error ? lastError : new Error("Falha ao gerar resposta da IA.");
 }
 
+/** Família 2.x usa orçamento de tokens; a 3.x usa nível de raciocínio. */
+function thinkingFor(model: string, budget: number): ThinkingConfig {
+  if (model.startsWith("gemini-2")) return { thinkingBudget: budget };
+  return { thinkingLevel: budget > 0 ? ThinkingLevel.LOW : ThinkingLevel.MINIMAL };
+}
+
+/** Uma tentativa nunca espera mais que `ms`: chamadas presas na API eram o que fazia passar de 1 minuto. */
+function attemptSignal(ms: number, parent?: AbortSignal) {
+  const signals = [AbortSignal.timeout(ms)];
+  if (parent) signals.push(parent);
+  return AbortSignal.any(signals);
+}
+
 /**
  * Gera JSON com a IA. Sem raciocínio interno por padrão: ele gasta o mesmo limite de tokens
  * da resposta, deixa a geração lenta e pode cortar o JSON no meio.
  */
-export async function generateJSON<T>(prompt: string, options: { thinkingBudget?: number } = {}): Promise<T> {
+export async function generateJSON<T>(
+  prompt: string,
+  options: { thinkingBudget?: number; attemptTimeoutMs?: number } = {},
+): Promise<T> {
   return withModels(async (model, attempt) => {
     const response = await getGemini().models.generateContent({
       model,
@@ -121,11 +147,147 @@ Importante: responda somente JSON valido, compacto, sem markdown e sem campos ex
         maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
         responseMimeType: "application/json",
         temperature: attempt === 0 ? 0.2 : 0,
-        thinkingConfig: { thinkingBudget: options.thinkingBudget ?? 0 },
+        thinkingConfig: thinkingFor(model, options.thinkingBudget ?? 0),
+        abortSignal: attemptSignal(options.attemptTimeoutMs ?? 45_000),
       },
     });
     return parseJSON<T>(response.text ?? "");
   });
+}
+
+function fastModels() {
+  const configured = (process.env.GEMINI_FAST_MODELS ?? defaultFastModels.join(","))
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
+  return configured.length ? [...new Set(configured)] : configuredModels();
+}
+
+/** Prazo total de uma lista; meta do produto é entregar em até 20 s. */
+const LIST_DEADLINE_MS = Number(process.env.GEMINI_LIST_DEADLINE_MS ?? 19_000);
+/** Sem resposta neste tempo, a mesma parte é pedida em paralelo ao próximo modelo (fica a que chegar primeiro). */
+const HEDGE_AFTER_MS = Number(process.env.GEMINI_HEDGE_AFTER_MS ?? 8_000);
+
+class DeadlineError extends Error {}
+
+/**
+ * Gera uma parte da lista. Começa no modelo mais rápido; se ele falhar ou demorar mais que
+ * HEDGE_AFTER_MS, dispara o próximo modelo em paralelo e usa a primeira resposta válida.
+ */
+async function generateChunk<T>(prompt: string, schema: Schema, deadline: number): Promise<T[]> {
+  const models = fastModels();
+  const controller = new AbortController();
+
+  return new Promise<T[]>((resolve, reject) => {
+    let started = 0;
+    let running = 0;
+    let settled = false;
+    let lastError: unknown = null;
+    let hedgeTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(hedgeTimer);
+      controller.abort();
+      fn();
+    };
+
+    const launch = () => {
+      const remaining = deadline - Date.now();
+      if (started >= models.length || remaining < 1500) {
+        if (running === 0) finish(() => reject(lastError ?? new DeadlineError("A IA demorou demais para responder.")));
+        return;
+      }
+      const model = models[started];
+      started += 1;
+      running += 1;
+      clearTimeout(hedgeTimer);
+      hedgeTimer = setTimeout(launch, HEDGE_AFTER_MS);
+
+      getGemini()
+        .models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            maxOutputTokens: 4096,
+            responseMimeType: "application/json",
+            responseSchema: schema,
+            temperature: 0.4,
+            thinkingConfig: thinkingFor(model, 0),
+            abortSignal: attemptSignal(remaining, controller.signal),
+          },
+        })
+        .then((response) => {
+          const parsed = parseJSON<unknown>(response.text ?? "");
+          if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("A IA retornou uma lista vazia.");
+          finish(() => resolve(parsed as T[]));
+        })
+        .catch((error: unknown) => {
+          running -= 1;
+          if (settled) return;
+          lastError = error;
+          launch();
+        });
+    };
+
+    launch();
+  });
+}
+
+/**
+ * Gera uma lista (questões, flashcards) dividida em partes pequenas pedidas ao mesmo tempo.
+ * Respostas menores saem bem mais rápido e uma parte lenta não segura as outras.
+ * `buildPrompt(quantidade, parte, totalDePartes)` monta o pedido de cada parte.
+ */
+export async function generateJSONList<T>(options: {
+  total: number;
+  chunkSize: number;
+  schema: Schema;
+  buildPrompt: (count: number, part: number, parts: number) => string;
+  /** Chave para remover itens repetidos entre partes. */
+  dedupeKey?: (item: T) => string;
+}): Promise<T[]> {
+  const deadline = Date.now() + LIST_DEADLINE_MS;
+  const parts = Math.max(1, Math.ceil(options.total / options.chunkSize));
+  const sizes = Array.from({ length: parts }, (_, index) =>
+    Math.floor(options.total / parts) + (index < options.total % parts ? 1 : 0),
+  );
+
+  const results = await Promise.allSettled(
+    sizes.map((size, index) =>
+      generateChunk<T>(
+        `${options.buildPrompt(size, index + 1, parts)}
+
+Importante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
+        options.schema,
+        deadline,
+      ).then((items) => items.slice(0, size)),
+    ),
+  );
+
+  const seen = new Set<string>();
+  const items: T[] = [];
+  let firstError: unknown = null;
+  for (const result of results) {
+    if (result.status === "rejected") {
+      firstError ??= result.reason;
+      continue;
+    }
+    for (const item of result.value) {
+      const key = options.dedupeKey?.(item);
+      if (key) {
+        if (seen.has(key)) continue;
+        seen.add(key);
+      }
+      items.push(item);
+    }
+  }
+
+  if (items.length === 0) {
+    throw firstError instanceof Error ? firstError : new Error("Falha ao gerar resposta da IA.");
+  }
+  return items;
 }
 
 function toGeminiContents(messages: ChatInputMessage[]): Content[] {

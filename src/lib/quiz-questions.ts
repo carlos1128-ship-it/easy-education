@@ -1,3 +1,4 @@
+import { Type, type Schema } from "@google/genai";
 import type { GeneratedQuizQuestion } from "@/types";
 
 const LETTERS = ["A", "B", "C", "D"] as const;
@@ -100,12 +101,52 @@ export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: num
   ));
 }
 
+/**
+ * Corta no total pedido. Com a geração em partes, uma parte pode falhar no prazo:
+ * aceita a partir de 70% do pedido em vez de jogar fora tudo que já ficou pronto.
+ */
 export function fillQuestionCount(questions: GeneratedQuizQuestion[], count: number) {
   const safeQuestions = questions.slice(0, count);
-  if (safeQuestions.length < count) {
+  if (safeQuestions.length < Math.min(count, Math.max(3, Math.ceil(count * 0.7)))) {
     throw new Error("A IA retornou poucas questoes validas.");
   }
   return safeQuestions;
+}
+
+/** Formato fixo da resposta da IA: o JSON sempre vem completo e não precisa de nova tentativa. */
+export const quizQuestionsSchema: Schema = {
+  type: Type.ARRAY,
+  items: {
+    type: Type.OBJECT,
+    properties: {
+      question: { type: Type.STRING },
+      options: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: "4", maxItems: "4" },
+      correctAnswer: { type: Type.STRING, enum: ["A", "B", "C", "D"] },
+      explanation: { type: Type.STRING },
+    },
+    required: ["question", "options", "correctAnswer", "explanation"],
+    propertyOrdering: ["question", "options", "correctAnswer", "explanation"],
+  },
+};
+
+/** Questões por parte: 5 saem em ~6 s; o quiz inteiro leva o tempo da parte mais lenta. */
+export const QUIZ_CHUNK_SIZE = 5;
+
+const PART_FOCUS = [
+  "conceitos centrais e definicoes aplicadas",
+  "aplicacao em situacoes do cotidiano e problemas",
+  "interpretacao de dados, graficos, tabelas ou textos",
+  "relacoes com outros temas e erros comuns dos alunos",
+];
+
+/** Diz a cada parte o que cobrir, para as partes não repetirem as mesmas questões. */
+export function partInstruction(part: number, parts: number) {
+  if (parts <= 1) return "";
+  return `\n- Esta e a parte ${part} de ${parts} de uma mesma prova; outras partes cobrem outros pontos. Nesta parte, priorize: ${PART_FOCUS[(part - 1) % PART_FOCUS.length]}. Nao repita questoes de outras partes.`;
+}
+
+export function questionDedupeKey(question: Partial<GeneratedQuizQuestion>) {
+  return normalizeForMatch(cleanText(question.question)).slice(0, 120);
 }
 
 export function toQuizRunnerQuestions(questions: PersistedQuestion[]): QuizRunnerQuestion[] {
