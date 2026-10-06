@@ -9,6 +9,11 @@ function withServerlessConnectionLimits(databaseUrl: string) {
     const url = new URL(databaseUrl);
     if (url.protocol !== "postgres:" && url.protocol !== "postgresql:") return databaseUrl;
 
+    // Porta 6543 = pooler do Supabase em modo transaction: o Prisma precisa desligar prepared statements.
+    if (url.port === "6543" && !url.searchParams.has("pgbouncer")) {
+      url.searchParams.set("pgbouncer", "true");
+    }
+
     if (!url.searchParams.has("connection_limit")) {
       url.searchParams.set("connection_limit", "1");
     }
