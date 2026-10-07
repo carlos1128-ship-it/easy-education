@@ -21,6 +21,8 @@ model Profile {
   onboardingDone  Boolean  @default(false) @map("onboarding_done")
   /// Respostas detalhadas do onboarding (motivo, prova, série, idioma, dificuldades, preferências).
   personalization Json?
+  /// Quando o aluno terminou (ou pulou) o tutorial guiado do app.
+  tourCompletedAt DateTime? @map("tour_completed_at")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 

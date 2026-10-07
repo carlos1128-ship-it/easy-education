@@ -39,7 +39,7 @@ export type LearnerPromptProfile = {
 export async function getLearnerPromptProfile(userId: string): Promise<LearnerPromptProfile> {
   const profile = await getPrisma().profile.findUnique({
     where: { userId },
-    select: { studyGoal: true, level: true, targetDate: true, dailyMinutes: true, personalization: true },
+    select: { studyGoal: true, studyMethod: true, level: true, targetDate: true, dailyMinutes: true, personalization: true },
   });
   const personalization = parsePersonalization(profile?.personalization);
   return {

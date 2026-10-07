@@ -19,7 +19,7 @@ export const onboardingSchema = z.object({
   targetDate: z.string().max(40).optional(),
   level: z.string().min(2).max(60),
   dailyMinutes: z.number().min(30).max(480),
-  studyMethod: z.string().min(2).max(60),
+  studyMethod: z.string().min(2).max(200),
   subjects: z.array(z.object({ name: z.string().max(80), difficulty: z.number().min(1).max(5) })).max(30),
   personalization: personalizationSchema.optional(),
   /** Refazendo a personalização: arquiva o plano atual e monta outro. */

@@ -3,9 +3,10 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Sparkles } from "lucide-react";
+import { CircleHelp, Search, Sparkles } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { NotificationsBell } from "@/components/layout/notifications-bell";
+import { startProductTour } from "@/components/onboarding/product-tour";
 import { MobileSidebar } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getProfileInitials } from "@/lib/subjects";
@@ -61,12 +62,24 @@ export function Header({ profileName, studyGoal }: { profileName: string; studyG
         IA
       </Link>
       <ThemeToggle className="hidden lg:flex" />
-      <NotificationsBell />
+      <button
+        type="button"
+        onClick={startProductTour}
+        aria-label="Ver o tutorial do app"
+        title="Tutorial: para que serve cada parte"
+        className="hidden size-9 flex-shrink-0 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink lg:grid"
+      >
+        <CircleHelp size={20} strokeWidth={1.75} aria-hidden="true" />
+      </button>
+      <span data-tour="notificacoes" className="inline-flex">
+        <NotificationsBell />
+      </span>
       <Link
         href="/dashboard/configuracoes"
         prefetch={false}
         className="grid size-9 flex-shrink-0 place-items-center rounded-full bg-brand text-[13px] font-bold text-on-brand no-underline"
         aria-label="Configurações"
+        data-tour="/dashboard/configuracoes"
       >
         {initials}
       </Link>

@@ -20,6 +20,7 @@ import {
   EXAM_BOARDS,
   EXPLANATION_STYLES,
   goalLabel,
+  INTEREST_OPTIONS,
   LANGUAGE_EXAMS,
   LANGUAGE_LEVELS,
   LANGUAGE_SKILLS,
@@ -29,6 +30,7 @@ import {
   PURPOSES,
   SCHOOL_YEARS,
   SEMESTERS,
+  STUDY_METHODS,
   WEEKDAYS,
   type Personalization,
   type PurposeId,
@@ -39,8 +41,9 @@ const levels = [
   { value: "Intermediário", hint: "Já vi boa parte do conteúdo" },
   { value: "Avançado", hint: "Quero treinar no nível da prova" },
 ];
-const methods = ["Pomodoro", "Revisão espaçada", "Active Recall", "Blocos de estudo"];
-const STEPS = 5;
+type StepId = "purpose" | "details" | "routine" | "subjects" | "learning";
+const MAX_METHODS = 3;
+const EVIDENCE_LABEL: Record<string, string> = { alta: "Mais eficaz", moderada: "Eficaz", foco: "Ajuda no foco", baixa: "Use junto com questões" };
 
 function formatHours(minutes: number) {
   const h = Math.floor(minutes / 60);
@@ -109,10 +112,23 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
     Object.keys(initial?.subjects ?? {}).filter((name) => !SUBJECTS.some((item) => item.name === name) && !LANGUAGE_SKILLS.some((item) => item.name === name)),
   );
   const [newSubject, setNewSubject] = useState("");
-  const [method, setMethod] = useState(initial?.studyMethod ?? "Pomodoro");
+  const [methodsChosen, setMethodsChosen] = useState<string[]>(() => {
+    const saved = (initial?.studyMethod ?? "").split(",").map((item) => item.trim()).filter((item) => STUDY_METHODS.some((m) => m.value === item));
+    return saved.length ? saved : ["Questões e simulados", "Revisão espaçada"];
+  });
+  // Temas de quem estuda por conta própria: caixinhas + "Outros" com texto livre.
+  const savedInterests = (start?.interests ?? "").split(",").map((item) => item.trim()).filter(Boolean);
+  const [interestChips, setInterestChips] = useState<string[]>(savedInterests.filter((item) => (INTEREST_OPTIONS as readonly string[]).includes(item)));
+  const [otherInterest, setOtherInterest] = useState(savedInterests.filter((item) => !(INTEREST_OPTIONS as readonly string[]).includes(item)).join(", "));
+  const [otherOpen, setOtherOpen] = useState(Boolean(otherInterest));
   const [saving, setSaving] = useState(false);
-  const progress = ((step + 1) / STEPS) * 100;
-  const StepIcon = [Compass, BookOpen, Clock, Layers, Sparkles][step] ?? CalendarCheck;
+
+  // Quem estuda por conta própria escolhe os temas na etapa 2: não repete a etapa de matérias.
+  const steps: StepId[] = purpose === "conhecimento" ? ["purpose", "details", "routine", "learning"] : ["purpose", "details", "routine", "subjects", "learning"];
+  const stepId = steps[Math.min(step, steps.length - 1)];
+  const progress = ((step + 1) / steps.length) * 100;
+  const StepIcon = { purpose: Compass, details: BookOpen, routine: Clock, subjects: Layers, learning: Sparkles }[stepId] ?? CalendarCheck;
+  const interestList = [...interestChips, ...otherInterest.split(",").map((item) => item.trim()).filter(Boolean)].slice(0, 12);
 
   const set = <K extends keyof Personalization>(key: K, value: Personalization[K]) => setDetails((current) => ({ ...current, [key]: value }));
   const toggleIn = (key: "challenges" | "studyDays", value: string) => {
@@ -140,6 +156,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
       setSelectedSubjects(defaultSubjectsFor(next));
     }
     setPurpose(next);
+    setStep(0);
   }
 
   function addSubject() {
@@ -152,11 +169,12 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
 
   /** Validação mínima por etapa, sem travar quem não sabe responder tudo. */
   function canContinue() {
-    if (step === 0) return Boolean(purpose);
-    if (step === 1 && purpose === "idioma") return Boolean(details.language);
-    if (step === 1 && purpose === "conhecimento") return Boolean(details.interests?.trim());
-    if (step === 2) return studyDays.length > 0;
-    if (step === 3) return subjectPayload.length > 0;
+    if (stepId === "purpose") return Boolean(purpose);
+    if (stepId === "details" && purpose === "idioma") return Boolean(details.language);
+    if (stepId === "details" && purpose === "conhecimento") return interestList.length > 0;
+    if (stepId === "routine") return studyDays.length > 0;
+    if (stepId === "subjects") return subjectPayload.length > 0;
+    if (stepId === "learning") return methodsChosen.length > 0;
     return true;
   }
 
@@ -167,7 +185,10 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
       ...details,
       purpose,
       studyDays,
+      ...(purpose === "conhecimento" ? { interests: interestList.join(", ").slice(0, 400) } : {}),
     } as Personalization;
+    // Por conta própria: os temas escolhidos viram as matérias do plano.
+    const subjects = purpose === "conhecimento" ? interestList.map((name) => ({ name: name.slice(0, 80), difficulty: 3 })) : subjectPayload;
     const levelValue = purpose === "idioma" && details.languageLevel ? `${details.languageLevel} (QECR)` : level;
     try {
       const response = await fetch("/api/onboarding", {
@@ -178,8 +199,8 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
           targetDate: targetDate || undefined,
           level: levelValue,
           dailyMinutes,
-          studyMethod: method,
-          subjects: subjectPayload,
+          studyMethod: methodsChosen.join(", "),
+          subjects,
           personalization,
           regeneratePlan: redo,
         }),
@@ -210,12 +231,12 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
           <StepIcon className="size-5" />
         </div>
         <div className="flex-1">
-          <p className="text-sm text-slate-500 dark:text-[#94A3B8]">Etapa {step + 1} de {STEPS}</p>
+          <p className="text-sm text-slate-500 dark:text-[#94A3B8]">Etapa {step + 1} de {steps.length}</p>
           <Progress value={progress} className="mt-2 h-2" />
         </div>
       </div>
 
-      {step === 0 ? (
+      {stepId === "purpose" ? (
         <div className="space-y-3">
           <Label>Por que você está estudando?</Label>
           <p className={hintText}>Isso muda o estilo das questões, o tom das explicações e o seu plano.</p>
@@ -236,7 +257,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
         </div>
       ) : null}
 
-      {step === 1 ? (
+      {stepId === "details" ? (
         <div className="space-y-5">
           {purpose === "escola" ? (
             <div className="space-y-2">
@@ -319,8 +340,27 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
           {purpose === "conhecimento" ? (
             <>
               <div className="space-y-2">
-                <Label>O que você quer aprender?</Label>
-                <Input value={details.interests ?? ""} onChange={(event) => set("interests", event.target.value)} placeholder="Ex.: astronomia, história da arte, finanças pessoais" />
+                <Label>O que você quer aprender? (marque quantos quiser)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {INTEREST_OPTIONS.map((item) => (
+                    <Chip
+                      key={item}
+                      active={interestChips.includes(item)}
+                      onClick={() => setInterestChips((current) => (current.includes(item) ? current.filter((value) => value !== item) : [...current, item]))}
+                    >
+                      {item}
+                    </Chip>
+                  ))}
+                  <Chip active={otherOpen} onClick={() => setOtherOpen((value) => !value)}>Outros</Chip>
+                </div>
+                {otherOpen ? (
+                  <Input
+                    value={otherInterest}
+                    onChange={(event) => setOtherInterest(event.target.value)}
+                    placeholder="Escreva o tema (separe por vírgula se forem vários)"
+                    autoFocus
+                  />
+                ) : null}
               </div>
               <div>
                 <Label>Quanto você já sabe?</Label>
@@ -355,7 +395,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
         </div>
       ) : null}
 
-      {step === 2 ? (
+      {stepId === "routine" ? (
         <div className="space-y-6">
           {purpose === "idioma" ? (
             <div>
@@ -408,7 +448,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
         </div>
       ) : null}
 
-      {step === 3 ? (
+      {stepId === "subjects" ? (
         <div className="space-y-4">
           <div>
             <Label>{purpose === "idioma" ? "Quais habilidades você quer treinar?" : "Quais matérias entram no seu estudo?"}</Label>
@@ -436,7 +476,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
         </div>
       ) : null}
 
-      {step === 4 ? (
+      {stepId === "learning" ? (
         <div className="space-y-6">
           <div className="space-y-2">
             <Label>O que mais atrapalha seu estudo? (marque quantas quiser)</Label>
@@ -465,12 +505,39 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
               ))}
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Método de estudo</Label>
-            <div className="flex flex-wrap gap-2">
-              {methods.map((item) => (
-                <Chip key={item} active={method === item} onClick={() => setMethod(item)}>{item}</Chip>
-              ))}
+          <div>
+            <Label>Métodos de estudo (escolha até {MAX_METHODS})</Label>
+            <p className={hintText}>Segundo as pesquisas, testar o que você sabe e revisar com intervalos são o que mais fixa o conteúdo.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {STUDY_METHODS.map((item) => {
+                const active = methodsChosen.includes(item.value);
+                return (
+                  <button
+                    key={item.value}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() =>
+                      setMethodsChosen((current) =>
+                        active ? current.filter((value) => value !== item.value) : current.length >= MAX_METHODS ? current : [...current, item.value],
+                      )
+                    }
+                    className={cn("rounded-lg border p-4 text-left", active && selectedCard)}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-medium">{item.value}</p>
+                      <span
+                        className={cn(
+                          "whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium",
+                          item.evidence === "alta" ? "bg-[#DCFCE7] text-[#166534] dark:bg-[#0F2A1B] dark:text-[#86EFAC]" : "bg-slate-100 text-slate-600 dark:bg-[#131D35] dark:text-[#94A3B8]",
+                        )}
+                      >
+                        {EVIDENCE_LABEL[item.evidence]}
+                      </span>
+                    </div>
+                    <p className={hintText}>{item.hint}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -483,9 +550,9 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
         <Button
           className="bg-[#1B4FD8] text-white hover:bg-[#0F2B8A]"
           disabled={saving || !canContinue()}
-          onClick={step === STEPS - 1 ? finish : () => setStep((value) => value + 1)}
+          onClick={step === steps.length - 1 ? finish : () => setStep((value) => value + 1)}
         >
-          {step === STEPS - 1 ? (saving ? "Montando seu plano…" : redo ? "Salvar e refazer meu plano" : "Criar meu plano") : "Continuar"}
+          {step === steps.length - 1 ? (saving ? "Montando seu plano…" : redo ? "Salvar e refazer meu plano" : "Criar meu plano") : "Continuar"}
         </Button>
       </div>
     </div>

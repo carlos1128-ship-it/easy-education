@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { MobileBottomNav, Sidebar } from "@/components/layout/sidebar";
+import { ProductTour } from "@/components/onboarding/product-tour";
 import { RealtimeRefresh } from "@/components/realtime/realtime-refresh";
 import { StudyTimer } from "@/components/study-plan/study-timer";
 import { ensureProfileForUser } from "@/lib/profile";
@@ -23,6 +24,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </div>
       <MobileBottomNav />
       <StudyTimer />
+      {/* Primeira vez no app: tutorial guiado abre sozinho no Início. */}
+      <ProductTour autoStart={profile.onboardingDone && !profile.tourCompletedAt} />
     </div>
   );
 }

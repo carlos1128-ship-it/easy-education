@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Shield, Sparkles, UserRound } from "lucide-react";
+import { TourReplayButton } from "@/components/onboarding/tour-replay-button";
 import { goalLabel, parsePersonalization, PURPOSES } from "@/lib/learner-profile";
 import { ProfileSettingsForm } from "@/components/settings/profile-settings-form";
 import { getPrisma } from "@/lib/prisma";
@@ -55,6 +56,9 @@ export default async function ConfiguraçõesPage() {
             >
               {personalization ? "Atualizar personalização" : "Personalizar meu estudo"}
             </Link>
+            <div>
+              <TourReplayButton />
+            </div>
           </section>
           <section className="rounded-2xl border border-border bg-surface p-5 shadow-card">
             <div className="mb-3 flex items-center gap-3">

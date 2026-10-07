@@ -80,6 +80,32 @@ export const PRACTICE_PREFERENCES = [
   { value: "equilibrado", label: "Um pouco de tudo" },
 ] as const;
 
+/** Temas para quem estuda por conta própria (caixinhas; "Outros" abre um campo livre). */
+export const INTEREST_OPTIONS = [
+  "Artes", "Música", "Fotografia", "Design", "Literatura", "Escrita criativa", "História", "Filosofia", "Psicologia",
+  "Sociologia", "Política e atualidades", "Geografia", "Astronomia", "Biologia", "Química", "Física", "Matemática",
+  "Programação", "Tecnologia e IA", "Finanças pessoais", "Economia", "Empreendedorismo", "Marketing", "Saúde e nutrição",
+  "Direito do dia a dia", "Idiomas", "Culinária", "Meio ambiente",
+] as const;
+
+/**
+ * Métodos de estudo. A eficácia segue a revisão de Dunlosky et al. (2013), "Improving Students' Learning
+ * With Effective Learning Techniques": testar-se e espaçar a revisão têm a maior eficácia; intercalar,
+ * explicar com as próprias palavras e perguntar "por quê?" são moderados; resumir, grifar e reler, baixos.
+ * Pomodoro e blocos organizam o tempo e o foco (não são técnicas de memorização).
+ */
+export const STUDY_METHODS = [
+  { value: "Questões e simulados", hint: "Testar o que sabe é o que mais fixa o conteúdo", evidence: "alta" },
+  { value: "Revisão espaçada", hint: "Revisar em intervalos, pouco antes de esquecer", evidence: "alta" },
+  { value: "Active Recall", hint: "Lembrar sem olhar a resposta antes de conferir", evidence: "alta" },
+  { value: "Prática intercalada", hint: "Misturar assuntos e tipos de questão na mesma sessão", evidence: "moderada" },
+  { value: "Técnica Feynman", hint: "Explicar com suas palavras, como se ensinasse alguém", evidence: "moderada" },
+  { value: "Perguntar por quê", hint: "Para cada fato, buscar o motivo e a ligação com o que já sabe", evidence: "moderada" },
+  { value: "Pomodoro", hint: "25 min de foco e 5 de pausa; ajuda quem perde o foco", evidence: "foco" },
+  { value: "Blocos de estudo", hint: "Horários fixos na agenda para cada matéria", evidence: "foco" },
+  { value: "Resumos e mapas mentais", hint: "Organizam ideias; funcionam melhor junto com questões", evidence: "baixa" },
+] as const;
+
 /** Habilidades usadas no lugar das matérias quando o objetivo é idioma. */
 export const LANGUAGE_SKILLS = [
   { name: "Leitura (Reading)", color: "#0EA5E9" },
@@ -103,7 +129,7 @@ export const personalizationSchema = z.object({
   language: short(30),
   languageLevel: short(4),
   destination: short(60),
-  interests: short(200),
+  interests: short(400),
   depth: z.enum(["introdutorio", "intermediario", "aprofundado"]).optional(),
   targetScore: short(60),
   studyDays: z.array(z.enum(WEEKDAYS.map((day) => day.value) as [string, ...string[]])).max(7).optional(),
@@ -176,6 +202,7 @@ export function examStyleFromPersonalization(p: Personalization) {
 
 type ProfileLike = {
   studyGoal?: string | null;
+  studyMethod?: string | null;
   level?: string | null;
   targetDate?: Date | null;
   dailyMinutes?: number | null;
@@ -210,6 +237,7 @@ export function buildLearnerContext(profile: ProfileLike | null | undefined) {
     if (practice) lines.push(`- Aprende melhor: ${practice.toLowerCase()}.`);
   }
   if (profile.level) lines.push(`- Nível que declarou: ${profile.level}.`);
+  if (profile.studyMethod) lines.push(`- Métodos de estudo que escolheu: ${profile.studyMethod}.`);
   if (profile.targetDate) {
     const days = Math.ceil((profile.targetDate.getTime() - Date.now()) / 86_400_000);
     if (days > 0) lines.push(`- Prova em ${days} dias.`);

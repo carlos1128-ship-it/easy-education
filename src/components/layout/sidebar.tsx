@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut, Menu, MoreVertical } from "lucide-react";
+import { CircleHelp, LogOut, Menu, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/brand/logo";
+import { startProductTour } from "@/components/onboarding/product-tour";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { navItems } from "@/lib/app-data";
@@ -57,6 +58,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
         prefetch={false}
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
+        data-tour={item.href}
         className={navLinkClass(active)}
       >
         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
@@ -113,6 +115,18 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
       ) : null}
       <nav aria-label="Conta" className="flex flex-col gap-0.5 border-t border-border pt-3">
         {footerItems.map(renderItem)}
+        <button
+          type="button"
+          className={cn(navLinkClass(false), "w-full text-left")}
+          onClick={() => {
+            onNavigate?.();
+            // Espera o menu do celular fechar para o tutorial achar os itens na tela.
+            window.setTimeout(startProductTour, onNavigate ? 350 : 0);
+          }}
+        >
+          <CircleHelp size={20} strokeWidth={1.75} aria-hidden="true" />
+          <span>Tutorial do app</span>
+        </button>
         <button type="button" className={cn(navLinkClass(false), "w-full text-left")} onClick={handleLogout}>
           <LogOut size={20} strokeWidth={1.75} aria-hidden="true" />
           <span>Sair</span>
@@ -167,6 +181,7 @@ export function MobileBottomNav() {
               href={item.href}
               prefetch={false}
               aria-current={active ? "page" : undefined}
+              data-tour={item.href}
               className={cn(
                 "flex min-h-[52px] flex-col items-center justify-center gap-[3px] whitespace-nowrap rounded-lg text-xs no-underline",
                 active ? "font-medium text-brand-strong" : "text-ink-muted",
