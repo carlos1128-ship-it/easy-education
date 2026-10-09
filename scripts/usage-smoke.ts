@@ -7,7 +7,7 @@
 import { consumeFeature, getUsageSnapshot, PlanLimitError } from "@/lib/usage";
 import { getPrisma } from "@/lib/prisma";
 
-const user = { id: `smoke-${Date.now()}`, email: null };
+const user = { id: `smoke-${Date.now()}`, email: undefined };
 const prisma = getPrisma();
 
 function assert(condition: unknown, message: string) {
