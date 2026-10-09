@@ -21,14 +21,14 @@ describe("planos e limites (valores combinados com o produto)", () => {
     expect(PLANS.free.priceCents).toBe(0);
   });
 
-  it("chat: 3, 12 e 30 mensagens por dia", () => {
-    expect(allowanceFor("free", "chat_message")).toEqual({ kind: "limit", max: 3, window: "day" });
+  it("chat: bloqueado no Gratuito, 12 e 30 mensagens por dia", () => {
+    expect(allowanceFor("free", "chat_message").kind).toBe("locked");
     expect(allowanceFor("basic", "chat_message")).toEqual({ kind: "limit", max: 12, window: "day" });
     expect(allowanceFor("full", "chat_message")).toEqual({ kind: "limit", max: 30, window: "day" });
   });
 
-  it("redação: 1 por semana, 3 por semana e 1 por dia", () => {
-    expect(allowanceFor("free", "essay_correction")).toEqual({ kind: "limit", max: 1, window: "week" });
+  it("redação: bloqueada no Gratuito, 3 por semana e 1 por dia", () => {
+    expect(allowanceFor("free", "essay_correction").kind).toBe("locked");
     expect(allowanceFor("basic", "essay_correction")).toEqual({ kind: "limit", max: 3, window: "week" });
     expect(allowanceFor("full", "essay_correction")).toEqual({ kind: "limit", max: 1, window: "day" });
   });
@@ -39,7 +39,7 @@ describe("planos e limites (valores combinados com o produto)", () => {
   });
 
   it("upload: quantidade por dia e tamanho por plano", () => {
-    expect(allowanceFor("free", "file_upload")).toEqual({ kind: "limit", max: 1, window: "day" });
+    expect(allowanceFor("free", "file_upload").kind).toBe("locked");
     expect(allowanceFor("basic", "file_upload")).toEqual({ kind: "limit", max: 2, window: "day" });
     expect(allowanceFor("full", "file_upload")).toEqual({ kind: "limit", max: 5, window: "day" });
     expect([uploadLimitMB("free"), uploadLimitMB("basic"), uploadLimitMB("full")]).toEqual([5, 15, 50]);
@@ -197,5 +197,21 @@ describe("interface sem números de limite", () => {
       fileTooLargeInfo("free").message,
     ].filter((text): text is string => typeof text === "string");
     for (const text of texts) expect(text, text).not.toMatch(/\d/);
+  });
+});
+
+describe("limites combinados em 09/10/2026 (tarde)", () => {
+  it("Gratuito só tem o que não gasta IA", () => {
+    for (const feature of FEATURE_KEYS) expect(allowanceFor("free", feature).kind, feature).toBe("locked");
+  });
+  it("simulado por IA contado em questões: 45 por dia no Básico e 90 no Completo", () => {
+    expect(allowanceFor("basic", "ai_simulado")).toEqual({ kind: "limit", max: 45, window: "day" });
+    expect(allowanceFor("full", "ai_simulado")).toEqual({ kind: "limit", max: 90, window: "day" });
+  });
+  it("quizzes e flashcards mais liberados", () => {
+    expect(allowanceFor("basic", "ai_quiz")).toEqual({ kind: "limit", max: 10, window: "day" });
+    expect(allowanceFor("full", "ai_quiz")).toEqual({ kind: "limit", max: 20, window: "day" });
+    expect(allowanceFor("basic", "ai_flashcards")).toEqual({ kind: "limit", max: 25, window: "day" });
+    expect(allowanceFor("full", "ai_flashcards")).toEqual({ kind: "limit", max: 50, window: "day" });
   });
 });

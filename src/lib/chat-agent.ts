@@ -172,7 +172,8 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
             action: { type: "simulado", href: "/dashboard/assinatura", label: "Ver os planos" },
           };
     }
-    const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject, topic: text(args.assunto), questionCount: clampInt(args.quantidade, 5, 20, 20) }), { tier });
+    const questionCount = clampInt(args.quantidade, 5, 45, 20);
+    const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject, topic: text(args.assunto), questionCount }), { tier, amount: questionCount });
     revalidateAll();
     return {
       reply: `Pronto. Criei o simulado "${quiz.title}" com ${quiz.questionCount} questões. Vou abrir para você começar.`,

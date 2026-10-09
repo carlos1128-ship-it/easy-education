@@ -63,6 +63,8 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
   const score = questions.filter((item) => answers[item.id] === item.correctAnswer).length;
   const canGoNext = pageQuestions.every((item) => answers[item.id]);
   const isLastPage = index + pageSize >= questions.length;
+  const pageCount = Math.max(1, Math.ceil(questions.length / pageSize));
+  const page = Math.floor(index / pageSize) + 1;
 
   usePreloadOwls(isLastPage ? ["comemorando", "apaixonada", "determinada"] : ["piscando", "feliz", "determinada"]);
 
@@ -75,37 +77,53 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
 
   const touch = () => setActivity((value) => value + 1);
 
-  async function confirmAnswer(question: QuizRunnerQuestion) {
+  /** Salva uma resposta. Já confirmada antes (409, ex.: outra aba) também conta como salva. */
+  async function confirmAnswer(question: QuizRunnerQuestion): Promise<boolean | null> {
     const answer = drafts[question.id];
     if (!answer || answers[question.id]) return null;
-    setSaving(true);
-    const response = await fetch(`/api/quiz/${quizId}/answer`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questionId: question.id, answer }),
-    });
-    setSaving(false);
-    if (!response.ok) {
-      toast.error(response.status === 409 ? "Essa resposta já foi confirmada." : "Não foi possível salvar a resposta.");
+    try {
+      const response = await fetch(`/api/quiz/${quizId}/answer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionId: question.id, answer }),
+      });
+      if (!response.ok && response.status !== 409) {
+        toast.error("Não foi possível salvar a resposta. Tente de novo.");
+        return null;
+      }
+      setAnswers((current) => ({ ...current, [question.id]: answer }));
+      return answer === question.correctAnswer;
+    } catch {
+      toast.error("Sem conexão com o servidor. Verifique a internet e tente de novo.");
       return null;
     }
-    setAnswers((current) => ({ ...current, [question.id]: answer }));
-    return answer === question.correctAnswer;
   }
+
+  /** Questões desta página ainda sem alternativa marcada. */
+  const missingOnPage = pageQuestions.filter((item) => !answers[item.id] && !drafts[item.id]);
 
   async function confirmPage() {
     primeSounds();
     touch();
-    const results: boolean[] = [];
-    for (const item of pageQuestions) {
-      if (!answers[item.id] && drafts[item.id]) {
-        const result = await confirmAnswer(item);
-        if (result !== null) results.push(result);
-      }
+    // Simulado: só confirma a página com todas marcadas, e mostra qual falta (antes ficava travado sem aviso).
+    if (missingOnPage.length) {
+      const numbers = missingOnPage.map((item) => questions.indexOf(item) + 1);
+      toast.message(numbers.length === 1 ? `Marque a questão ${numbers[0]} antes de confirmar.` : `Marque as questões ${numbers.join(", ")} antes de confirmar.`);
+      document.getElementById(`questao-${missingOnPage[0].id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
     }
+    setSaving(true);
+    const results = (await Promise.all(pageQuestions.map((item) => confirmAnswer(item)))).filter((result): result is boolean => result !== null);
+    setSaving(false);
     if (!results.length) return;
     const correct = results.filter(Boolean).length;
     void playSound(correct >= results.length - correct ? "acerto" : "erro");
+  }
+
+  function goToPage(start: number) {
+    touch();
+    setIndex(Math.max(0, Math.min(start, (pageCount - 1) * pageSize)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function goNext() {
@@ -115,6 +133,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
       void playSound("concluido");
     }
     setIndex((value) => value + pageSize);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (!pageQuestions.length && !finished) {
@@ -201,6 +220,40 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
           </div>
           <SoundToggle />
         </div>
+        {mode === "simulado" && questions.length > pageSize ? (
+          <nav aria-label="Ir para a questão" className="hidden w-full rounded-2xl border border-border bg-surface p-3 lg:block">
+            <p className="m-0 mb-2 text-[13px] font-semibold text-ink">
+              Página {page} de {pageCount}
+            </p>
+            <div className="grid grid-cols-5 gap-1.5">
+              {questions.map((item, position) => {
+                const confirmed = answers[item.id];
+                const onPage = position >= index && position < index + pageSize;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => goToPage(Math.floor(position / pageSize) * pageSize)}
+                    aria-label={`Questão ${position + 1}${confirmed ? (confirmed === item.correctAnswer ? ", certa" : ", errada") : drafts[item.id] ? ", marcada" : ""}`}
+                    className={cn(
+                      "grid h-8 place-items-center rounded-md border text-[12px] font-semibold transition-colors",
+                      onPage && "ring-2 ring-brand/40",
+                      confirmed
+                        ? confirmed === item.correctAnswer
+                          ? "border-success bg-success-tint text-success"
+                          : "border-danger bg-danger-tint text-danger"
+                        : drafts[item.id]
+                          ? "border-brand bg-brand-tint text-brand-strong"
+                          : "border-border text-ink-muted hover:border-border-strong",
+                    )}
+                  >
+                    {position + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+        ) : null}
       </aside>
 
       <div className="min-w-0">
@@ -210,12 +263,18 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
           const confirmed = answers[question.id];
           const selected = confirmed ?? drafts[question.id];
           return (
-            <section key={question.id} className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">
-              <h2 className="text-[17px] font-medium leading-[26px] text-ink">
-                {index + questionIndex + 1}. {question.question}
-              </h2>
+            <section
+              key={question.id}
+              id={`questao-${question.id}`}
+              className={cn(
+                "scroll-mt-24 rounded-2xl border bg-surface p-5 shadow-card lg:p-7",
+                !confirmed && !drafts[question.id] && hasDraft ? "border-warning" : "border-border",
+              )}
+            >
+              <p className="m-0 mb-2 text-[13px] font-semibold text-brand-strong">Questão {index + questionIndex + 1}</p>
+              <h2 className="m-0 whitespace-pre-line text-[17px] font-medium leading-[26px] text-ink">{question.question}</h2>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                {options.map((option) => {
+                {options.map((option, optionIndex) => {
                   const letter = option.slice(0, 1);
                   const text = option.replace(/^[A-Ea-e]\s*[).:-]\s*/, "");
                   const state: QuizOptionState = confirmed
@@ -229,7 +288,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
                       : "default";
                   return (
                     <QuizOption
-                      key={option}
+                      key={`${optionIndex}-${option}`}
                       letter={letter}
                       state={state}
                       disabled={Boolean(confirmed) || saving}
@@ -263,15 +322,12 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
         })}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:justify-between">
+      <div className="sticky bottom-0 z-10 -mx-1 mt-6 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-surface/90 p-3 shadow-pop backdrop-blur sm:flex sm:justify-between">
         <Button
           variant="outline"
           className="order-2 sm:order-none"
           disabled={index === 0 || saving}
-          onClick={() => {
-            touch();
-            setIndex((value) => Math.max(0, value - pageSize));
-          }}
+          onClick={() => goToPage(index - pageSize)}
         >
           Anterior
         </Button>

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CheckCircle2, X } from "lucide-react";
+import { CheckCircle2, ListChecks, X } from "lucide-react";
 import { toast } from "sonner";
+import { StudyRoadmap } from "@/components/study-plan/study-roadmap";
 import { useActiveStudy } from "@/lib/active-study";
 
 const MAX_MINUTES = 600;
@@ -26,6 +27,7 @@ export function StudyTimer() {
   const { active, setActive } = useActiveStudy();
   const [now, setNow] = useState(() => Date.now());
   const [saving, setSaving] = useState(false);
+  const [showRoadmap, setShowRoadmap] = useState(false);
 
   useEffect(() => {
     if (!active) return;
@@ -56,15 +58,24 @@ export function StudyTimer() {
     router.refresh();
   }
 
+  function toggleStep(step: number) {
+    if (!active) return;
+    const done = new Set(active.done ?? []);
+    if (done.has(step)) done.delete(step);
+    else done.add(step);
+    setActive({ ...active, done: [...done] });
+  }
+
   function cancel() {
     if (window.confirm("Descartar este estudo? O tempo não será registrado.")) setActive(null);
   }
 
   return (
+    <div className="fixed right-3 top-[60px] z-40 flex flex-col items-end gap-2 lg:right-6 lg:top-[76px]">
     <div
       role="status"
       aria-label={`Estudando ${active.subject}`}
-      className="fixed right-3 top-[60px] z-40 flex items-center gap-2 rounded-full border border-border bg-surface py-1.5 pl-3 pr-1.5 shadow-pop lg:right-6 lg:top-[76px]"
+      className="flex items-center gap-2 rounded-full border border-border bg-surface py-1.5 pl-3 pr-1.5 shadow-pop"
     >
       <span className="relative flex size-2.5 flex-shrink-0">
         <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand opacity-60 motion-reduce:animate-none" />
@@ -80,6 +91,15 @@ export function StudyTimer() {
         </span>
       )}
       <span className="font-mono text-[13px] font-medium tabular-nums text-brand-strong">{formatClock(elapsed)}</span>
+      <button
+        type="button"
+        onClick={() => setShowRoadmap((value) => !value)}
+        aria-expanded={showRoadmap}
+        className="inline-flex h-8 items-center gap-1 rounded-full border border-border px-2.5 text-xs font-medium text-ink hover:bg-surface-muted"
+      >
+        <ListChecks className="size-3.5" aria-hidden="true" />
+        Roteiro
+      </button>
       <button
         type="button"
         onClick={complete}
@@ -98,6 +118,8 @@ export function StudyTimer() {
       >
         <X className="size-4" aria-hidden="true" />
       </button>
+    </div>
+    {showRoadmap ? <StudyRoadmap active={active} onToggle={toggleStep} /> : null}
     </div>
   );
 }

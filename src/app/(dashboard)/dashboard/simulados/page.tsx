@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ClipboardCheck, Clock, Landmark, Sparkles, Target } from "lucide-react";
-import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
+import { LockedNotice } from "@/components/plan/usage-hint";
 import { SimuladoCreateForm } from "@/components/quiz/simulado-create-form";
 import { ConcursoCard } from "@/components/simulados/concurso-card";
 import { EnemPicker } from "@/components/simulados/enem-picker";
@@ -18,7 +18,8 @@ type HistoryItem = { id: string; href: string; title: string; detail: string; da
 
 export default async function SimuladosPage() {
   const { user, access } = await getStudentOrRedirect();
-  const aiLocked = allowanceFor(access.tier, "ai_simulado").kind === "locked";
+  const simuladoAllowance = allowanceFor(access.tier, "ai_simulado");
+  const aiLocked = simuladoAllowance.kind === "locked";
   const prisma = getPrisma();
   const [profile, simulados, sessions, files] = await Promise.all([
     prisma.profile.findUnique({ where: { userId: user.id }, select: { personalization: true } }),
@@ -115,7 +116,6 @@ export default async function SimuladosPage() {
           ) : (
             <>
               <ConcursoCard role={concurso.role} board={concurso.board} todayQuizId={todayConcurso?.id ?? null} />
-              <UsageHint feature="ai_simulado" />
             </>
           )}
         </section>
@@ -136,8 +136,7 @@ export default async function SimuladosPage() {
           />
         ) : (
           <div className="space-y-3">
-            {concurso ? null : <UsageHint feature="ai_simulado" />}
-            <SimuladoCreateForm files={files} />
+            <SimuladoCreateForm files={files} maxQuestions={simuladoAllowance.kind === "limit" ? simuladoAllowance.max : 20} />
           </div>
         )}
       </section>

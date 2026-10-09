@@ -17,10 +17,18 @@ export function parseStudyPlan(value: unknown): GeneratedStudyPlan | null {
   return plan;
 }
 
-export function getTodayPlanBlocks(plan: GeneratedStudyPlan | null): StudyPlanBlock[] {
+const weekdayFormat = new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: "America/Sao_Paulo" });
+
+/** Dia da semana de hoje no horário de Brasília ("monday"...). O servidor roda em UTC. */
+export function todayWeekday(now: Date = new Date()) {
+  return weekdayFormat.format(now).toLowerCase();
+}
+
+/** Blocos de hoje. Dia sem bloco no plano é dia de descanso (não puxa os blocos de outro dia). */
+export function getTodayPlanBlocks(plan: GeneratedStudyPlan | null, now: Date = new Date()): StudyPlanBlock[] {
   if (!plan) return [];
-  const today = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date()).toLowerCase();
-  return plan.days.find((day) => day.dayOfWeek.toLowerCase() === today)?.blocks ?? plan.days[0]?.blocks ?? [];
+  const today = todayWeekday(now);
+  return plan.days.find((day) => day.dayOfWeek.toLowerCase() === today)?.blocks ?? [];
 }
 
 export function getDayLabel(dayOfWeek: string) {

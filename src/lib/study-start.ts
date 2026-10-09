@@ -63,7 +63,7 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
     // Gerar com IA gasta o limite do plano (só quando realmente gera; reaproveitar o de hoje é grátis).
     try {
-      const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject: block.subject, topic, title, questionCount: 10 }));
+      const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject: block.subject, topic, title, questionCount: 10 }), { amount: 10 });
       revalidateStudyPages();
       return { href: `/dashboard/simulados/${quiz.id}`, activity: "simulado", reused: false };
     } catch (error) {

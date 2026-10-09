@@ -67,8 +67,8 @@ export function comparisonRows(): ComparisonRow[] {
 
 /** O que mais pesa na escolha, para o cartão de cada plano (sem números de limite). */
 const HIGHLIGHTS: Record<PlanTier, string[]> = {
-  free: ["Chat com IA para tirar dúvidas", "Correção de redação", "Envio de PDF, texto e foto", "Plano de estudos"],
-  basic: ["Mais uso do chat com IA", "Quizzes, flashcards e simulados com IA", "Redação por foto", "Estudar com vídeos do YouTube"],
+  free: ["Simulados com provas anteriores do ENEM", "Painel de desempenho", "Revisão das questões que você errou", "Seu primeiro plano de estudos"],
+  basic: ["Chat com IA para tirar dúvidas", "Correção de redação, também por foto", "Quizzes, flashcards e simulados com IA", "Estudar com seus arquivos e vídeos do YouTube"],
   full: ["O maior uso de IA do app", "Simulado com IA todo dia", "Mais vídeos e arquivos maiores", "Redação e plano com a IA mais avançada"],
 };
 

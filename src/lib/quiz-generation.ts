@@ -23,7 +23,7 @@ export async function createQuizForUser(input: QuizGenerationInput) {
   // Anotação de vídeo é mais longa e tem as marcas de tempo: manda mais texto.
   const topic = input.topic ?? file?.textContent?.slice(0, video ? 14000 : 5000);
   const promptScope = describeSubjectForPrompt(input.subject, topic);
-  const learner = await getLearnerPromptProfile(input.userId);
+  const learner = await getLearnerPromptProfile(input.userId, input.subject);
   const style = input.model ?? learner.style;
   const buildPrompt = (count: number, part: number, parts: number, references: string) => `Gere exatamente ${count} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${input.difficulty} no estilo de ${style}.
 Regras obrigatorias:

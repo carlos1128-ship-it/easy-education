@@ -16,7 +16,7 @@ type Plan = "free" | "basic" | "full";
  * Escolha entre os três planos logo depois do cadastro. Gratuito segue para o app; Básico e Completo vão para
  * o pagamento seguro do Stripe. Os números vêm de src/lib/plans.ts.
  */
-export function PlanPicker({ initialPlan, freeHref }: { initialPlan: Plan; freeHref: string }) {
+export function PlanPicker({ initialPlan, freeHref, trial = false }: { initialPlan: Plan; freeHref: string; trial?: boolean }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Plan>(initialPlan);
   const [loading, setLoading] = useState(false);
@@ -117,11 +117,23 @@ export function PlanPicker({ initialPlan, freeHref }: { initialPlan: Plan; freeH
         disabled={loading}
         className="h-12 w-full rounded-xl bg-brand text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-strong disabled:opacity-60 dark:bg-[#2563eb] dark:text-white dark:hover:bg-[#1d4ed8]"
       >
-        {selected === "free" ? (loading ? "Abrindo..." : "Começar no plano Gratuito") : loading ? "Abrindo pagamento..." : `Assinar o ${PLANS[selected].name} por ${p[selected].price}/mês`}
+        {selected === "free"
+          ? loading
+            ? "Abrindo..."
+            : "Começar no plano Gratuito"
+          : loading
+            ? "Abrindo pagamento..."
+            : trial
+              ? `Testar o ${PLANS[selected].name} por 7 dias grátis`
+              : `Assinar o ${PLANS[selected].name} por ${p[selected].price}/mês`}
       </button>
       <p className="m-0 flex items-center justify-center gap-2 text-center text-sm text-ink-muted">
         <ShieldCheck size={16} className="flex-none" aria-hidden="true" />
-        {selected === "free" ? "Você pode assinar um plano pago quando quiser, em Assinatura." : <>Pagamento seguro pelo Stripe. {p.guarantee}</>}
+        {selected === "free"
+          ? "Você pode testar um plano pago quando quiser, em Assinatura."
+          : trial
+            ? `Depois do teste, ${p[selected].price}/mês no cartão. Cancele antes do fim e não paga nada. Pagamento seguro pelo Stripe.`
+            : <>Pagamento seguro pelo Stripe. {p.guarantee}</>}
       </p>
     </div>
   );

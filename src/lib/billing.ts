@@ -10,6 +10,15 @@ const ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
 /** Dias da garantia (direito de arrependimento) contados a partir do primeiro pagamento. */
 export const GUARANTEE_DAYS = 7;
 
+/** Teste grátis dos planos pagos, uma vez por aluno. O cartão é pedido no início e a 1ª cobrança vem no fim. */
+export const TRIAL_DAYS = 7;
+
+/** O aluno ainda pode usar o teste grátis? Só quem nunca teve assinatura (nem teste) no Stripe. */
+export async function isTrialEligible(userId: string) {
+  const subscription = await getSubscriptionForUser(userId);
+  return !subscription?.stripeSubscriptionId && !subscription?.firstPaidAt;
+}
+
 export class BillingError extends Error {
   constructor(
     message: string,
@@ -164,6 +173,7 @@ export async function createCheckoutSession(
   origin: string,
 ) {
   const stripe = getStripe();
+  const trial = await isTrialEligible(user.id);
   const customer = await getOrCreateStripeCustomer(user);
   const price = await getPriceForPlan(plan);
   // Trava de segurança: o app nunca cobra um valor diferente do que mostra (plans.ts).
@@ -180,7 +190,12 @@ export async function createCheckoutSession(
     allow_promotion_codes: true,
     billing_address_collection: "auto",
     customer_update: { name: "auto", address: "auto" },
-    subscription_data: { metadata: { userId: user.id, plan } },
+    payment_method_collection: "always",
+    subscription_data: {
+      metadata: { userId: user.id, plan },
+      // 7 dias grátis na primeira assinatura; sem cartão válido no fim do teste, a assinatura é cancelada.
+      ...(trial ? { trial_period_days: TRIAL_DAYS, trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}),
+    },
     metadata: { userId: user.id, plan },
     success_url: `${origin}/assinar/sucesso?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/assinar?plano=${plan === "full" ? "completo" : "basico"}&cancelado=1`,

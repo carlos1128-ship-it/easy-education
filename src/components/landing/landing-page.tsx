@@ -810,7 +810,6 @@ function PricingCard({ tier }: { tier: "free" | "basic" | "full" }) {
         {planHighlights(tier).map((item) => (
           <PlanFeature key={item}>{item}</PlanFeature>
         ))}
-        {tier === "free" ? <PlanFeature>Simulados com provas anteriores do ENEM, para quem estuda para o ENEM</PlanFeature> : null}
       </div>
       <Link
         href={tier === "full" ? landingLinks.signUpFull : tier === "basic" ? landingLinks.signUpBasic : landingLinks.signUp}

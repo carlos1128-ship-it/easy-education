@@ -31,8 +31,19 @@ const checkSchema: Schema = {
   },
 };
 
+/** Questões por chamada de conferência: blocos pequenos resolvem melhor e rodam em paralelo (simulado de 90). */
+const VERIFY_BATCH = 15;
+
 /** Resolve às cegas e mantém só as questões em que a resposta da IA bate com o gabarito. */
 export async function verifyQuizQuestions(questions: GeneratedQuizQuestion[]): Promise<Verified<GeneratedQuizQuestion>> {
+  if (questions.length <= VERIFY_BATCH) return verifyQuizBatch(questions);
+  const batches: GeneratedQuizQuestion[][] = [];
+  for (let i = 0; i < questions.length; i += VERIFY_BATCH) batches.push(questions.slice(i, i + VERIFY_BATCH));
+  const results = await Promise.all(batches.map(verifyQuizBatch));
+  return { items: results.flatMap((result) => result.items), verified: results.every((result) => result.verified) };
+}
+
+async function verifyQuizBatch(questions: GeneratedQuizQuestion[]): Promise<Verified<GeneratedQuizQuestion>> {
   if (!questions.length) return { items: [], verified: true };
   const listing = questions
     .map((question, index) => `${index + 1}) ${question.question}\n${question.options.join("\n")}`)

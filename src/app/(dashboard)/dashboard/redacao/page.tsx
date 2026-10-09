@@ -1,13 +1,15 @@
 import { FileEdit } from "lucide-react";
 import { EssayCorrectionForm } from "@/components/essay/essay-correction-form";
 import { EssayResult } from "@/components/essay/essay-result";
-import { UsageHint } from "@/components/plan/usage-hint";
+import { LockedNotice } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getPrisma } from "@/lib/prisma";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { allowanceFor } from "@/lib/plans";
+import { getStudentOrRedirect } from "@/lib/server-user";
 
 export default async function RedaçãoPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  const locked = allowanceFor(access.tier, "essay_correction").kind === "locked";
   const essays = await getPrisma().essay.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
@@ -20,10 +22,17 @@ export default async function RedaçãoPage() {
       <div className="flex min-w-0 flex-col gap-2">
         <p className="m-0 text-sm font-medium text-brand-strong">Redação</p>
         <h1 className="m-0 text-3xl font-bold tracking-tight text-ink">Enviar para correção</h1>
-        <UsageHint feature="essay_correction" className="mb-1 self-start" />
-        <section className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">
-          <EssayCorrectionForm />
-        </section>
+        {locked ? (
+          <LockedNotice
+            feature="essay_correction"
+            title="Correção de redação faz parte dos planos pagos"
+            description="Digite ou fotografe sua redação e receba a nota de cada competência pela grade do Enem. Teste grátis por 7 dias."
+          />
+        ) : (
+          <section className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">
+            <EssayCorrectionForm />
+          </section>
+        )}
       </div>
 
       <aside className="space-y-4">

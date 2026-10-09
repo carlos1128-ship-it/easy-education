@@ -1,14 +1,27 @@
 import { CalendarCheck, Sparkles } from "lucide-react";
-import { UsageHint } from "@/components/plan/usage-hint";
+import { LockedNotice } from "@/components/plan/usage-hint";
+import { allowanceFor } from "@/lib/plans";
 import { StudyPlanGenerator } from "@/components/study-plan/study-plan-generator";
 import { StudySessionButton } from "@/components/study-plan/study-session-button";
 import { formatMinutes } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
-import { getDayLabel, parseStudyPlan } from "@/lib/study-plan";
+import { getStudentOrRedirect } from "@/lib/server-user";
+import { getDayLabel, parseStudyPlan, todayWeekday } from "@/lib/study-plan";
+import { cn } from "@/lib/utils";
+
+const UNLOCKS_ON: Record<string, string> = {
+  sunday: "no domingo",
+  monday: "na segunda",
+  tuesday: "na terça",
+  wednesday: "na quarta",
+  thursday: "na quinta",
+  friday: "na sexta",
+  saturday: "no sábado",
+};
 
 export default async function PlanoPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  const today = todayWeekday();
   const prisma = getPrisma();
   const [profile, latestPlan] = await Promise.all([
     prisma.profile.findUnique({ where: { userId: user.id } }),
@@ -56,22 +69,32 @@ export default async function PlanoPage() {
         </p>
       ) : null}
 
-      <div className="-mb-4">
-        <UsageHint feature="study_plan" />
-      </div>
-
+      {allowanceFor(access.tier, "study_plan").kind === "locked" ? (
+        <LockedNotice
+          feature="study_plan"
+          title="Refazer o plano com a IA é dos planos pagos"
+          description="Seu plano da semana continua aqui. Para a IA montar um plano novo sempre que sua rotina mudar, escolha um plano pago."
+        />
+      ) : (
       <StudyPlanGenerator
         goal={profile?.studyGoal ?? "Estudos gerais"}
         dailyMinutes={profile?.dailyMinutes ?? 60}
         method={profile?.studyMethod ?? "pomodoro"}
         targetDate={profile?.targetDate ? profile.targetDate.toISOString().slice(0, 10) : null}
       />
+      )}
 
       <section aria-label="Semana" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
-        {plan?.days.length ? plan.days.map((day) => (
-          <div key={day.dayOfWeek} className="flex min-h-[280px] flex-col gap-3 rounded-2xl bg-surface-muted p-3">
+        {plan?.days.length ? plan.days.map((day) => {
+          // A semana inteira aparece, mas só os blocos de hoje podem ser iniciados.
+          const isToday = day.dayOfWeek.toLowerCase() === today;
+          return (
+          <div key={day.dayOfWeek} className={cn("flex min-h-[280px] flex-col gap-3 rounded-2xl p-3", isToday ? "bg-brand-tint ring-2 ring-brand/30" : "bg-surface-muted")}>
             <div className="flex items-center justify-between gap-3 px-1 pt-1">
-              <p className="m-0 text-lg font-bold text-ink">{getDayLabel(day.dayOfWeek)}</p>
+              <p className="m-0 text-lg font-bold text-ink">
+                {getDayLabel(day.dayOfWeek)}
+                {isToday ? <span className="ml-2 rounded-full bg-brand px-2 py-0.5 align-middle text-[11px] font-bold text-on-brand">Hoje</span> : null}
+              </p>
               <span className="text-xs font-medium text-ink-muted">
                 {day.blocks.length} {day.blocks.length === 1 ? "bloco" : "blocos"}
               </span>
@@ -83,11 +106,18 @@ export default async function PlanoPage() {
                   <p className="m-0 text-ink-muted">{item.topic}</p>
                   <p className="m-0 text-xs font-medium text-brand-strong">{formatMinutes(item.durationMinutes)} · {item.method}</p>
                 </div>
-                <StudySessionButton subject={item.subject} durationMinutes={item.durationMinutes} method={item.method} notes={item.topic} type={item.type} />
+                {isToday ? (
+                  <StudySessionButton subject={item.subject} durationMinutes={item.durationMinutes} method={item.method} notes={item.topic} type={item.type} />
+                ) : (
+                  <span className="inline-flex min-h-10 items-center justify-center rounded-lg border border-dashed border-border-strong px-3 text-[13px] font-medium text-ink-muted">
+                    Libera {UNLOCKS_ON[day.dayOfWeek.toLowerCase()] ?? "no dia"}
+                  </span>
+                )}
               </div>
             ))}
           </div>
-        )) : (
+          );
+        }) : (
           <div className="rounded-2xl border border-dashed border-border-strong p-8 text-sm text-ink-muted sm:col-span-2 lg:col-span-4 2xl:col-span-7">
             Gere seu primeiro plano com as matérias reais que você quer estudar.
           </div>

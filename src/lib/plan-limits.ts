@@ -69,7 +69,7 @@ export function lockedInfo(tier: PlanTier, feature: FeatureKey): PlanLimitInfo {
   };
 }
 
-export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<AllowanceStatus, { state: "limit" }>, now: Date): PlanLimitInfo {
+export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<AllowanceStatus, { state: "limit" }>, now: Date, requested = 1): PlanLimitInfo {
   const meta = FEATURES[feature];
   const target = upgradeTargetFor(tier, feature);
   const offer = target ? `mais ${meta.plural}` : null;
@@ -84,7 +84,10 @@ export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<A
     upgradeTo: target,
     upgradeOffer: offer ?? undefined,
     message:
-      `Você usou todo o seu limite de ${meta.plural} ${period} no plano ${PLANS[tier].name}. ` +
+      // Ainda sobra um pouco, mas não o suficiente para o pedido (ex.: simulado grande demais para o que resta hoje).
+      (status.remaining > 0 && requested > status.remaining
+        ? `Você não tem ${meta.plural} suficientes ${period} para um pedido deste tamanho. Escolha um simulado menor ou espere: `
+        : `Você usou todo o seu limite de ${meta.plural} ${period} no plano ${PLANS[tier].name}. `) +
       `Ele volta ${describeReset(status.window, now)}.` +
       (target && offer ? ` No plano ${PLANS[target].name} você tem ${offer}.` : ""),
   };

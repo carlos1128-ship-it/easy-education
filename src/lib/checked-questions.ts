@@ -42,7 +42,8 @@ export async function produceQuestions(input: {
     (count) =>
       generateJSONList<GeneratedQuizQuestion>({
         total: count,
-        chunkSize: QUIZ_CHUNK_SIZE,
+        // Simulado grande: partes de 10 (metade dos pedidos à IA, cabe no limite de pedidos por minuto).
+        chunkSize: count > 30 ? 10 : QUIZ_CHUNK_SIZE,
         schema: quizQuestionsSchema,
         buildPrompt: (size, part, parts) => input.buildPrompt(size, part, parts, references?.prompt ?? ""),
         dedupeKey: questionDedupeKey,

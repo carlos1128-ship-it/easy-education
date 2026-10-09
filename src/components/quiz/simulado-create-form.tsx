@@ -6,14 +6,17 @@ import { ClipboardCheck } from "lucide-react";
 import { SubjectMultiSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { readApiJson } from "@/lib/client-response";
 import { useMountedRef } from "@/lib/use-mounted";
 
 type FileOption = { id: string; name: string; processed: boolean };
 
-export function SimuladoCreateForm({ files = [] }: { files?: FileOption[] }) {
+/** Tamanhos de simulado oferecidos; só aparecem os que cabem no plano. */
+const SIZES = [10, 20, 45, 90];
+
+export function SimuladoCreateForm({ files = [], maxQuestions = 20 }: { files?: FileOption[]; maxQuestions?: number }) {
+  const sizes = SIZES.filter((size) => size <= maxQuestions);
   const mounted = useMountedRef();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -94,7 +97,16 @@ export function SimuladoCreateForm({ files = [] }: { files?: FileOption[] }) {
       )}
       <div className="w-full lg:w-36">
         <label htmlFor="simulado-count" className="text-sm font-medium text-ink">Questões</label>
-        <Input id="simulado-count" name="questionCount" type="number" min={5} max={20} defaultValue={20} className="mt-1" />
+        <select
+          id="simulado-count"
+          name="questionCount"
+          defaultValue={String(sizes.includes(20) ? 20 : sizes[sizes.length - 1] ?? 10)}
+          className="mt-1 h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-ink"
+        >
+          {(sizes.length ? sizes : [10]).map((size) => (
+            <option key={size} value={size}>{size} questões</option>
+          ))}
+        </select>
       </div>
       <Button type="submit" disabled={loading} className="gap-2 rounded-lg bg-brand text-on-brand hover:bg-brand-strong">
         <ClipboardCheck className="size-4" />

@@ -70,6 +70,7 @@ export async function POST() {
         title: `${TITLE_PREFIX} · ${target.role}`.slice(0, 120),
         questionCount: CONCURSO_QUESTIONS,
       }),
+      { amount: CONCURSO_QUESTIONS },
     );
     revalidatePath("/dashboard/simulados");
     return NextResponse.json({ quizId: quiz.id, reused: false });

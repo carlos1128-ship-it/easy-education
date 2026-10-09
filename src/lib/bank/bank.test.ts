@@ -181,3 +181,27 @@ describe("simulado de provas anteriores do ENEM", () => {
     expect(ENEM_DAYS.completo.areas.length * PER_AREA).toBe(180);
   });
 });
+
+describe("idioma das questões", () => {
+  it("só gera no idioma estudado quando a matéria é o próprio idioma", async () => {
+    const { examStyleFromPersonalization, isLanguageSubject } = await import("@/lib/learner-profile");
+    const p = { purpose: "idioma" as const, language: "Espanhol", languageLevel: "B1" };
+    expect(isLanguageSubject(p, "Espanhol")).toBe(true);
+    expect(isLanguageSubject(p, "Gramática")).toBe(true);
+    expect(isLanguageSubject(p, "Matemática")).toBe(false);
+    expect(examStyleFromPersonalization(p, "História")).toContain("em português");
+    expect(examStyleFromPersonalization(p, "Espanhol")).toContain("Espanhol");
+  });
+});
+
+describe("roteiro do bloco de estudo", () => {
+  it("divide o tempo planejado em etapas que somam o bloco", async () => {
+    const { buildRoadmap } = await import("@/lib/study-roadmap");
+    for (const type of ["estudo", "revisao", "simulado", "redacao"]) {
+      const steps = buildRoadmap({ type, subject: "Biologia", topic: "Genética", plannedMinutes: 60, practiceHref: "/dashboard/quizzes/x" });
+      expect(steps.reduce((sum, step) => sum + step.minutes, 0)).toBe(60);
+    }
+    const study = buildRoadmap({ type: "estudo", subject: "Biologia", topic: "Genética", plannedMinutes: 60 });
+    expect(study.find((step) => step.external)?.href).toContain("youtube.com/results");
+  });
+});

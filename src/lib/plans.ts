@@ -126,10 +126,11 @@ export const FEATURES: Record<FeatureKey, FeatureMeta> = {
   },
   ai_simulado: {
     label: "Simulado gerado por IA",
-    singular: "simulado gerado por IA",
-    plural: "simulados gerados por IA",
+    singular: "questão de simulado gerada por IA",
+    plural: "questões de simulado geradas por IA",
     unlocks: "gerar simulados com IA no estilo da sua prova, inclusive o simulado do seu concurso",
-    weight: 6,
+    // Contado por questão; o custo fica coberto pelos tetos de custo do dia e do mês.
+    weight: 0,
     usesAi: true,
   },
 };
@@ -175,14 +176,16 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     id: "free",
     name: "Gratuito",
     priceCents: 0,
-    tagline: "Chat com IA, redação, plano de estudos e desempenho, sem pagar nada.",
+    // Gratuito: só o que não gasta IA (provas anteriores do ENEM, desempenho e revisão). A IA fica para o teste de
+    // 7 dias e os planos pagos. O primeiro plano de estudos, feito no onboarding, continua sendo gerado.
+    tagline: "Simulados com provas anteriores do ENEM, desempenho e revisão, sem pagar nada.",
     limits: {
-      chat_message: perDay(3),
-      essay_correction: perWeek(1),
+      chat_message: locked,
+      essay_correction: locked,
       essay_photo_read: locked,
-      file_upload: perDay(1),
+      file_upload: locked,
       video_material: locked,
-      study_plan: perWeek(1),
+      study_plan: locked,
       trail: locked,
       ai_quiz: locked,
       ai_flashcards: locked,
@@ -197,7 +200,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     id: "basic",
     name: "Básico",
     priceCents: 1990,
-    tagline: "Para estudar com IA todo dia, no seu ritmo.",
+    tagline: "Para estudar com IA todo dia, no seu ritmo. Começa com 7 dias grátis.",
     limits: {
       chat_message: perDay(12),
       essay_correction: perWeek(3),
@@ -208,14 +211,15 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       video_material: perDay(1),
       study_plan: perWeek(1),
       trail: open,
-      ai_quiz: perDay(2),
-      ai_flashcards: perDay(2),
-      ai_simulado: perWeek(1),
+      ai_quiz: perDay(10),
+      ai_flashcards: perDay(25),
+      // Simulado por IA é contado em QUESTÕES por dia (um simulado de 45 ou vários menores).
+      ai_simulado: perDay(45),
     },
     uploadMaxBytes: 15 * MB,
     videoMaxMinutes: 20,
-    // Teto de custo: R$ 4,90 por mês (US$ 0,85). Usando todos os limites todo dia, o custo estimado fica perto de R$ 4,74.
-    safety: { dailyUnits: 80, dailyCostUsd: 0.12, monthlyCostUsd: 0.85 },
+    // Teto de custo de uso justo: R$ 4,90 por mês (US$ 0,85). Questões reaproveitadas de outros alunos não gastam IA.
+    safety: { dailyUnits: 400, dailyCostUsd: 0.2, monthlyCostUsd: 0.85 },
   },
   full: {
     id: "full",
@@ -230,14 +234,15 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       video_material: perDay(3),
       study_plan: perWeek(3),
       trail: open,
-      ai_quiz: perDay(5),
-      ai_flashcards: perDay(5),
-      ai_simulado: perDay(1),
+      ai_quiz: perDay(20),
+      ai_flashcards: perDay(50),
+      // Simulado por IA é contado em QUESTÕES por dia (um simulado de 90 ou vários menores).
+      ai_simulado: perDay(90),
     },
     uploadMaxBytes: 50 * MB,
     videoMaxMinutes: 30,
-    // Teto de custo: R$ 14,90 por mês (US$ 2,62). Usando todos os limites todo dia, o custo estimado fica perto de R$ 14,58.
-    safety: { dailyUnits: 200, dailyCostUsd: 0.4, monthlyCostUsd: 2.62 },
+    // Teto de custo de uso justo: R$ 14,90 por mês (US$ 2,62). Questões reaproveitadas de outros alunos não gastam IA.
+    safety: { dailyUnits: 800, dailyCostUsd: 0.5, monthlyCostUsd: 2.62 },
   },
 };
 

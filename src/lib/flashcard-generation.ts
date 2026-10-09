@@ -73,7 +73,7 @@ export async function createFlashcardDeckForUser(input: FlashcardGenerationInput
   const file = input.fileId ? await prisma.uploadedFile.findFirst({ where: { id: input.fileId, userId: input.userId } }) : null;
   const video = isVideoFile(file);
   const topic = input.topic ?? file?.textContent?.slice(0, video ? 14000 : 6000) ?? input.subject;
-  const learner = await getLearnerPromptProfile(input.userId);
+  const learner = await getLearnerPromptProfile(input.userId, input.subject);
   const buildPrompt = (count: number, part: number, parts: number) => `Crie exatamente ${count} flashcards de estudo ativo sobre "${topic}" para a materia ${input.subject}.
 Regras obrigatorias:
 - O front deve ser uma pergunta objetiva que o aluno consiga tentar responder sem ver o verso.

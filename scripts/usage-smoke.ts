@@ -18,48 +18,54 @@ function assert(condition: unknown, message: string) {
 
 async function main() {
   try {
-    // 1) Gratuito: 3 mensagens por dia.
-    const first = await consumeFeature(user, "chat_message", { tier: "free" });
-    assert(first.remaining === 2 && first.max === 3, "primeira mensagem sobra 2 de 3");
-    await consumeFeature(user, "chat_message", { tier: "free" });
-    const third = await consumeFeature(user, "chat_message", { tier: "free" });
-    assert(third.remaining === 0, "terceira mensagem zera o limite");
+    // 1) Básico: 12 mensagens por dia; a 13ª é bloqueada.
+    let last = await consumeFeature(user, "chat_message", { tier: "basic" });
+    assert(last.remaining === 11 && last.max === 12, "primeira mensagem sobra 11 de 12");
+    for (let i = 0; i < 11; i += 1) last = await consumeFeature(user, "chat_message", { tier: "basic" });
+    assert(last.remaining === 0, "a 12ª mensagem zera o limite");
 
     let blocked: unknown = null;
     try {
-      await consumeFeature(user, "chat_message", { tier: "free" });
+      await consumeFeature(user, "chat_message", { tier: "basic" });
     } catch (error) {
       blocked = error;
     }
-    assert(blocked instanceof PlanLimitError && blocked.info.code === "limit_reached", "quarta mensagem é bloqueada");
+    assert(blocked instanceof PlanLimitError && blocked.info.code === "limit_reached", "a 13ª mensagem é bloqueada");
     if (blocked instanceof PlanLimitError) {
-      assert(blocked.info.upgradeTo === "basic" && Boolean(blocked.info.resetAt), "bloqueio informa upgrade e quando volta");
+      assert(blocked.info.upgradeTo === "full" && Boolean(blocked.info.resetAt), "bloqueio informa upgrade e quando volta");
+      assert(!/\d/.test(blocked.info.message), "mensagem de limite sem números");
       console.log("   mensagem:", blocked.info.message);
     }
 
     // 2) Devolver o uso libera de novo.
-    await third.refund();
-    const again = await consumeFeature(user, "chat_message", { tier: "free" });
+    await last.refund();
+    const again = await consumeFeature(user, "chat_message", { tier: "basic" });
     assert(again.remaining === 0, "depois do refund dá para usar de novo");
 
-    // 3) Recurso fechado no Gratuito.
-    let locked: unknown = null;
-    try {
-      await consumeFeature(user, "ai_quiz", { tier: "free" });
-    } catch (error) {
-      locked = error;
+    // 3) Gratuito: só o que não gasta IA.
+    for (const feature of ["chat_message", "ai_quiz", "essay_correction"] as const) {
+      let locked: unknown = null;
+      try {
+        await consumeFeature(user, feature, { tier: "free" });
+      } catch (error) {
+        locked = error;
+      }
+      assert(locked instanceof PlanLimitError && locked.info.code === "feature_locked" && locked.status === 403, `${feature} fechado no Gratuito`);
     }
-    assert(locked instanceof PlanLimitError && locked.info.code === "feature_locked" && locked.status === 403, "quiz por IA fechado no Gratuito");
 
-    // 4) Corrida: 8 requisições ao mesmo tempo no Básico (1 simulado por semana) passam só 1.
-    const results = await Promise.allSettled(Array.from({ length: 8 }, () => consumeFeature(user, "ai_simulado", { tier: "basic" })));
+    // 4) Simulado por IA contado em questões: no Básico (45 por dia) dois pedidos de 30 ao mesmo tempo: só 1 passa.
+    const results = await Promise.allSettled(Array.from({ length: 2 }, () => consumeFeature(user, "ai_simulado", { tier: "basic", amount: 30 })));
     const passed = results.filter((item) => item.status === "fulfilled").length;
-    assert(passed === 1, `corrida: só 1 de 8 passou (passaram ${passed})`);
+    assert(passed === 1, `corrida: só 1 simulado de 30 de 2 passou (passaram ${passed})`);
+    const rest = await consumeFeature(user, "ai_simulado", { tier: "basic", amount: 15 });
+    assert(rest.remaining === 0, "sobram 15 questões depois de um simulado de 30");
 
     // 5) Painel de uso.
-    const snapshot = await getUsageSnapshot(user, { tier: "free" });
-    assert(snapshot.features.chat_message.used === 3 && snapshot.features.chat_message.remaining === 0, "snapshot mostra 3 de 3 usadas");
-    assert(snapshot.features.trail.state === "locked", "snapshot mostra trilha fechada");
+    const snapshot = await getUsageSnapshot(user, { tier: "basic" });
+    assert(snapshot.features.chat_message.used === 12 && snapshot.features.chat_message.remaining === 0, "snapshot mostra 12 de 12 usadas");
+    assert(snapshot.features.ai_simulado.used === 45, "snapshot conta as 45 questões de simulado");
+    const free = await getUsageSnapshot(user, { tier: "free" });
+    assert(free.features.trail.state === "locked", "snapshot mostra trilha fechada no Gratuito");
 
     // 3) Cada plano tem o seu limite: o mesmo recurso libera mais uso no Básico e mais ainda no Completo.
     async function usesUntilBlocked(tier: "free" | "basic" | "full", feature: "chat_message" | "ai_quiz" | "ai_simulado") {
@@ -70,7 +76,7 @@ async function main() {
         try {
           await consumeFeature(someone, feature, { tier });
           used += 1;
-          if (used > 60) return used;
+          if (used > 120) return used;
         } catch (error) {
           if (error instanceof PlanLimitError) return used;
           throw error;
@@ -78,9 +84,9 @@ async function main() {
       }
     }
     const expected: Array<[Parameters<typeof usesUntilBlocked>[0], Parameters<typeof usesUntilBlocked>[1], number]> = [
-      ["free", "chat_message", 3], ["basic", "chat_message", 12], ["full", "chat_message", 30],
-      ["free", "ai_quiz", 0], ["basic", "ai_quiz", 2], ["full", "ai_quiz", 5],
-      ["free", "ai_simulado", 0], ["basic", "ai_simulado", 1], ["full", "ai_simulado", 1],
+      ["free", "chat_message", 0], ["basic", "chat_message", 12], ["full", "chat_message", 30],
+      ["free", "ai_quiz", 0], ["basic", "ai_quiz", 10], ["full", "ai_quiz", 20],
+      ["free", "ai_simulado", 0], ["basic", "ai_simulado", 45], ["full", "ai_simulado", 90],
     ];
     for (const [tier, feature, max] of expected) {
       const used = await usesUntilBlocked(tier, feature);

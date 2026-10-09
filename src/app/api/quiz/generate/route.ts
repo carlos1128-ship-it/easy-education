@@ -24,14 +24,19 @@ export async function POST(request: Request) {
     const payload = quizGenerateSchema.parse(await request.json());
     // Limites do plano: simulado e quiz gerados por IA têm contadores próprios (bloqueados no Gratuito).
     if (payload.difficulty === "simulado") {
-      const quiz = await withFeature(user, "ai_simulado", () =>
-        createSimuladoForUser({
-          userId: user.id,
-          subject: payload.subject,
-          topic: payload.topic,
-          questionCount: payload.questionCount,
-          fileId: payload.fileId,
-        }),
+      // Simulado é contado em questões: um de 45 gasta 45 do dia.
+      const quiz = await withFeature(
+        user,
+        "ai_simulado",
+        () =>
+          createSimuladoForUser({
+            userId: user.id,
+            subject: payload.subject,
+            topic: payload.topic,
+            questionCount: payload.questionCount,
+            fileId: payload.fileId,
+          }),
+        { amount: payload.questionCount },
       );
       revalidateQuizPages();
       return NextResponse.json({ quizId: quiz.id });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
-import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
+import { LockedNotice } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FlashcardCreateForm } from "@/components/flashcard/flashcard-create-form";
 import { allowanceFor } from "@/lib/plans";
@@ -35,7 +35,6 @@ export default async function FlashcardsPage() {
         />
       ) : (
         <div className="space-y-3">
-          <UsageHint feature="ai_flashcards" />
           <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
         </div>
       )}

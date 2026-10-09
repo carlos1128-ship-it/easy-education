@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HelpCircle } from "lucide-react";
-import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
+import { LockedNotice } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QuizCreateForm } from "@/components/quiz/quiz-create-form";
 import { allowanceFor } from "@/lib/plans";
@@ -31,7 +31,6 @@ export default async function QuizzesPage() {
         />
       ) : (
         <div className="space-y-3">
-          <UsageHint feature="ai_quiz" />
           <QuizCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
         </div>
       )}

@@ -44,16 +44,18 @@ Os limites foram recalculados para o teto de custo combinado: **Gratuito até R$
 
 | Recurso | Gratuito | Básico (R$ 19,90) | Completo (R$ 34,90) |
 |---|---|---|---|
-| Chat com IA | 3/dia | 12/dia | 30/dia |
-| Redação (texto ou foto) | 1/semana (só texto) | 3/semana | 1/dia |
-| Envio de arquivos | 1/dia, 5 MB | 2/dia, 15 MB | 5/dia, 50 MB |
+| Chat com IA | bloqueado | 12/dia | 30/dia |
+| Redação (texto ou foto) | bloqueada | 3/semana | 1/dia |
+| Envio de arquivos | bloqueado | 2/dia, 15 MB | 5/dia, 50 MB |
 | Vídeos do YouTube | bloqueado | 1/dia (com legenda até 60 min; sem legenda, 20 min) | 3/dia (com legenda até 60 min; sem legenda, 30 min) |
-| Plano de estudos | 1/semana | 1/semana | 3/semana |
+| Plano de estudos (refazer) | bloqueado (o 1º, do onboarding, é gerado) | 1/semana | 3/semana |
 | Trilha | bloqueada | liberada | liberada |
-| Quiz por IA | bloqueado | 2/dia | 5/dia |
-| Flashcards por IA | bloqueado | 2/dia | 5/dia |
-| Simulado por IA (inclui o do concurso) | bloqueado | 1/semana | 1/dia |
+| Quiz por IA | bloqueado | 10/dia | 20/dia |
+| Flashcards por IA (decks) | bloqueado | 25/dia | 50/dia |
+| Simulado por IA, em **questões** (inclui o do concurso) | bloqueado | 45 questões/dia | 90 questões/dia |
 | Simulados de provas anteriores do ENEM | livre | livre | livre |
+
+**Atualização 09/10/2026 (noite):** o Gratuito ficou só com o que não gasta IA (provas anteriores do ENEM, desempenho e revisão) e os planos pagos ganharam 7 dias grátis. Quizzes, flashcards e simulados foram ampliados a pedido do produto. Com esses limites, usar tudo todos os dias passaria do teto de custo; quem garante o teto (Básico R$ 4,90 e Completo R$ 14,90 por mês) é o teto mensal de uso justo no servidor. Questões reaproveitadas do banco compartilhado não gastam IA, então o uso real fica bem abaixo do pior caso. A tabela abaixo é da versão anterior dos limites.
 
 ## Pior caso: usar todo o limite, todos os dias
 

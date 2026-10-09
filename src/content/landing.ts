@@ -43,7 +43,7 @@ export const landingHero = {
   titleKeyword: "treino",
   subtitle:
     "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
-  boxText: `Comece grátis · planos a partir de ${priceBasic}/mês`,
+  boxText: `7 dias grátis · planos a partir de ${priceBasic}/mês`,
   cta: "Começar grátis",
   highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
@@ -107,7 +107,7 @@ export const illustrativeLabel = "Exemplo ilustrativo";
 export const landingMeta = {
   title: "Easy Education: estude com IA usando o seu próprio material",
   description:
-    `Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos, simulados e correção de redação. Para escola, faculdade, vestibular e concurso. Comece grátis; planos a partir de ${priceBasic} por mês.`,
+    `Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos, simulados e correção de redação. Para escola, faculdade, vestibular e concurso. Teste 7 dias grátis; planos a partir de ${priceBasic} por mês.`,
 } as const;
 
 export const landingResources = {
@@ -228,11 +228,11 @@ export const landingSteps = {
 export const landingPlans = {
   enabled: true,
   eyebrow: "Planos",
-  title: "Comece grátis e escolha quanto de IA você quer usar",
-  text: "O Gratuito não pede cartão. Os planos pagos liberam quiz, flashcards e simulados gerados por IA, e o Completo tem os limites maiores para quem estuda todo dia.",
+  title: "Teste 7 dias grátis e escolha quanto de IA você quer usar",
+  text: "Os planos pagos começam com 7 dias grátis: você só paga se continuar. O Gratuito, sem cartão, tem os simulados com provas anteriores do ENEM.",
   free: {
     name: PLANS.free.name,
-    description: "Para conhecer o app e estudar com calma.",
+    description: "Para treinar com provas anteriores do ENEM, sem IA.",
     price: "Grátis",
     period: "",
     cta: "Começar grátis",
@@ -242,24 +242,24 @@ export const landingPlans = {
     description: "Para estudar com IA algumas vezes por semana.",
     price: priceBasic,
     period: "por mês",
-    cta: "Assinar o Básico",
+    cta: "Testar 7 dias grátis",
   },
   full: {
     name: PLANS.full.name,
     description: "Para quem estuda todo dia e usa muito a IA.",
     price: priceFull,
     period: "por mês",
-    cta: "Assinar o Completo",
+    cta: "Testar 7 dias grátis",
     badge: "Mais indicado",
   },
   includedTitle: "Em todos os planos, inclusive o Gratuito",
   included: [
-    "Chat com IA para tirar dúvidas",
-    "Correção de redação por texto",
-    "Plano de estudos e painel de desempenho",
-    "Provas anteriores do ENEM, para quem estuda para o ENEM",
+    "Simulados com provas anteriores do ENEM, para quem estuda para o ENEM",
+    "Painel de desempenho",
+    "Revisão das questões que você errou",
+    "Seu primeiro plano de estudos",
   ],
-  guarantee: "Nos planos pagos: garantia de 7 dias, devolvemos seu dinheiro se não gostar. Cancele quando quiser.",
+  guarantee: "Nos planos pagos: 7 dias grátis para testar e, depois do primeiro pagamento, mais 7 dias de garantia. Cancele quando quiser.",
   images: [
     { src: "/images/estudante-xadrez-recorte.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
     { src: "/images/estudante-jeans-recorte.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
@@ -327,11 +327,11 @@ export const landingFaq = {
   items: [
     {
       q: "Preciso pagar para usar?",
-      a: "Não. O plano Gratuito não tem prazo: inclui o chat com IA, a correção de redação, o plano de estudos e o painel de desempenho, com limites menores. Quem estuda para o ENEM também faz simulados com provas anteriores. Os planos pagos liberam quizzes, flashcards e simulados gerados por IA, vídeos do YouTube e a trilha.",
+      a: "Não. Os planos pagos começam com 7 dias grátis: o cartão é pedido no início, mas a primeira cobrança só acontece no fim do teste, e você pode cancelar antes sem pagar nada. O plano Gratuito não tem prazo nem cartão e tem os simulados com provas anteriores do ENEM, o desempenho e a revisão das questões que você errou. Chat, redação, quizzes, flashcards, simulados gerados por IA, vídeos e a trilha são dos planos pagos.",
     },
     {
       q: "Como funcionam os limites de uso?",
-      a: "Cada plano tem um uso justo de IA, maior nos planos pagos. No app, uma barra mostra quanto você já usou de cada recurso e avisa antes de acabar. O uso do dia volta à meia-noite e o da semana, na segunda-feira.",
+      a: "Cada plano pago tem um uso justo de IA, maior no Completo. Você acompanha quanto já usou em Assinatura, dentro do app. O uso do dia volta à meia-noite e o da semana, na segunda-feira.",
     },
     {
       q: "Como funcionam os simulados?",
@@ -351,11 +351,11 @@ export const landingFaq = {
     },
     {
       q: "Quanto custa o Easy Education?",
-      a: `O plano Gratuito não custa nada. O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}. Nos planos pagos você cancela quando quiser e tem 7 dias de garantia.`,
+      a: `O plano Gratuito não custa nada. O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}, os dois com 7 dias grátis para testar. Você cancela quando quiser e, depois do primeiro pagamento, tem mais 7 dias de garantia.`,
     },
     {
       q: "Qual a diferença entre o Gratuito, o Básico e o Completo?",
-      a: "O Gratuito tem chat com IA, correção de redação, plano de estudos e desempenho, com um uso menor. O Básico libera quizzes, flashcards e simulados gerados por IA, redação por foto, vídeos do YouTube e a trilha. O Completo tem o maior uso de IA do app. A tabela de planos compara cada recurso.",
+      a: "O Gratuito tem os simulados com provas anteriores do ENEM, o desempenho e a revisão, sem IA. O Básico libera o chat com IA, a correção de redação, quizzes, flashcards e simulados gerados por IA, vídeos do YouTube e a trilha. O Completo tem o maior uso de IA do app. A tabela de planos compara cada recurso.",
     },
     {
       q: "Preciso ter a apostila em PDF?",
@@ -390,7 +390,7 @@ export const landingFaq = {
 
 export const landingFinalCta = {
   title: "Comece seu plano de estudos hoje",
-  text: "Crie sua conta grátis, conte o que você está estudando e receba o plano da semana na hora. Nos planos pagos, a garantia de 7 dias devolve seu dinheiro.",
+  text: "Crie sua conta, conte o que você está estudando e receba o plano da semana na hora. Os planos pagos começam com 7 dias grátis.",
   cta: "Começar grátis",
   image: { src: "/images/formatura-azul.jpg" },
 } as const;

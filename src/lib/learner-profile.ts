@@ -177,8 +177,33 @@ const BOARD_STYLE: Record<string, string> = {
   Cesgranrio: "padrão Cesgranrio: situações práticas e conhecimento técnico do cargo",
 };
 
-/** Estilo das questões geradas para este aluno. */
-export function examStyleFromPersonalization(p: Personalization) {
+const LANGUAGE_WORDS: Record<string, string[]> = {
+  Inglês: ["ingles", "english"],
+  Espanhol: ["espanhol", "spanish", "espanol"],
+  Francês: ["frances", "french", "francais"],
+  Alemão: ["alemao", "german", "deutsch"],
+  Italiano: ["italiano", "italian"],
+  Japonês: ["japones", "japanese", "nihongo"],
+};
+const SKILL_WORDS = ["reading", "writing", "listening", "speaking", "gramatica", "vocabulario", "conversacao", "idioma", "lingua estrangeira"];
+
+function plain(value: string) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+/**
+ * A matéria pedida é o próprio idioma que o aluno estuda (ex.: "Espanhol", "Gramática", "Reading")?
+ * Só aí as questões saem no idioma; em qualquer outra matéria (Matemática, História...) saem em português.
+ */
+export function isLanguageSubject(p: Personalization, subject?: string | null) {
+  if (!subject) return true;
+  const text = plain(subject);
+  const words = LANGUAGE_WORDS[p.language ?? ""] ?? (p.language ? [plain(p.language)] : []);
+  return [...words, ...SKILL_WORDS, ...LANGUAGE_SKILLS.map((skill) => plain(skill.name.split(" (")[0]))].some((word) => text.includes(word));
+}
+
+/** Estilo das questões geradas para este aluno. Com `subject`, ajusta o idioma das questões à matéria pedida. */
+export function examStyleFromPersonalization(p: Personalization, subject?: string | null) {
   switch (p.purpose) {
     case "escola":
       return `prova escolar do ${p.schoolYear ?? "ensino médio"}, com linguagem clara e cobrança do conteúdo visto em sala, no nível dessa série`;
@@ -190,6 +215,9 @@ export function examStyleFromPersonalization(p: Personalization) {
     case "faculdade":
       return `prova de graduação${p.course ? ` de ${p.course}` : ""}${p.semester ? ` (${p.semester})` : ""}, com profundidade técnica e termos da área`;
     case "idioma":
+      if (!isLanguageSubject(p, subject)) {
+        return "estudo geral, com linguagem clara e cobrança do conteúdo da matéria pedida; enunciados, alternativas e explicações em português";
+      }
       return `estudo de ${p.language ?? "idioma estrangeiro"} no nível ${p.languageLevel ?? "intermediário"} do Quadro Europeu (QECR)${
         p.exam && p.exam !== "Nenhuma prova" ? `, no formato das questões do ${p.exam}` : ""
       }: enunciados e alternativas no idioma estudado (adequados ao nível), explicação em português`;

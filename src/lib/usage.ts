@@ -102,7 +102,7 @@ export async function consumeFeature(user: UserRef, feature: FeatureKey, options
     const used = await tx.usageEvent.count({ where: { userId: user.id, feature, createdAt: { gte: since } } });
     const status = evaluateAllowance(allowance, used, now);
     if (status.state === "limit" && status.remaining < amount) {
-      throw new PlanLimitError(limitInfo(tier, feature, status, now));
+      throw new PlanLimitError(limitInfo(tier, feature, status, now, amount));
     }
 
     // Teto global de segurança do dia (peso dos recursos e custo estimado da IA).
@@ -148,7 +148,12 @@ export async function consumeFeature(user: UserRef, feature: FeatureKey, options
  * Roda `run` depois de reservar o uso; se `run` falhar, o uso volta para o aluno.
  * É o jeito normal de proteger uma rota que gasta IA.
  */
-export async function withFeature<T>(user: UserRef, feature: FeatureKey, run: (ticket: UsageTicket) => Promise<T>, options: { tier?: PlanTier } = {}): Promise<T> {
+export async function withFeature<T>(
+  user: UserRef,
+  feature: FeatureKey,
+  run: (ticket: UsageTicket) => Promise<T>,
+  options: { tier?: PlanTier; amount?: number } = {},
+): Promise<T> {
   const ticket = await consumeFeature(user, feature, options);
   try {
     return await run(ticket);

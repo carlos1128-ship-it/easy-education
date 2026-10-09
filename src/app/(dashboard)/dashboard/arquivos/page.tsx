@@ -3,7 +3,7 @@ import { FileActions } from "@/components/files/file-actions";
 import { FileUploader } from "@/components/files/file-uploader";
 import { PendingRefresh } from "@/components/files/pending-refresh";
 import { YouTubeLinkForm } from "@/components/files/youtube-link-form";
-import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
+import { LockedNotice } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatBytes } from "@/lib/format";
 import { allowanceFor } from "@/lib/plans";
@@ -21,6 +21,7 @@ function staleThreshold() {
 export default async function ArquivosPage({ searchParams }: { searchParams: Promise<{ busca?: string }> }) {
   const { user, access } = await getStudentOrRedirect();
   const videoLocked = allowanceFor(access.tier, "video_material").kind === "locked";
+  const uploadLocked = allowanceFor(access.tier, "file_upload").kind === "locked";
   const { busca } = await searchParams;
   const files = await getPrisma().uploadedFile.findMany({
     where: { userId: user.id, name: busca ? { contains: busca, mode: "insensitive" } : undefined },
@@ -40,13 +41,17 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
       </div>
 
       <PendingRefresh pending={files.some((file) => !file.processed && !file.processingError && !isStale(file))} />
-      <div className="flex flex-wrap gap-2">
-        <UsageHint feature="file_upload" />
-        {videoLocked ? null : <UsageHint feature="video_material" />}
-      </div>
-
       <div className="grid gap-4 xl:grid-cols-2">
-        <FileUploader />
+        {uploadLocked ? (
+          <LockedNotice
+            feature="file_upload"
+            className="sm:flex-col sm:items-start"
+            title="Estudar com seus arquivos é dos planos pagos"
+            description="Envie o PDF da escola ou a foto do caderno e a IA monta quiz, flashcards e simulado do seu material."
+          />
+        ) : (
+          <FileUploader />
+        )}
         {videoLocked ? (
           <LockedNotice
             feature="video_material"

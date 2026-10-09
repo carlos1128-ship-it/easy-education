@@ -36,14 +36,15 @@ export type LearnerPromptProfile = {
 };
 
 /** Tudo o que os geradores precisam saber do aluno, numa consulta só. */
-export async function getLearnerPromptProfile(userId: string): Promise<LearnerPromptProfile> {
+/** Perfil do aluno para os prompts. Com `subject`, o estilo acompanha a matéria pedida (ex.: idioma só em aula de idioma). */
+export async function getLearnerPromptProfile(userId: string, subject?: string | null): Promise<LearnerPromptProfile> {
   const profile = await getPrisma().profile.findUnique({
     where: { userId },
     select: { studyGoal: true, studyMethod: true, level: true, targetDate: true, dailyMinutes: true, personalization: true },
   });
   const personalization = parsePersonalization(profile?.personalization);
   return {
-    style: personalization ? examStyleFromPersonalization(personalization) : examStyleFor(profile?.studyGoal),
+    style: personalization ? examStyleFromPersonalization(personalization, subject) : examStyleFor(profile?.studyGoal),
     context: buildLearnerContext(profile),
     guidance: explanationGuidance(profile),
   };

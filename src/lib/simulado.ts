@@ -28,7 +28,7 @@ export async function createSimuladoForUser({
   const file = fileId ? await prisma.uploadedFile.findFirst({ where: { id: fileId, userId } }) : null;
   const video = isVideoFile(file);
   const promptScope = describeSubjectForPrompt(subject, topic ?? file?.textContent?.slice(0, video ? 14000 : 5000));
-  const learner = await getLearnerPromptProfile(userId);
+  const learner = await getLearnerPromptProfile(userId, subject);
   const style = learner.style;
   const buildPrompt = (count: number, part: number, parts: number, references: string) => `Crie exatamente ${count} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
 Regras obrigatorias:
@@ -108,6 +108,7 @@ export async function ensureWeeklySimuladoForUser(user: Pick<User, "id" | "email
         title: "Simulado semanal automatico",
         questionCount: 20,
       }),
+      { amount: 20 },
     );
   } catch (error) {
     if (error instanceof PlanLimitError) return null;

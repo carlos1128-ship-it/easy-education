@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Camera, ImagePlus, Loader2, Paperclip, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { usePlanOptional } from "@/components/plan/plan-provider";
-import { UsageHint } from "@/components/plan/usage-hint";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { quickSuggestions } from "@/lib/app-data";
@@ -215,7 +214,6 @@ export function ChatInterface() {
         <div ref={endRef} />
       </div>
       <div className="border-t border-border p-4">
-        <UsageHint feature="chat_message" className="mb-3" />
         <div className="mb-3 flex flex-wrap gap-2">
           {quickSuggestions.map((item) => (
             <button

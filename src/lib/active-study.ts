@@ -12,6 +12,8 @@ export type ActiveStudy = {
   plannedMinutes: number;
   startedAt: number;
   href?: string;
+  /** Etapas do roteiro do bloco já marcadas como feitas (índices). */
+  done?: number[];
 };
 
 const KEY = "ee-active-study";

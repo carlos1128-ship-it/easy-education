@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { after } from "next/server";
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Flame, Lock, PenTool, PlayCircle, RotateCcw, Sparkles, Target } from "lucide-react";
 import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -9,7 +8,6 @@ import { getPrisma } from "@/lib/prisma";
 import { allowanceFor, PLANS } from "@/lib/plans";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { getTrailForUser } from "@/lib/study-trail";
-import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
 import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
 import { cn } from "@/lib/utils";
@@ -46,8 +44,6 @@ export default async function DashboardPage() {
   const prisma = getPrisma();
   const trailLocked = allowanceFor(access.tier, "trail").kind === "locked";
   const weekStart = startOfWindow(6);
-  // Gerar o simulado semanal chama a IA; roda depois da resposta para não travar o dashboard.
-  after(() => ensureWeeklySimuladoForUser(user).catch((error) => console.error("[simulado-semanal]", error)));
 
   const [trail, profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks, bankAnswers, diagnostics, reviewsDue] = await Promise.all([
     trailLocked ? Promise.resolve(null) : getTrailForUser(user.id),
@@ -143,9 +139,9 @@ export default async function DashboardPage() {
           { label: "Fazer o simulado diagnóstico", done: diagnostics > 0, href: "/dashboard/simulados" },
         ]
       : []),
-    { label: "Enviar um material (PDF ou foto)", done: files.length > 0, href: "/dashboard/arquivos" },
+    ...(allowanceFor(access.tier, "file_upload").kind === "locked" ? [] : [{ label: "Enviar um material (PDF ou foto)", done: files.length > 0, href: "/dashboard/arquivos" }]),
     ...(allowanceFor(access.tier, "ai_quiz").kind === "locked" ? [] : [{ label: "Responder seu primeiro quiz", done: completedQuizzes.length > 0, href: "/dashboard/quizzes" }]),
-    { label: "Corrigir uma redação", done: essays.length > 0, href: "/dashboard/redacao" },
+    ...(allowanceFor(access.tier, "essay_correction").kind === "locked" ? [] : [{ label: "Corrigir uma redação", done: essays.length > 0, href: "/dashboard/redacao" }]),
   ];
   const firstStepsDone = firstSteps.filter((item) => item.done).length;
   const nextStep = firstSteps.find((item) => !item.done);
