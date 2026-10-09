@@ -78,27 +78,73 @@ export function normalizeQuizOptions(options: unknown) {
   return normalized;
 }
 
-export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: number, fallbackSubject: string) {
-  const questions = Array.isArray(rawQuestions) ? rawQuestions : [];
-  return questions.slice(0, count).map((item, index) => {
-    const question = item as Partial<GeneratedQuizQuestion>;
-    const subject = fallbackSubject || "conteudo";
-    const questionText = cleanText(question.question) || `Questao ${index + 1} sobre ${subject}.`;
-    const options = normalizeQuizOptions(question.options);
-    const explanation = cleanText(question.explanation) || `Esta questao revisa conceitos de ${subject}.`;
+/** Texto da alternativa sem a letra do começo ("A) ", "b. "). */
+function optionBody(value: unknown) {
+  return cleanText(value).replace(/^[A-D]\s*[).:-]\s*/i, "").trim();
+}
 
-    return {
-      question: questionText,
-      options,
-      correctAnswer: normalizeCorrectAnswer(question.correctAnswer),
-      explanation,
-    };
-  }).filter((question) => (
-    !isPlaceholderText(question.question) &&
-    !isPlaceholderText(question.explanation) &&
-    question.options.length === 4 &&
-    !question.options.some(isPlaceholderText)
-  ));
+/**
+ * A questão gerada tem enunciado e 4 alternativas de verdade? Recusa alternativa que é só a letra ("A", "B)"),
+ * vazia, repetida ou placeholder, e enunciado curto demais. Questão recusada é pedida de novo (generateQuizQuestions).
+ */
+export function isUsableGeneratedQuestion(item: unknown) {
+  const question = (item ?? {}) as Partial<GeneratedQuizQuestion>;
+  const text = cleanText(question.question);
+  const rawOptions: unknown[] = Array.isArray(question.options) ? question.options : [];
+  if (text.length < 15 || isPlaceholderText(text)) return false;
+  if (rawOptions.length !== 4) return false;
+  const bodies = rawOptions.map(optionBody);
+  if (bodies.some((body) => !body || /^[A-E]$/i.test(body) || isPlaceholderText(body) || /^alternativa [a-e]$/.test(normalizeForMatch(body)))) return false;
+  if (new Set(bodies.map(normalizeForMatch)).size !== 4) return false;
+  const explanation = cleanText(question.explanation);
+  if (!explanation || isPlaceholderText(explanation)) return false;
+  const answer = cleanText(question.correctAnswer).toUpperCase().charAt(0);
+  return (LETTERS as readonly string[]).includes(answer);
+}
+
+export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: number) {
+  const questions = Array.isArray(rawQuestions) ? rawQuestions : [];
+  return questions
+    .filter(isUsableGeneratedQuestion)
+    .slice(0, count)
+    .map((item) => {
+      const question = item as GeneratedQuizQuestion;
+      return {
+        question: cleanText(question.question),
+        options: normalizeQuizOptions((question.options as unknown[]).map(optionBody)),
+        correctAnswer: normalizeCorrectAnswer(question.correctAnswer),
+        explanation: cleanText(question.explanation),
+      };
+    });
+}
+
+/**
+ * Gera as questões e confere cada uma. Se a IA devolver questões quebradas (ex.: alternativas só com a letra),
+ * pede de novo só as que faltam, até 2 vezes, antes de aceitar (mínimo de 70%) ou desistir com erro.
+ */
+export async function generateQuizQuestions(
+  count: number,
+  generate: (missing: number, round: number) => Promise<unknown[]>,
+): Promise<GeneratedQuizQuestion[]> {
+  const accepted: GeneratedQuizQuestion[] = [];
+  const seen = new Set<string>();
+  for (let round = 0; round < 3 && accepted.length < count; round += 1) {
+    const missing = count - accepted.length;
+    let raw: unknown[];
+    try {
+      raw = await generate(missing, round);
+    } catch (error) {
+      if (!accepted.length) throw error;
+      break;
+    }
+    for (const question of sanitizeGeneratedQuizQuestions(raw, missing)) {
+      const key = questionDedupeKey(question);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      accepted.push(question);
+    }
+  }
+  return fillQuestionCount(accepted, count);
 }
 
 /**
@@ -119,8 +165,14 @@ export const quizQuestionsSchema: Schema = {
   items: {
     type: Type.OBJECT,
     properties: {
-      question: { type: Type.STRING },
-      options: { type: Type.ARRAY, items: { type: Type.STRING }, minItems: "4", maxItems: "4" },
+      question: { type: Type.STRING, description: "Enunciado completo da questão." },
+      options: {
+        type: Type.ARRAY,
+        description: "O TEXTO completo das 4 alternativas, na ordem A, B, C, D. Nunca só a letra.",
+        items: { type: Type.STRING, description: "Texto da alternativa, sem a letra na frente." },
+        minItems: "4",
+        maxItems: "4",
+      },
       correctAnswer: { type: Type.STRING, enum: ["A", "B", "C", "D"] },
       explanation: { type: Type.STRING },
     },

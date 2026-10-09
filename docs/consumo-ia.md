@@ -6,7 +6,7 @@ Atualizado em 09/10/2026. Baseado nos tokens medidos nos testes reais desta vers
 
 | Item | Valor |
 |---|---|
-| Modelos usados | `gemini-3.5-flash-lite` (quiz, simulado, flashcards, vídeo) e `gemini-2.5-flash` (chat, redação, plano, banco de questões). |
+| Modelos usados | Desde 09/10/2026, por plano (`src/lib/gemini.ts`): todos os alunos usam primeiro o `gemini-2.5-flash-lite` (US$ 0,10 / 0,40), com reserva no `gemini-3.1-flash-lite` (US$ 0,25 / 1,50) e no `gemini-3.5-flash-lite`. Só no Completo a redação e o plano de estudos usam o `gemini-2.5-flash` (US$ 0,30 / 2,50). Tarefas internas (classificar questões) usam o `gemini-2.5-flash`. |
 | Preço | US$ 0,30 por 1M tokens de entrada; US$ 2,50 por 1M tokens de saída (ver `src/lib/ai-cost.ts`; `gemini-2.5-flash-lite` usa US$ 0,10 / 0,40) |
 | Câmbio usado | R$ 5,50 por dólar (ajuste com `USD_BRL` na tela interna e em `ai-cost`/docs se mudar) |
 | Margem | +15% em toda operação, para os pedidos-reserva que o app dispara quando um modelo demora |
@@ -14,7 +14,9 @@ Atualizado em 09/10/2026. Baseado nos tokens medidos nos testes reais desta vers
 | Vídeo | ~100 tokens por segundo em resolução baixa. A documentação do Google diz que a leitura por link do YouTube está "em preview, sem cobrança"; aqui considero que será cobrada, por segurança |
 | PDF e TXT | O texto é extraído no servidor, sem custo de IA. Foto passa pela IA. |
 
-## Custo por operação
+## Custo por operação (modelos antigos, antes de 09/10/2026)
+
+Referência histórica, medida com o gemini-2.5-flash e o gemini-3.5-flash-lite. Os valores atuais estão em "Pior caso", mais abaixo.
 
 | Operação | US$ | R$ |
 |---|---|---|
@@ -36,58 +38,48 @@ Atualizado em 09/10/2026. Baseado nos tokens medidos nos testes reais desta vers
 
 As provas anteriores do ENEM não gastam IA a cada acesso: a classificação e a resolução comentada são feitas uma vez, em lote, e ficam salvas. Fazer simulado de prova anterior e revisar custa zero de IA, em qualquer plano.
 
-## Limites por plano (valores atuais de `plans.ts`)
+## Limites por plano (valores atuais de `plans.ts`, 09/10/2026)
+
+Os limites foram recalculados para o teto de custo combinado: **Gratuito até R$ 1, Básico até R$ 4,90 e Completo até R$ 14,90 de IA por aluno por mês**.
 
 | Recurso | Gratuito | Básico (R$ 19,90) | Completo (R$ 34,90) |
 |---|---|---|---|
-| Chat com IA | 3/dia | 20/dia | 50/dia |
-| Redação (texto) | 1/semana | 7/semana | 3/dia |
-| Redação por foto | bloqueada | dentro do limite de redações | dentro do limite de redações |
-| Envio de arquivos | 1/dia, 5 MB | 2/dia, 15 MB | 10/dia, 50 MB |
-| Vídeos do YouTube | bloqueado | 3/dia | 10/dia |
-| Plano de estudos | 1/semana | 3/semana | 1/dia |
+| Chat com IA | 3/dia | 12/dia | 30/dia |
+| Redação (texto ou foto) | 1/semana (só texto) | 3/semana | 1/dia |
+| Envio de arquivos | 1/dia, 5 MB | 2/dia, 15 MB | 5/dia, 50 MB |
+| Vídeos do YouTube | bloqueado | 2/semana, trechos de até 20 min | 4/semana, trechos de até 30 min |
+| Plano de estudos | 1/semana | 1/semana | 3/semana |
 | Trilha | bloqueada | liberada | liberada |
-| Quiz por IA | bloqueado | 3/dia | 15/dia |
-| Flashcards por IA | bloqueado | 3/dia | 15/dia |
+| Quiz por IA | bloqueado | 2/dia | 5/dia |
+| Flashcards por IA | bloqueado | 2/dia | 5/dia |
 | Simulado por IA (inclui o do concurso) | bloqueado | 1/semana | 1/dia |
+| Simulados de provas anteriores do ENEM | livre | livre | livre |
 
 ## Pior caso: usar todo o limite, todos os dias
 
-Conta refeita em 09/10/2026 com os limites atuais. Cada operação no maior tamanho permitido: quiz de 20 questões de um material, flashcards de 30 cartões, simulado de 30 questões, redação por foto, todo arquivo enviado como foto e vídeos de 60 minutos (o máximo aceito). Mês de 30 dias; limite semanal × 4,29.
+Cada operação no maior tamanho permitido (quiz de 20 questões de um material, 30 flashcards, simulado de 30 questões, redação por foto, todo arquivo como foto, vídeo no trecho máximo), mês de 30 dias, limite semanal × 4,29. Tokens estimados com folga (o chat medido em 09/10 usou ~1.000 de entrada e ~270 de saída; a conta usa 4.000 e 800, para cobrir o histórico da conversa).
 
-| Recurso | Gratuito | Básico | Completo |
+| Operação | Tokens (entrada / saída) | Custo no 2.5-flash-lite | No 2.5-flash (só Completo: redação e plano) |
 |---|---|---|---|
-| Chat | 90 × 0,003 = US$ 0,27 | 600 × 0,003 = US$ 1,80 | 1.500 × 0,003 = US$ 4,50 |
-| Redação (com foto) | 4,3 × 0,011 = US$ 0,05 | 30 × 0,014 = US$ 0,42 | 90 × 0,014 = US$ 1,26 |
-| Arquivos (foto) | 30 × 0,003 = US$ 0,09 | 60 × 0,003 = US$ 0,18 | 300 × 0,003 = US$ 0,90 |
-| Plano de estudos | 4,3 × 0,006 = US$ 0,03 | 12,9 × 0,006 = US$ 0,08 | 30 × 0,006 = US$ 0,18 |
-| Vídeos de 60 min | — | 90 × 0,123 = US$ 11,07 | 300 × 0,123 = US$ 36,90 |
-| Quiz por IA | — | 90 × 0,024 = US$ 2,16 | 450 × 0,024 = US$ 10,80 |
-| Flashcards por IA | — | 90 × 0,010 = US$ 0,90 | 450 × 0,010 = US$ 4,50 |
-| Simulado por IA | — | 4,3 × 0,030 = US$ 0,13 | 30 × 0,030 = US$ 0,90 |
-| **Total sem teto** | **US$ 0,43 ≈ R$ 2,38** | **US$ 16,74 ≈ R$ 92** | **US$ 59,94 ≈ R$ 330** |
-| Total sem teto, vídeos de 20 min | igual | US$ 9,63 ≈ R$ 53 | US$ 36,24 ≈ R$ 199 |
-| **Teto mensal de uso justo (o que vale)** | não chega no teto (US$ 0,60) | **US$ 3,00 ≈ R$ 16,50** | **US$ 5,50 ≈ R$ 30,25** |
-| Preço | R$ 0 | R$ 19,90 | R$ 34,90 |
+| Mensagem no chat | 4.000 / 800 | US$ 0,0008 | — |
+| Correção de redação | 3.500 / 3.000 | US$ 0,0018 | US$ 0,0098 |
+| Leitura de foto | 1.500 / 800 | US$ 0,0005 | — |
+| Plano de estudos | 2.500 / 3.500 | US$ 0,0019 | US$ 0,0109 |
+| Quiz de 20 questões de um material | 12.000 / 4.500 | US$ 0,0035 | — |
+| Flashcards (30) | 9.000 / 3.500 | US$ 0,0026 | — |
+| Simulado de 30 questões | 9.000 / 6.500 | US$ 0,0040 | — |
+| Vídeo de 20 min | 120.000 / 3.500 | US$ 0,0154 | — |
+| Vídeo de 30 min | 180.000 / 4.000 | US$ 0,0225 | — |
 
-O teto é conferido antes de cada uso, então a última operação do mês pode passar um pouco dele (no máximo o custo de uma operação, cerca de US$ 0,12 com um vídeo de 60 min).
+| Plano | Pior caso estimado | Teto mensal no servidor | Teto combinado |
+|---|---|---|---|
+| Gratuito | US$ 0,10 ≈ **R$ 0,58** | US$ 0,17 ≈ R$ 0,94 | R$ 1,00 |
+| Básico | US$ 0,86 ≈ **R$ 4,74** | US$ 0,85 ≈ R$ 4,68 | R$ 4,90 |
+| Completo | US$ 2,65 ≈ **R$ 14,58** | US$ 2,62 ≈ R$ 14,41 | R$ 14,90 |
 
-Sem teto mensal, um aluno que usasse todos os limites todos os dias daria prejuízo nos planos pagos (o gargalo são os vídeos, o chat e as questões geradas). Por isso existem **dois tetos de segurança por aluno**, aplicados no servidor (`consumeFeature`, `src/lib/usage.ts`) e editáveis em `plans.ts`:
+O teto mensal (`safety.monthlyCostUsd` em `plans.ts`) soma o custo real gravado em `ai_call_logs` e bloqueia o uso de IA ao chegar nele (volta no dia 1º). Ele é conferido antes de cada uso, então a última operação do mês pode passar um pouco (no máximo uma operação, cerca de US$ 0,02 a 0,04 com um vídeo). Ele garante o teto mesmo quando a IA cai no modelo de reserva, que é mais caro: nesse caso o aluno só chega no teto alguns dias antes.
 
-- **Teto diário** (soma dos pesos dos usos e custo estimado em dólares no dia): Gratuito US$ 0,10; Básico US$ 0,50; Completo US$ 1,50.
-- **Teto mensal de uso justo** (custo estimado de IA no mês): Gratuito US$ 0,60; Básico US$ 3,00; Completo US$ 5,50. Ao chegar nele, o aluno vê "teto de uso justo deste mês", com a data em que volta (dia 1º).
-
-Com os tetos, o pior caso por aluno fica limitado ao valor da última coluna da tabela acima. O Completo, no pior caso absoluto, deixa cerca de R$ 4,65 de margem antes da taxa do Stripe (≈ 4% + R$ 0,39 por cobrança de cartão no Brasil; confirmar na sua conta). Isso só acontece com abuso; o uso típico é bem menor.
-
-## Perfis de uso típico (por mês)
-
-| Perfil | Uso no mês | Custo |
-|---|---|---|
-| **Leve** (estuda 3 vezes por semana) | 8 quizzes, 2 simulados, 6 decks, 2 redações, 1 plano, 60 mensagens, 2 vídeos de 20 min, 3 fotos | **R$ 2,65** |
-| **Médio** (quase todo dia) | 25 quizzes, 4 simulados, 15 decks, 4 redações, 2 planos, 200 mensagens, 6 vídeos de 20 min, 8 fotos | **R$ 8,13** |
-| **Intenso** (todo dia, uso pesado) | 60 quizzes, 8 simulados, 30 decks, 10 redações, 4 planos, 600 mensagens, 10 vídeos de 20 min + 5 de 60 min, 20 fotos | **R$ 23,76** |
-
-Leve e Médio cabem folgados nos tetos do Básico. O Intenso passa do teto do Básico (R$ 16,50) e cabe no Completo (R$ 30,25), que é o plano certo para ele.
+**Importante (09/10/2026):** a chave do Gemini ainda está no plano grátis do Google, e o `gemini-2.5-flash` e o `gemini-2.5-flash-lite` estão sem cota. Hoje tudo responde pelo `gemini-3.1-flash-lite` (reserva), que custa cerca de 2,5 vezes mais. Com o faturamento ativado, o modelo mais barato volta a ser o principal.
 
 ## Como acompanhar o custo real
 

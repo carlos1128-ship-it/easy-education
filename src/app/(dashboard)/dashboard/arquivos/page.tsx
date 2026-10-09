@@ -1,14 +1,22 @@
 import { CirclePlay, FileText } from "lucide-react";
 import { FileActions } from "@/components/files/file-actions";
 import { FileUploader } from "@/components/files/file-uploader";
+import { PendingRefresh } from "@/components/files/pending-refresh";
 import { YouTubeLinkForm } from "@/components/files/youtube-link-form";
 import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatBytes } from "@/lib/format";
-import { allowanceFor } from "@/lib/plans";
+import { allowanceFor, PLANS } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { parseVideoSourceKey, watchUrl, YOUTUBE_FILE_TYPE } from "@/lib/youtube";
+
+const STALE_MS = 7 * 60 * 1000;
+
+/** Página do servidor: renderiza a cada pedido, então ler o relógio aqui é seguro. */
+function staleThreshold() {
+  return Date.now() - STALE_MS;
+}
 
 export default async function ArquivosPage({ searchParams }: { searchParams: Promise<{ busca?: string }> }) {
   const { user, access } = await getStudentOrRedirect();
@@ -17,8 +25,12 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
   const files = await getPrisma().uploadedFile.findMany({
     where: { userId: user.id, name: busca ? { contains: busca, mode: "insensitive" } : undefined },
     orderBy: { createdAt: "desc" },
-    select: { id: true, name: true, type: true, sizeBytes: true, processed: true, sourceUrl: true, processingError: true },
+    select: { id: true, name: true, type: true, sizeBytes: true, processed: true, sourceUrl: true, processingError: true, createdAt: true },
   });
+
+  // Leitura que passou do tempo máximo da função (5 min) e não gravou resultado: conta como falha, não fica "lendo" para sempre.
+  const staleBefore = staleThreshold();
+  const isStale = (file: (typeof files)[number]) => !file.processed && !file.processingError && file.createdAt.getTime() < staleBefore;
 
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
@@ -27,6 +39,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Meus materiais</h1>
       </div>
 
+      <PendingRefresh pending={files.some((file) => !file.processed && !file.processingError && !isStale(file))} />
       <div className="flex flex-wrap gap-2">
         <UsageHint feature="file_upload" />
         {videoLocked ? null : <UsageHint feature="video_material" />}
@@ -42,7 +55,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
             description="Cole o link de uma aula e a IA gera anotações com o minuto de cada assunto, para virar quiz, flashcards ou simulado."
           />
         ) : (
-          <YouTubeLinkForm />
+          <YouTubeLinkForm maxMinutes={PLANS[access.tier].videoMaxMinutes} />
         )}
       </div>
 
@@ -51,10 +64,13 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
           {files.map((file) => {
             const isVideo = file.type === YOUTUBE_FILE_TYPE;
             const video = isVideo ? parseVideoSourceKey(file.sourceUrl) : null;
-            const failed = Boolean(file.processingError);
+            const stale = isStale(file);
+            const failed = Boolean(file.processingError) || stale;
             const status = file.processed
               ? "Pronto"
-              : failed
+              : stale
+                ? "Demorou demais. Apague e tente de novo"
+                : failed
                 ? "Não foi possível ler"
                 : isVideo
                   ? "A IA está assistindo o vídeo…"

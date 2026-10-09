@@ -5,6 +5,8 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { runWithAiCallContext } from "@/lib/ai-cost";
 import { getPrisma } from "@/lib/prisma";
+import { getAccessState } from "@/lib/billing";
+import { PLANS } from "@/lib/plans";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { consumeFeature } from "@/lib/usage";
 import {
@@ -13,7 +15,6 @@ import {
   parseTimestamp,
   parseYouTubeUrl,
   processVideoMaterial,
-  VIDEO_MAX_MINUTES,
   VideoError,
   videoSourceKey,
   YOUTUBE_FILE_TYPE,
@@ -42,10 +43,13 @@ export async function POST(request: Request) {
 
     const startSeconds = parseTimestamp(payload.start) ?? parsed.startSeconds ?? 0;
     const requestedEnd = parseTimestamp(payload.end);
-    const maxSeconds = VIDEO_MAX_MINUTES * 60;
+    // Vídeo é o recurso que mais gasta IA: o trecho máximo depende do plano (ver plans.ts).
+    const { tier } = await getAccessState(user);
+    const maxMinutes = PLANS[tier].videoMaxMinutes;
+    const maxSeconds = maxMinutes * 60;
     if (requestedEnd !== null && requestedEnd <= startSeconds) throw new VideoError("O fim do trecho precisa vir depois do início.");
     if (requestedEnd !== null && requestedEnd - startSeconds > maxSeconds) {
-      throw new VideoError(`Escolha um trecho de até ${VIDEO_MAX_MINUTES} minutos por vez.`);
+      throw new VideoError(`No seu plano, escolha um trecho de até ${maxMinutes} minutos por vez.`);
     }
     const endSeconds = requestedEnd ?? startSeconds + maxSeconds;
 
@@ -58,7 +62,7 @@ export async function POST(request: Request) {
 
     const meta = await fetchVideoMeta(parsed.id);
     // Vídeos por dia dependem do plano (bloqueado no Gratuito). O trecho repetido acima não gasta o limite.
-    const ticket = await consumeFeature(user, "video_material");
+    const ticket = await consumeFeature(user, "video_material", { tier });
 
     const range = startSeconds > 0 || requestedEnd !== null ? ` (${formatTimestamp(startSeconds)}–${requestedEnd !== null ? formatTimestamp(endSeconds) : "fim"})` : "";
     let file;

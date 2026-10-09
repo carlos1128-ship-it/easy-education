@@ -148,6 +148,8 @@ export type PlanConfig = {
   limits: Record<FeatureKey, Allowance>;
   /** Tamanho máximo de cada arquivo enviado. */
   uploadMaxBytes: number;
+  /** Maior trecho de vídeo do YouTube por envio, em minutos (vídeo é o que mais custa de IA). */
+  videoMaxMinutes: number;
   /**
    * Tetos globais de segurança por aluno por dia. Servem para um bug ou abuso não gerar uma conta enorme;
    * ficam bem acima do uso normal de cada plano.
@@ -184,7 +186,9 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_simulado: locked,
     },
     uploadMaxBytes: 5 * MB,
-    safety: { dailyUnits: 30, dailyCostUsd: 0.1, monthlyCostUsd: 0.6 },
+    videoMaxMinutes: 0,
+    // Teto de custo: R$ 1 por mês (US$ 0,17 a R$ 5,50). Ver docs/consumo-ia.md.
+    safety: { dailyUnits: 30, dailyCostUsd: 0.02, monthlyCostUsd: 0.17 },
   },
   basic: {
     id: "basic",
@@ -192,20 +196,22 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     priceCents: 1990,
     tagline: "Para estudar com IA todo dia, no seu ritmo.",
     limits: {
-      chat_message: perDay(20),
-      essay_correction: perWeek(7),
+      chat_message: perDay(12),
+      essay_correction: perWeek(3),
       // Redação por foto entra no limite de redações; este é só o teto técnico de leituras (2x o limite de redações).
-      essay_photo_read: perWeek(14),
+      essay_photo_read: perWeek(6),
       file_upload: perDay(2),
-      video_material: perDay(3),
-      study_plan: perWeek(3),
+      video_material: perWeek(2),
+      study_plan: perWeek(1),
       trail: open,
-      ai_quiz: perDay(3),
-      ai_flashcards: perDay(3),
+      ai_quiz: perDay(2),
+      ai_flashcards: perDay(2),
       ai_simulado: perWeek(1),
     },
     uploadMaxBytes: 15 * MB,
-    safety: { dailyUnits: 120, dailyCostUsd: 0.5, monthlyCostUsd: 3 },
+    videoMaxMinutes: 20,
+    // Teto de custo: R$ 4,90 por mês (US$ 0,85). Usando todos os limites todo dia, o custo estimado fica perto de R$ 4,74.
+    safety: { dailyUnits: 80, dailyCostUsd: 0.12, monthlyCostUsd: 0.85 },
   },
   full: {
     id: "full",
@@ -213,19 +219,21 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     priceCents: 3490,
     tagline: "Para quem estuda pesado e quer o limite mais alto.",
     limits: {
-      chat_message: perDay(50),
-      essay_correction: perDay(3),
-      essay_photo_read: perDay(6),
-      file_upload: perDay(10),
-      video_material: perDay(10),
-      study_plan: perDay(1),
+      chat_message: perDay(30),
+      essay_correction: perDay(1),
+      essay_photo_read: perDay(2),
+      file_upload: perDay(5),
+      video_material: perWeek(4),
+      study_plan: perWeek(3),
       trail: open,
-      ai_quiz: perDay(15),
-      ai_flashcards: perDay(15),
+      ai_quiz: perDay(5),
+      ai_flashcards: perDay(5),
       ai_simulado: perDay(1),
     },
     uploadMaxBytes: 50 * MB,
-    safety: { dailyUnits: 300, dailyCostUsd: 1.5, monthlyCostUsd: 5.5 },
+    videoMaxMinutes: 30,
+    // Teto de custo: R$ 14,90 por mês (US$ 2,62). Usando todos os limites todo dia, o custo estimado fica perto de R$ 14,58.
+    safety: { dailyUnits: 200, dailyCostUsd: 0.4, monthlyCostUsd: 2.62 },
   },
 };
 

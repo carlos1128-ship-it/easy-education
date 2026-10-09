@@ -32,6 +32,7 @@ export function currentAiCallContext(): AiCallContext {
 const PRICE_PER_MILLION: Array<{ prefix: string; input: number; output: number }> = [
   { prefix: "gemini-2.5-flash-lite", input: 0.1, output: 0.4 },
   { prefix: "gemini-2.5-flash", input: 0.3, output: 2.5 },
+  { prefix: "gemini-3.1-flash-lite", input: 0.25, output: 1.5 },
   { prefix: "gemini-3.5-flash-lite", input: 0.3, output: 2.5 },
 ];
 const DEFAULT_PRICE = { input: 0.3, output: 2.5 };

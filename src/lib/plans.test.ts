@@ -21,16 +21,16 @@ describe("planos e limites (valores combinados com o produto)", () => {
     expect(PLANS.free.priceCents).toBe(0);
   });
 
-  it("chat: 3, 20 e 50 mensagens por dia", () => {
+  it("chat: 3, 12 e 30 mensagens por dia", () => {
     expect(allowanceFor("free", "chat_message")).toEqual({ kind: "limit", max: 3, window: "day" });
-    expect(allowanceFor("basic", "chat_message")).toEqual({ kind: "limit", max: 20, window: "day" });
-    expect(allowanceFor("full", "chat_message")).toEqual({ kind: "limit", max: 50, window: "day" });
+    expect(allowanceFor("basic", "chat_message")).toEqual({ kind: "limit", max: 12, window: "day" });
+    expect(allowanceFor("full", "chat_message")).toEqual({ kind: "limit", max: 30, window: "day" });
   });
 
-  it("redação: 1 por semana, 7 por semana e 3 por dia", () => {
+  it("redação: 1 por semana, 3 por semana e 1 por dia", () => {
     expect(allowanceFor("free", "essay_correction")).toEqual({ kind: "limit", max: 1, window: "week" });
-    expect(allowanceFor("basic", "essay_correction")).toEqual({ kind: "limit", max: 7, window: "week" });
-    expect(allowanceFor("full", "essay_correction")).toEqual({ kind: "limit", max: 3, window: "day" });
+    expect(allowanceFor("basic", "essay_correction")).toEqual({ kind: "limit", max: 3, window: "week" });
+    expect(allowanceFor("full", "essay_correction")).toEqual({ kind: "limit", max: 1, window: "day" });
   });
 
   it("redação por foto fica bloqueada no Gratuito", () => {
@@ -41,7 +41,7 @@ describe("planos e limites (valores combinados com o produto)", () => {
   it("upload: quantidade por dia e tamanho por plano", () => {
     expect(allowanceFor("free", "file_upload")).toEqual({ kind: "limit", max: 1, window: "day" });
     expect(allowanceFor("basic", "file_upload")).toEqual({ kind: "limit", max: 2, window: "day" });
-    expect(allowanceFor("full", "file_upload")).toEqual({ kind: "limit", max: 10, window: "day" });
+    expect(allowanceFor("full", "file_upload")).toEqual({ kind: "limit", max: 5, window: "day" });
     expect([uploadLimitMB("free"), uploadLimitMB("basic"), uploadLimitMB("full")]).toEqual([5, 15, 50]);
   });
 
@@ -88,6 +88,18 @@ describe("planos e limites (valores combinados com o produto)", () => {
     // Em reais (câmbio 5,50), o gasto máximo de IA por aluno fica dentro do preço do plano.
     expect(PLANS.basic.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(PLANS.basic.priceCents / 100);
     expect(PLANS.full.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(PLANS.full.priceCents / 100);
+  });
+
+  it("teto de custo combinado: Gratuito até R$ 1, Básico até R$ 4,90 e Completo até R$ 14,90 por mês", () => {
+    expect(PLANS.free.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(1);
+    expect(PLANS.basic.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(4.9);
+    expect(PLANS.full.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(14.9);
+  });
+
+  it("vídeo: bloqueado no Gratuito, trechos de até 20 min no Básico e 30 min no Completo", () => {
+    expect(PLANS.free.videoMaxMinutes).toBe(0);
+    expect(PLANS.basic.videoMaxMinutes).toBe(20);
+    expect(PLANS.full.videoMaxMinutes).toBe(30);
   });
 
   it("upgrade: Gratuito → Básico, Básico → Completo, Completo sem upgrade", () => {

@@ -78,8 +78,8 @@ async function main() {
       }
     }
     const expected: Array<[Parameters<typeof usesUntilBlocked>[0], Parameters<typeof usesUntilBlocked>[1], number]> = [
-      ["free", "chat_message", 3], ["basic", "chat_message", 20], ["full", "chat_message", 50],
-      ["free", "ai_quiz", 0], ["basic", "ai_quiz", 3], ["full", "ai_quiz", 15],
+      ["free", "chat_message", 3], ["basic", "chat_message", 12], ["full", "chat_message", 30],
+      ["free", "ai_quiz", 0], ["basic", "ai_quiz", 2], ["full", "ai_quiz", 5],
       ["free", "ai_simulado", 0], ["basic", "ai_simulado", 1], ["full", "ai_simulado", 1],
     ];
     for (const [tier, feature, max] of expected) {

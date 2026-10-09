@@ -6,12 +6,11 @@ import { getPrisma } from "@/lib/prisma";
 import { PlanLimitError, withFeature } from "@/lib/usage";
 import {
   describeSubjectForPrompt,
-  fillQuestionCount,
+  generateQuizQuestions,
   partInstruction,
   QUIZ_CHUNK_SIZE,
   questionDedupeKey,
   quizQuestionsSchema,
-  sanitizeGeneratedQuizQuestions,
 } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
@@ -45,16 +44,10 @@ Regras obrigatorias:
 - Nao use placeholders como "Alternativa correta", "Distrator plausivel" ou "resolva a situacao-problema proposta" sem apresentar a situacao.
 - Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
 - Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${learnerPromptBlock(learner)}
-Retorne APENAS um array JSON valido com question, options (4 strings), correctAnswer (A, B, C ou D) e explanation.`;
-  const rawQuestions = await generateJSONList<GeneratedQuizQuestion>({
-    total: questionCount,
-    chunkSize: QUIZ_CHUNK_SIZE,
-    schema: quizQuestionsSchema,
-    buildPrompt,
-    dedupeKey: questionDedupeKey,
-  });
-  const questions = sanitizeGeneratedQuizQuestions(rawQuestions, questionCount, subject);
-  const safeQuestions = fillQuestionCount(questions, questionCount);
+Retorne APENAS um array JSON valido com question, options (array com o TEXTO completo de cada uma das 4 alternativas, na ordem A, B, C e D, sem a letra na frente; nunca escreva so a letra), correctAnswer (A, B, C ou D) e explanation.`;
+  const safeQuestions = await generateQuizQuestions(questionCount, (missing) =>
+    generateJSONList<GeneratedQuizQuestion>({ total: missing, chunkSize: QUIZ_CHUNK_SIZE, schema: quizQuestionsSchema, buildPrompt, dedupeKey: questionDedupeKey }),
+  );
 
   return prisma.quiz.create({
     data: {

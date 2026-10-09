@@ -8,13 +8,34 @@ import {
   type Schema,
   type ThinkingConfig,
 } from "@google/genai";
-import { recordAiCall } from "@/lib/ai-cost";
+import { currentAiCallContext, recordAiCall } from "@/lib/ai-cost";
 import type { ChatInputMessage } from "@/types";
 
 const defaultModel = "gemini-2.5-flash";
-const defaultFallbackModels = ["gemini-2.5-flash-lite"];
+/** Reservas sempre de outra família: quando um modelo fica sem cota ou sobrecarregado, o próximo responde. */
+const defaultFallbackModels = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
 /** Modelos das listas (quiz, simulado, flashcards): os mais rápidos primeiro, com reserva de outra família. */
-const defaultFastModels = ["gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const defaultFastModels = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
+
+/**
+ * Modelos por plano, para caber no teto de custo de cada um (Gratuito R$ 1, Básico R$ 4,90, Completo R$ 14,90 por mês;
+ * ver docs/consumo-ia.md). Todos os alunos usam primeiro o modelo mais barato (gemini-2.5-flash-lite, ~6x mais barato
+ * na saída). O Completo usa o gemini-2.5-flash só onde a qualidade pesa mais e o volume é baixo: redação e plano.
+ */
+const economyModels = ["gemini-2.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+const PREMIUM_FEATURES = new Set(["essay_correction", "essay_photo_read", "study_plan"]);
+
+/** Lista de modelos para a chamada atual, pelo plano e recurso do aluno (contexto da requisição). */
+function planModels(): string[] | null {
+  const { plan, feature } = currentAiCallContext();
+  if (!plan) return null;
+  if (plan === "full" && feature && PREMIUM_FEATURES.has(feature)) return [defaultModel, ...defaultFallbackModels];
+  const configured = (process.env.GEMINI_ECONOMY_MODELS ?? economyModels.join(","))
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
+  return configured.length ? [...new Set(configured)] : economyModels;
+}
 
 let geminiClient: GoogleGenAI | null = null;
 
@@ -42,6 +63,9 @@ export function getGemini() {
 }
 
 function configuredModels() {
+  const byPlan = planModels();
+  if (byPlan) return byPlan;
+  // Sem aluno (tarefas internas, como classificar o banco em lote): modelo padrão.
   const primary = process.env.GEMINI_MODEL ?? defaultModel;
   const fallbacks = (process.env.GEMINI_FALLBACK_MODELS ?? defaultFallbackModels.join(","))
     .split(",")
@@ -175,6 +199,8 @@ Importante: responda somente JSON valido, compacto, sem markdown e sem campos ex
 }
 
 function fastModels() {
+  const byPlan = planModels();
+  if (byPlan) return byPlan;
   const configured = (process.env.GEMINI_FAST_MODELS ?? defaultFastModels.join(","))
     .split(",")
     .map((model) => model.trim())
@@ -319,7 +345,7 @@ function toGeminiContents(messages: ChatInputMessage[]): Content[] {
 
 export async function streamChat(messages: ChatInputMessage[], systemPrompt: string) {
   return getGemini().models.generateContentStream({
-    model: process.env.GEMINI_MODEL ?? defaultModel,
+    model: configuredModels()[0],
     contents: toGeminiContents(messages),
     config: {
       maxOutputTokens: 2048,

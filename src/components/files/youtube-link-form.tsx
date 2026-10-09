@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { readApiJson } from "@/lib/client-response";
 
 /** Cola um link do YouTube: a IA lê o vídeo e gera anotações com marcas de tempo para quiz, flashcards e simulado. */
-export function YouTubeLinkForm() {
+export function YouTubeLinkForm({ maxMinutes }: { maxMinutes: number }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showRange, setShowRange] = useState(false);
@@ -80,7 +80,7 @@ export function YouTubeLinkForm() {
           Vídeo longo? Escolher só um trecho
         </button>
       )}
-      <p className="m-0 mt-3 text-xs text-ink-muted">Só vídeos públicos, até 60 minutos por vez. As questões refletem o conteúdo do vídeo, que pode conter erros.</p>
+      <p className="m-0 mt-3 text-xs text-ink-muted">Só vídeos públicos, até {maxMinutes} minutos por vez no seu plano (vídeos maiores: escolha o trecho). As questões refletem o conteúdo do vídeo, que pode conter erros.</p>
     </form>
   );
 }
