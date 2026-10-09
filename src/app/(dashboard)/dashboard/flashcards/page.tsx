@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
+import { BankEntryCard } from "@/components/bank/bank-entry-card";
+import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FlashcardCreateForm } from "@/components/flashcard/flashcard-create-form";
+import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { getStudentOrRedirect } from "@/lib/server-user";
 
 export default async function FlashcardsPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  const aiLocked = allowanceFor(access.tier, "ai_flashcards").kind === "locked";
   const prisma = getPrisma();
   const [decks, files] = await Promise.all([
     prisma.flashcardDeck.findMany({
@@ -24,7 +28,25 @@ export default async function FlashcardsPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Decks de revisão</h1>
       </div>
 
-      <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
+      <BankEntryCard
+        title="Revisão das questões que você errou"
+        description="Os cartões saem das questões do banco que você errou ou marcou, e voltam na hora certa (repetição espaçada). Em todos os planos."
+        href="/dashboard/revisao"
+        action="Revisar agora"
+      />
+
+      {aiLocked ? (
+        <LockedNotice
+          feature="ai_flashcards"
+          title="Flashcards gerados por IA fazem parte dos planos pagos"
+          description="No plano Gratuito você revisa os cartões das questões que respondeu. Para gerar decks sobre qualquer assunto ou material, escolha um plano pago."
+        />
+      ) : (
+        <div className="space-y-3">
+          <UsageHint feature="ai_flashcards" />
+          <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
+        </div>
+      )}
 
       {decks.length === 0 ? (
         <EmptyState icon={BookOpen} title="Nenhum deck criado ainda." description="Gere flashcards com IA e revise com repeticao espacada." />

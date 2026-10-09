@@ -34,6 +34,9 @@ import {
   landingSteps,
 } from "@/content/landing";
 import { cn } from "@/lib/utils";
+import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
+import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
+import { uploadLimitMB } from "@/lib/plans";
 
 const container = "mx-auto max-w-[1520px] px-5 lg:px-12 2xl:px-16";
 const sectionTop = "pt-16 lg:pt-24";
@@ -766,11 +769,11 @@ function PlanFeature({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PricingCard({ tier }: { tier: "basic" | "full" }) {
+function PricingCard({ tier }: { tier: "free" | "basic" | "full" }) {
   const p = landingPlans;
   const plan = p[tier];
   const featured = tier === "full";
-  const limits = p.limits.filter((limit) => limit[tier]);
+  const perDay = pricePerDayLabel(tier);
   return (
     <div
       className={cn(
@@ -792,25 +795,33 @@ function PricingCard({ tier }: { tier: "basic" | "full" }) {
           <span className="text-4xl font-black leading-[42px] tracking-[-0.5px]">{plan.price}</span>
           <span className="text-ink-muted">{plan.period}</span>
         </div>
-        <span className="text-sm font-medium text-brand-strong">{plan.perDay}</span>
+        {perDay ? <span className="text-sm font-medium text-brand-strong">{perDay}</span> : <span className="text-sm font-medium text-brand-strong">Sem cartão de crédito</span>}
       </div>
       <div className="flex flex-col gap-3">
-        <PlanFeature>
-          <strong className="font-bold">{plan.usage}</strong>
-        </PlanFeature>
-        {limits.map((limit) => (
-          <PlanFeature key={limit.label}>
-            <strong className="font-medium">{limit[tier]} </strong>
-            {limit.label}
+        {planHighlights(tier).map((item) => (
+          <PlanFeature key={item}>
+            <strong className="font-medium">{item}</strong>
           </PlanFeature>
         ))}
-        <span className="mt-1 text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">{p.includedTitle}</span>
-        {p.included.map((item) => (
-          <PlanFeature key={item}>{item}</PlanFeature>
-        ))}
+        <span className="mt-1 text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">{tier === "free" ? p.includedTitle : "Tudo do plano anterior, mais"}</span>
+        {tier === "free" ? (
+          p.included.map((item) => <PlanFeature key={item}>{item}</PlanFeature>)
+        ) : tier === "basic" ? (
+          <>
+            <PlanFeature>Quizzes e flashcards gerados por IA</PlanFeature>
+            <PlanFeature>Redação por foto e vídeos do YouTube</PlanFeature>
+            <PlanFeature>Trilha de estudos com troféus</PlanFeature>
+          </>
+        ) : (
+          <>
+            <PlanFeature>Os limites mais altos de IA</PlanFeature>
+            <PlanFeature>Simulados gerados por IA todo dia</PlanFeature>
+            <PlanFeature>Arquivos de até {uploadLimitMB("full")} MB</PlanFeature>
+          </>
+        )}
       </div>
       <Link
-        href={tier === "full" ? landingLinks.signUpFull : landingLinks.signUpBasic}
+        href={tier === "full" ? landingLinks.signUpFull : tier === "basic" ? landingLinks.signUpBasic : landingLinks.signUp}
         className={cn(
           "mt-auto grid h-12 place-items-center rounded-lg text-[15px] font-medium no-underline transition-colors",
           featured ? "bg-brand text-on-brand hover:bg-brand-strong" : "border-[1.5px] border-border-strong text-ink hover:bg-surface-muted",
@@ -831,28 +842,17 @@ function PlansSection() {
         <h2 className={h2}>{p.title}</h2>
         <p className={lead}>{p.text}</p>
       </div>
-      <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="relative hidden min-h-[300px] items-end justify-center overflow-hidden rounded-3xl bg-brand-tint lg:flex">
-          <div className="absolute left-1/2 top-10 size-[280px] -translate-x-1/2 rounded-full bg-brand-soft" />
-          <Image
-            src={p.images[0].src}
-            width={p.images[0].width}
-            height={p.images[0].height}
-            alt={p.images[0].alt}
-            sizes="200px"
-            className="relative -mr-6 block h-[92%] max-h-[440px] w-auto"
-          />
-          <Image
-            src={p.images[1].src}
-            width={p.images[1].width}
-            height={p.images[1].height}
-            alt={p.images[1].alt}
-            sizes="200px"
-            className="relative -ml-6 block h-[86%] max-h-[410px] w-auto"
-          />
-        </div>
-        <PricingCard tier="full" />
+      <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-3">
+        <PricingCard tier="free" />
         <PricingCard tier="basic" />
+        <PricingCard tier="full" />
+      </div>
+      <div className="flex flex-col gap-4">
+        <h3 className="m-0 text-xl font-bold text-ink">Compare os planos, número por número</h3>
+        <PlanComparisonTable />
+        <p className="m-0 text-[13px] text-ink-muted">
+          Os limites diários voltam à meia-noite e os semanais, na segunda-feira, no horário de Brasília. Todo limite tem um teto: não existe uso ilimitado.
+        </p>
       </div>
       <div className="flex items-center justify-center gap-2.5 text-center text-ink-muted">
         <IconShield size={18} className="flex-none" />
@@ -867,10 +867,10 @@ const productJsonLd = {
   "@type": "Product",
   name: "Easy Education",
   description: "Plataforma de estudos com IA para qualquer estudante: quiz, flashcards, simulados, plano de estudos e correção de redação a partir do próprio material.",
-  offers: [landingPlans.basic, landingPlans.full].map((plan) => ({
+  offers: [landingPlans.free, landingPlans.basic, landingPlans.full].map((plan) => ({
     "@type": "Offer",
     name: `Plano ${plan.name}`,
-    price: plan.price.replace(/[^\d,]/g, "").replace(",", "."),
+    price: plan.price === "Grátis" ? "0" : plan.price.replace(/[^\d,]/g, "").replace(",", "."),
     priceCurrency: "BRL",
     category: "subscription",
   })),

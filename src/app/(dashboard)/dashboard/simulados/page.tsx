@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { ClipboardCheck, Clock, Target } from "lucide-react";
+import { BankEntryCard } from "@/components/bank/bank-entry-card";
+import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { SimuladoCreateForm } from "@/components/quiz/simulado-create-form";
+import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { getStudentOrRedirect } from "@/lib/server-user";
 
 export default async function SimuladosPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  const aiLocked = allowanceFor(access.tier, "ai_simulado").kind === "locked";
   const prisma = getPrisma();
   const [simulados, files] = await Promise.all([
     prisma.quiz.findMany({ where: { userId: user.id, difficulty: "simulado" }, orderBy: { createdAt: "desc" } }),
@@ -21,7 +25,25 @@ export default async function SimuladosPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Prática em ritmo de prova</h1>
       </div>
 
-      <SimuladoCreateForm files={files} />
+      <BankEntryCard
+        title="Simulados de provas anteriores"
+        description="Faça uma prova inteira ou uma área, com as questões originais. O resultado é uma estimativa baseada no seu desempenho e fica no histórico."
+        href="/dashboard/banco/simulados"
+        action="Escolher um simulado"
+      />
+
+      {aiLocked ? (
+        <LockedNotice
+          feature="ai_simulado"
+          title="Simulados gerados por IA fazem parte dos planos pagos"
+          description="No plano Gratuito os simulados de provas anteriores continuam liberados. Para gerar simulados novos no estilo da sua prova, escolha um plano pago."
+        />
+      ) : (
+        <div className="space-y-3">
+          <UsageHint feature="ai_simulado" />
+          <SimuladoCreateForm files={files} />
+        </div>
+      )}
 
       <section className="grid gap-4 md:grid-cols-3">
         {[

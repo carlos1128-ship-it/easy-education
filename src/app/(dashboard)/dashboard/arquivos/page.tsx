@@ -2,14 +2,17 @@ import { CirclePlay, FileText } from "lucide-react";
 import { FileActions } from "@/components/files/file-actions";
 import { FileUploader } from "@/components/files/file-uploader";
 import { YouTubeLinkForm } from "@/components/files/youtube-link-form";
+import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatBytes } from "@/lib/format";
+import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { getStudentOrRedirect } from "@/lib/server-user";
 import { parseVideoSourceKey, watchUrl, YOUTUBE_FILE_TYPE } from "@/lib/youtube";
 
 export default async function ArquivosPage({ searchParams }: { searchParams: Promise<{ busca?: string }> }) {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  const videoLocked = allowanceFor(access.tier, "video_material").kind === "locked";
   const { busca } = await searchParams;
   const files = await getPrisma().uploadedFile.findMany({
     where: { userId: user.id, name: busca ? { contains: busca, mode: "insensitive" } : undefined },
@@ -24,9 +27,23 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Meus materiais</h1>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        <UsageHint feature="file_upload" />
+        {videoLocked ? null : <UsageHint feature="video_material" />}
+      </div>
+
       <div className="grid gap-4 xl:grid-cols-2">
         <FileUploader />
-        <YouTubeLinkForm />
+        {videoLocked ? (
+          <LockedNotice
+            feature="video_material"
+            className="sm:flex-col sm:items-start"
+            title="Estudar com vídeos do YouTube é dos planos pagos"
+            description="Cole o link de uma aula e a IA gera anotações com o minuto de cada assunto, para virar quiz, flashcards ou simulado."
+          />
+        ) : (
+          <YouTubeLinkForm />
+        )}
       </div>
 
       {files.length ? (

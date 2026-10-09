@@ -12,7 +12,7 @@ import {
   uploadLimitMB,
 } from "@/lib/plans";
 import { describeReset, startOfDaySP, startOfWeekSP, windowReset } from "@/lib/time-window";
-import { evaluateAllowance } from "@/lib/usage";
+import { evaluateAllowance } from "@/lib/plan-limits";
 
 describe("planos e limites (valores combinados com o produto)", () => {
   it("preços mensais", () => {

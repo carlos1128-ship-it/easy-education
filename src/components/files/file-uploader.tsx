@@ -4,22 +4,34 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
+import { usePlanOptional } from "@/components/plan/plan-provider";
 import { Button } from "@/components/ui/button";
 import { readApiJson } from "@/lib/client-response";
+import { fileTooLargeInfo } from "@/lib/plan-limits";
+import { PLANS, uploadLimitMB } from "@/lib/plans";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const ACCEPT = ".pdf,.txt,.png,.jpg,.jpeg,.webp,text/plain,application/pdf,image/png,image/jpeg,image/webp";
 
 export function FileUploader() {
   const router = useRouter();
+  const plan = usePlanOptional();
+  const tier = plan?.tier ?? "full";
+  const maxMB = uploadLimitMB(tier);
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "processing">("idle");
 
   async function upload(file?: File) {
     if (!file) return;
     const isImage = IMAGE_TYPES.includes(file.type);
-    if (file.size > (isImage ? 10 : 20) * 1024 * 1024) {
-      toast.error(isImage ? "Imagem acima de 10MB." : "Arquivo acima de 20MB.");
+    if (isImage && file.size > 10 * 1024 * 1024) {
+      toast.error("Imagem acima de 10MB.");
+      return;
+    }
+    // Tamanho máximo do plano: avisa antes de enviar (o servidor confere de novo).
+    if (file.size > PLANS[tier].uploadMaxBytes) {
+      plan?.openLimit(fileTooLargeInfo(tier, file.size));
+      if (!plan) toast.error(`Arquivo acima de ${maxMB} MB.`);
       return;
     }
 
@@ -58,7 +70,7 @@ export function FileUploader() {
     >
       <Upload className="mx-auto size-8 text-brand-strong" aria-hidden="true" />
       <h3 className="mt-4 text-lg font-bold text-ink">Arraste seu arquivo aqui</h3>
-      <p className="mt-2 text-sm text-ink-muted">PDF ou TXT até 20MB · Foto (PNG, JPG ou WebP) até 10MB</p>
+      <p className="mt-2 text-sm text-ink-muted">PDF ou TXT até {maxMB} MB · Foto (PNG, JPG ou WebP) até {Math.min(maxMB, 10)} MB</p>
       <input
         ref={inputRef}
         type="file"

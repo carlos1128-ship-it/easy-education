@@ -9,6 +9,12 @@
  * - Termos de uso e Privacidade: as rotas ainda não existem.
  */
 
+import { PLANS, formatPriceBRL } from "@/lib/plans";
+
+/** Preços sempre vêm de src/lib/plans.ts: nenhum valor em reais é escrito à mão na landing. */
+const priceBasic = formatPriceBRL(PLANS.basic.priceCents);
+const priceFull = formatPriceBRL(PLANS.full.priceCents);
+
 export const landingLinks = {
   signUp: "/cadastro", // Cadastro -> escolha do plano -> pagamento no Stripe.
   signUpBasic: "/cadastro?plano=basico",
@@ -37,7 +43,7 @@ export const landingHero = {
   titleKeyword: "treino",
   subtitle:
     "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
-  boxText: "A partir de R$ 26,90/mês · 7 dias de garantia",
+  boxText: `Plano gratuito de verdade · planos pagos a partir de ${priceBasic}/mês`,
   cta: "Criar meu plano",
   highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
@@ -101,7 +107,7 @@ export const illustrativeLabel = "Exemplo ilustrativo";
 export const landingMeta = {
   title: "Easy Education: estude com IA usando o seu próprio material",
   description:
-    "Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos e correção de redação. Para escola, faculdade, vestibular e concurso. A partir de R$ 26,90 por mês.",
+    `Banco de questões de provas anteriores, quiz com explicação, flashcards com revisão espaçada, plano de estudos e correção de redação. Plano gratuito e planos pagos a partir de ${priceBasic} por mês.`,
 } as const;
 
 export const landingResources = {
@@ -222,41 +228,38 @@ export const landingSteps = {
 export const landingPlans = {
   enabled: true,
   eyebrow: "Planos",
-  title: "Escolha quanto de IA você quer usar",
-  text: "Os dois planos têm todas as ferramentas. O Completo libera mais uso de IA para quem estuda todo dia.",
+  title: "Comece grátis. Pague só se quiser mais IA",
+  text: "O plano Gratuito tem banco de questões, simulados e desempenho, sem cartão. Os planos pagos liberam mais conversas com a IA, redações e materiais seus.",
+  free: {
+    name: PLANS.free.name,
+    description: "Para praticar com questões de provas anteriores.",
+    price: "Grátis",
+    period: "",
+    cta: "Começar grátis",
+  },
   basic: {
-    name: "Básico",
-    description: "Para estudar algumas vezes por semana.",
-    price: "R$ 26,90",
+    name: PLANS.basic.name,
+    description: "Para estudar com IA algumas vezes por semana.",
+    price: priceBasic,
     period: "por mês",
-    perDay: "Menos de R$ 1 por dia",
-    usage: "Limite padrão de uso da IA",
     cta: "Assinar o Básico",
   },
   full: {
-    name: "Completo",
+    name: PLANS.full.name,
     description: "Para quem estuda todo dia e usa muito a IA.",
-    price: "R$ 46,90",
+    price: priceFull,
     period: "por mês",
-    perDay: "Cerca de R$ 1,56 por dia",
-    usage: "Limite maior de uso da IA",
     cta: "Assinar o Completo",
     badge: "Mais indicado",
   },
-  includedTitle: "Incluso nos dois planos",
+  includedTitle: "Em todos os planos, inclusive o Gratuito",
   included: [
-    "Quizzes e simulados com explicação",
-    "Flashcards com revisão espaçada",
-    "Correção de redação por texto ou foto",
-    "Chat com IA e plano de estudos diário",
+    "Banco de questões de provas anteriores, com resolução comentada",
+    "Simulados de provas anteriores",
     "Painel de desempenho por matéria",
+    "Revisão espaçada das questões que você errou",
   ],
-  limits: [
-    { label: "quizzes por mês", basic: null as string | null, full: null as string | null },
-    { label: "correções de redação por mês", basic: null as string | null, full: null as string | null },
-    { label: "mensagens no chat por dia", basic: null as string | null, full: null as string | null },
-  ],
-  guarantee: "Garantia de 7 dias: se não gostar, devolvemos seu dinheiro. Cancele quando quiser.",
+  guarantee: "Nos planos pagos: garantia de 7 dias, devolvemos seu dinheiro se não gostar. Cancele quando quiser.",
   images: [
     { src: "/images/estudante-xadrez-recorte.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
     { src: "/images/estudante-jeans-recorte.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
@@ -317,11 +320,11 @@ export const landingFaq = {
   items: [
     {
       q: "Quanto custa o Easy Education?",
-      a: "O Básico custa R$ 26,90 por mês e o Completo, R$ 46,90. Você cancela quando quiser e tem 7 dias de garantia.",
+      a: `O plano Gratuito não custa nada. O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}. Nos planos pagos você cancela quando quiser e tem 7 dias de garantia.`,
     },
     {
       q: "Qual a diferença entre o Básico e o Completo?",
-      a: "Os dois têm todas as ferramentas. O Completo tem limites maiores de uso da IA, pensado para quem gera quizzes, corrige redações e conversa com o chat todo dia.",
+      a: "O Gratuito tem o banco de questões, os simulados de provas anteriores e o desempenho, com poucas mensagens no chat e uma redação por semana. O Básico libera quizzes e flashcards gerados por IA, vídeos do YouTube e a trilha. O Completo tem os limites mais altos. A tabela de planos mostra cada número.",
     },
     {
       q: "Preciso ter a apostila em PDF?",
@@ -356,7 +359,7 @@ export const landingFaq = {
 
 export const landingFinalCta = {
   title: "Comece seu plano de estudos hoje",
-  text: "Assine, conte o que você está estudando e receba o plano da semana na hora. Se não gostar, a garantia de 7 dias devolve seu dinheiro.",
+  text: "Crie sua conta grátis, conte o que você está estudando e receba o plano da semana na hora. Nos planos pagos, a garantia de 7 dias devolve seu dinheiro.",
   cta: "Criar meu plano",
   image: { src: "/images/formatura-azul.jpg" },
 } as const;

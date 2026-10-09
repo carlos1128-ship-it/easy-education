@@ -3,13 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CircleHelp, LogOut, Menu, MoreVertical } from "lucide-react";
+import { CircleHelp, Lock, LogOut, Menu, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/brand/logo";
 import { startProductTour } from "@/components/onboarding/product-tour";
+import { usePlanOptional } from "@/components/plan/plan-provider";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { navItems } from "@/lib/app-data";
+import type { FeatureKey } from "@/lib/plans";
 import { getProfileInitials } from "@/lib/subjects";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +23,9 @@ const mobileNavItems = [
   { href: "/dashboard/flashcards", label: "Flashcards" },
   { href: "/dashboard/plano", label: "Plano" },
 ] as const;
+
+/** Páginas do menu que dependem de um recurso do plano: com o recurso fechado, o item ganha cadeado. */
+const LOCKABLE_NAV: Record<string, FeatureKey> = { "/dashboard/trilha": "trail" };
 
 function isActive(pathname: string, href: string) {
   return href === "/dashboard" ? pathname === href : pathname.startsWith(href);
@@ -35,6 +40,7 @@ const navLinkClass = (active: boolean) =>
 function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: () => void; profileName: string; studyGoal?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const plan = usePlanOptional();
   const mainItems = navItems.filter((item) => item.group === "Menu Principal");
   const studyItems = navItems.filter((item) => item.group === "Meus Estudos");
   const footerItems = navItems.filter((item) => item.group === "Footer");
@@ -50,19 +56,34 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
   function renderItem(item: (typeof navItems)[number]) {
     const active = isActive(pathname, item.href);
     const Icon = item.icon;
+    const lockFeature = LOCKABLE_NAV[item.href];
+    const locked = Boolean(lockFeature && plan?.usage[lockFeature]?.state === "locked");
 
     return (
       <Link
         key={item.href}
         href={item.href}
         prefetch={false}
-        onClick={onNavigate}
+        onClick={(event) => {
+          // Recurso fora do plano: em vez de abrir uma página vazia, explica o que o upgrade libera.
+          if (locked && lockFeature) {
+            event.preventDefault();
+            plan?.openLocked(lockFeature);
+          }
+          onNavigate?.();
+        }}
         aria-current={active ? "page" : undefined}
         data-tour={item.href}
         className={navLinkClass(active)}
       >
         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
         <span>{item.label}</span>
+        {locked ? (
+          <>
+            <Lock size={14} strokeWidth={2} className="ml-auto text-ink-muted" aria-hidden="true" />
+            <span className="sr-only">(bloqueado no seu plano)</span>
+          </>
+        ) : null}
       </Link>
     );
   }

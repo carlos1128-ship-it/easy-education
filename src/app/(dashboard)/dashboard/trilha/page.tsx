@@ -3,13 +3,27 @@ import Link from "next/link";
 import { ArrowRight, Flame, Trophy as TrophyIcon } from "lucide-react";
 import { StudyTrail } from "@/components/trail/study-trail";
 import { Trophy } from "@/components/trail/trophy";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { LockedPage } from "@/components/plan/locked-page";
+import { allowanceFor } from "@/lib/plans";
+import { getStudentOrRedirect } from "@/lib/server-user";
 import { DAYS_PER_SECTION, SECTION_COUNT, getTrailForUser } from "@/lib/study-trail";
 
 export const metadata: Metadata = { title: "Trilha de estudos · Easy Education" };
 
 export default async function TrilhaPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  // A trilha faz parte dos planos pagos; a checagem é aqui, no servidor, e não só no cadeado do menu.
+  if (allowanceFor(access.tier, "trail").kind === "locked") {
+    return (
+      <LockedPage
+        feature="trail"
+        tier={access.tier}
+        title="Trilha de estudos"
+        description="Transforme cada dia do seu plano em um nível, feche seções e ganhe troféus. Ajuda a manter a constância."
+        bullets={["Um nível por dia de plano concluído", "Troféu a cada seção de 7 dias", "Sequência de dias seguidos"]}
+      />
+    );
+  }
   const trail = await getTrailForUser(user.id);
   const today = trail.current;
   const earned = trail.trophies.filter((trophy) => trophy.earned > 0).length;

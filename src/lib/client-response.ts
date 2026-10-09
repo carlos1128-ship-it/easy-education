@@ -1,3 +1,5 @@
+import { emitPlanLimit, isPlanLimitPayload } from "@/lib/plan-limit-events";
+
 export async function readApiJson<T extends Record<string, unknown>>(
   response: Response,
   fallbackError: string,
@@ -9,7 +11,12 @@ export async function readApiJson<T extends Record<string, unknown>>(
   }
 
   try {
-    return JSON.parse(text) as T & { error?: string };
+    const parsed = JSON.parse(text) as T & { error?: string };
+    // Limite de plano ou recurso fora do plano: abre o modal de upgrade e deixa o aviso do formulário curto.
+    if (!response.ok && isPlanLimitPayload(parsed) && emitPlanLimit(parsed)) {
+      return { ...parsed, error: "Limite do plano atingido." } as T & { error?: string };
+    }
+    return parsed;
   } catch {
     return {
       error: fallbackError,

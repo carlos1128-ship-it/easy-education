@@ -1,4 +1,5 @@
 import { CalendarCheck, Sparkles } from "lucide-react";
+import { UsageHint } from "@/components/plan/usage-hint";
 import { StudyPlanGenerator } from "@/components/study-plan/study-plan-generator";
 import { StudySessionButton } from "@/components/study-plan/study-session-button";
 import { formatMinutes } from "@/lib/format";
@@ -54,6 +55,10 @@ export default async function PlanoPage() {
           </span>
         </p>
       ) : null}
+
+      <div className="-mb-4">
+        <UsageHint feature="study_plan" />
+      </div>
 
       <StudyPlanGenerator
         goal={profile?.studyGoal ?? "Estudos gerais"}

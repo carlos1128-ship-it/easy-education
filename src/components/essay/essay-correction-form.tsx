@@ -2,8 +2,9 @@
 
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImageUp, PenTool } from "lucide-react";
+import { ImageUp, Lock, PenTool } from "lucide-react";
 import { toast } from "sonner";
+import { usePlanOptional } from "@/components/plan/plan-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,9 @@ import { readApiJson } from "@/lib/client-response";
 
 export function EssayCorrectionForm() {
   const router = useRouter();
+  const plan = usePlanOptional();
+  // Redação por foto não faz parte do plano Gratuito: o botão ganha cadeado e abre o aviso de upgrade.
+  const photoLocked = plan?.usage.essay_photo_read?.state === "locked";
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [reading, setReading] = useState(false);
@@ -85,11 +89,21 @@ export function EssayCorrectionForm() {
             event.target.value = "";
           }}
         />
-        <Button type="button" variant="outline" size="sm" disabled={reading || loading} onClick={() => photoRef.current?.click()}>
-          <ImageUp className="size-4" aria-hidden="true" />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={reading || loading}
+          onClick={() => (photoLocked ? plan?.openLocked("essay_photo_read") : photoRef.current?.click())}
+        >
+          {photoLocked ? <Lock className="size-4" aria-hidden="true" /> : <ImageUp className="size-4" aria-hidden="true" />}
           {reading ? "Lendo a foto..." : "Enviar foto da redação"}
         </Button>
-        <span className="text-sm text-ink-muted">Escreveu no papel? Envie uma foto (PNG, JPG ou WebP) e a IA transcreve o texto aqui.</span>
+        <span className="text-sm text-ink-muted">
+          {photoLocked
+            ? "A correção por foto faz parte dos planos pagos. Digitando o texto, você corrige no plano Gratuito."
+            : "Escreveu no papel? Envie uma foto (PNG, JPG ou WebP) e a IA transcreve o texto aqui."}
+        </span>
       </div>
       <Textarea value={content} onChange={(event) => setContent(event.target.value)} className="min-h-80 resize-none rounded-lg" placeholder="Digite sua redação aqui..." />
       <div className="flex flex-col justify-between gap-3 text-sm text-ink-muted sm:flex-row sm:items-center">

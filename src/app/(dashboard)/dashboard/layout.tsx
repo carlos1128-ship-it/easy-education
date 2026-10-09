@@ -1,18 +1,21 @@
 import { Header } from "@/components/layout/header";
+import { PlanProvider } from "@/components/plan/plan-provider";
 import { MobileBottomNav, Sidebar } from "@/components/layout/sidebar";
 import { ProductTour } from "@/components/onboarding/product-tour";
 import { RealtimeRefresh } from "@/components/realtime/realtime-refresh";
 import { StudyTimer } from "@/components/study-plan/study-timer";
 import { ensureProfileForUser } from "@/lib/profile";
 import { getStudentOrRedirect } from "@/lib/server-user";
+import { getUsageSnapshot } from "@/lib/usage";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user } = await getStudentOrRedirect();
-  const profile = await ensureProfileForUser(user);
+  const { user, access } = await getStudentOrRedirect();
+  const [profile, usage] = await Promise.all([ensureProfileForUser(user), getUsageSnapshot(user, { tier: access.tier })]);
 
   return (
+    <PlanProvider tier={access.tier} usage={usage.features}>
     <div className="flex h-[100dvh] overflow-hidden bg-background text-foreground">
       <RealtimeRefresh userId={user.id} />
       <div className="hidden lg:block">
@@ -27,5 +30,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {/* Primeira vez no app: tutorial guiado abre sozinho no Início. */}
       <ProductTour autoStart={profile.onboardingDone && !profile.tourCompletedAt} />
     </div>
+    </PlanProvider>
   );
 }

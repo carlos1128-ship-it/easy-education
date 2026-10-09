@@ -5,11 +5,13 @@ import { Check, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { landingPlans } from "@/content/landing";
 import { readApiJson } from "@/lib/client-response";
+import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
+import { PLANS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 type Plan = "basic" | "full";
 
-/** Escolha do plano e ida para o pagamento seguro do Stripe. */
+/** Escolha do plano pago e ida para o pagamento seguro do Stripe. Os números vêm de src/lib/plans.ts. */
 export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
   const [selected, setSelected] = useState<Plan>(initialPlan);
   const [loading, setLoading] = useState(false);
@@ -39,6 +41,7 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
         {(["full", "basic"] as const).map((tier) => {
           const plan = p[tier];
           const active = selected === tier;
+          const perDay = pricePerDayLabel(tier);
           return (
             <button
               key={tier}
@@ -70,10 +73,15 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
                 <span className="text-3xl font-black tracking-[-0.5px] text-ink">{plan.price}</span>
                 <span className="text-ink-muted">{plan.period}</span>
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-semibold text-ink">{plan.usage}</span>
-                <span className="text-sm font-medium text-brand-strong">{plan.perDay}</span>
-              </div>
+              {perDay ? <span className="text-sm font-medium text-brand-strong">{perDay}</span> : null}
+              <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+                {planHighlights(tier).map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-ink">
+                    <Check size={15} className="mt-0.5 flex-none text-brand-strong" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               {"badge" in plan ? (
                 <span className="absolute -top-3 left-5 rounded-full bg-brand px-2.5 py-1 text-xs font-medium text-on-brand">{plan.badge}</span>
               ) : null}
@@ -100,7 +108,7 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
         disabled={loading}
         className="h-12 w-full rounded-xl bg-brand text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-strong disabled:opacity-60 dark:bg-[#2563eb] dark:text-white dark:hover:bg-[#1d4ed8]"
       >
-        {loading ? "Abrindo pagamento..." : `Assinar o ${p[selected].name} por ${p[selected].price}/mês`}
+        {loading ? "Abrindo pagamento..." : `Assinar o ${PLANS[selected].name} por ${p[selected].price}/mês`}
       </button>
       <p className="m-0 flex items-center justify-center gap-2 text-center text-sm text-ink-muted">
         <ShieldCheck size={16} className="flex-none" aria-hidden="true" />

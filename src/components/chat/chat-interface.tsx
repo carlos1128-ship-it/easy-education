@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Camera, ImagePlus, Loader2, Paperclip, Send, X } from "lucide-react";
 import { toast } from "sonner";
+import { usePlanOptional } from "@/components/plan/plan-provider";
+import { UsageHint } from "@/components/plan/usage-hint";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { quickSuggestions } from "@/lib/app-data";
@@ -90,6 +92,7 @@ const iconButton =
 
 export function ChatInterface() {
   const router = useRouter();
+  const plan = usePlanOptional();
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: "Oi! Sou sua IA de estudos. Posso tirar dúvidas, ler a foto de um exercício e criar quizzes, simulados, flashcards e o seu plano de estudo direto no app. Como posso ajudar hoje?" },
   ]);
@@ -159,6 +162,10 @@ export function ChatInterface() {
       const data = await readApiJson(response, messageForChatStatus(response.status));
       if (!response.ok) throw new Error(data.error ?? messageForChatStatus(response.status));
 
+      // Atualiza o "restam X mensagens" sem esperar a página recarregar.
+      const usage = data.usage as { remaining?: number | null; resetAt?: string | null } | undefined;
+      if (usage && typeof usage.remaining === "number") plan?.setRemaining("chat_message", usage.remaining, usage.resetAt);
+
       const reply = typeof data.content === "string" ? data.content : "";
       const action = data.action as ChatAction | undefined;
       setMessages([...nextMessages, { role: "assistant", content: reply || chatErrorMessage, action }]);
@@ -211,6 +218,7 @@ export function ChatInterface() {
         <div ref={endRef} />
       </div>
       <div className="border-t border-border p-4">
+        <UsageHint feature="chat_message" className="mb-3" />
         <div className="mb-3 flex flex-wrap gap-2">
           {quickSuggestions.map((item) => (
             <button

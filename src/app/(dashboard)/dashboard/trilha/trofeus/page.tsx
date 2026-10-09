@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Trophy } from "@/components/trail/trophy";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { LockedPage } from "@/components/plan/locked-page";
+import { allowanceFor } from "@/lib/plans";
+import { getStudentOrRedirect } from "@/lib/server-user";
 import { DAYS_PER_SECTION, getTrailForUser } from "@/lib/study-trail";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +15,17 @@ function shortDate(iso: string) {
 }
 
 export default async function TrofeusPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
+  if (allowanceFor(access.tier, "trail").kind === "locked") {
+    return (
+      <LockedPage
+        feature="trail"
+        tier={access.tier}
+        title="Sala de troféus"
+        description="Os troféus fazem parte da trilha de estudos, disponível nos planos pagos."
+      />
+    );
+  }
   const trail = await getTrailForUser(user.id);
   const earned = trail.trophies.filter((trophy) => trophy.earned > 0).length;
   const shelves = [trail.trophies.slice(0, 3), trail.trophies.slice(3, 6), trail.trophies.slice(6, 9)];

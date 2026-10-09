@@ -1,6 +1,7 @@
 import { FileEdit } from "lucide-react";
 import { EssayCorrectionForm } from "@/components/essay/essay-correction-form";
 import { EssayResult } from "@/components/essay/essay-result";
+import { UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
@@ -19,6 +20,7 @@ export default async function RedaçãoPage() {
       <div className="flex min-w-0 flex-col gap-2">
         <p className="m-0 text-sm font-medium text-brand-strong">Redação</p>
         <h1 className="m-0 text-3xl font-bold tracking-tight text-ink">Enviar para correção</h1>
+        <UsageHint feature="essay_correction" className="mb-1 self-start" />
         <section className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">
           <EssayCorrectionForm />
         </section>
