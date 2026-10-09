@@ -28,7 +28,7 @@ export default async function TrofeusPage() {
   }
   const trail = await getTrailForUser(user.id);
   const earned = trail.trophies.filter((trophy) => trophy.earned > 0).length;
-  const shelves = [trail.trophies.slice(0, 3), trail.trophies.slice(3, 6), trail.trophies.slice(6, 9)];
+  const shelves = [trail.trophies.slice(0, 5), trail.trophies.slice(5, 10)];
 
   return (
     <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-8">
@@ -51,18 +51,18 @@ export default async function TrofeusPage() {
       <div className="flex flex-col gap-10">
         {shelves.map((shelf, row) => (
           <section key={row} aria-label={`Estante ${row + 1}`} className="relative">
-            <div className="grid grid-cols-1 gap-8 px-4 sm:grid-cols-3 lg:px-16">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 px-2 sm:grid-cols-3 lg:grid-cols-5 lg:px-8">
               {shelf.map((trophy) => {
                 const locked = trophy.earned === 0;
                 return (
                   <div key={trophy.section} className="flex flex-col items-center gap-3 text-center">
                     <div className="relative">
-                      <Trophy tier={trophy.section - 1} locked={locked} size={150} />
+                      <Trophy tier={trophy.section - 1} locked={locked} size={140} />
                       {trophy.earned > 1 ? (
                         <span className="absolute -right-2 top-2 rounded-full bg-brand px-2 py-0.5 text-xs font-extrabold text-on-brand">×{trophy.earned}</span>
                       ) : null}
                       {/* Pedestal */}
-                      <div className="mx-auto -mt-1 h-3 w-44 rounded-full bg-border shadow-[0_5px_0_var(--surface-muted)]" aria-hidden="true" />
+                      <div className="mx-auto -mt-3 h-3 w-32 rounded-full bg-border shadow-[0_5px_0_var(--surface-muted)]" aria-hidden="true" />
                     </div>
                     <div>
                       <p className={cn("m-0 text-lg font-bold", locked ? "text-ink-muted" : "text-ink")}>Troféu {trophy.name}</p>

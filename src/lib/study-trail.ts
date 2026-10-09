@@ -68,7 +68,7 @@ export type TrailHistory = {
 };
 
 export const DAYS_PER_SECTION = 7;
-export const SECTION_COUNT = 9;
+export const SECTION_COUNT = 10;
 const CYCLE = DAYS_PER_SECTION * SECTION_COUNT;
 const MIN_MINUTES = 15;
 const REVIEW_CARDS = 10;
@@ -77,6 +77,7 @@ const SECTIONS = [
   { title: "Primeiros passos", trophy: "Bronze" },
   { title: "Pegando o ritmo", trophy: "Prata" },
   { title: "Constância", trophy: "Ouro" },
+  { title: "Hábito firme", trophy: "Platina" },
   { title: "Revisão em dia", trophy: "Esmeralda" },
   { title: "Mais acertos", trophy: "Safira" },
   { title: "Treino de prova", trophy: "Rubi" },

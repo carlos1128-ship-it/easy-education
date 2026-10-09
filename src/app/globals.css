@@ -317,3 +317,55 @@
     color: #f1f5f9;
   }
 }
+
+/* Troféus da trilha (components/trail/trophy.tsx): flutuam, um brilho passa por cima e o Lendário pulsa. */
+@keyframes trophy-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
+}
+@keyframes trophy-shine {
+  0% {
+    background-position: 160% 0;
+  }
+  55%,
+  100% {
+    background-position: -60% 0;
+  }
+}
+@keyframes trophy-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgb(255 196 60 / 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgb(255 196 60 / 0.7));
+  }
+}
+.trophy--earned {
+  animation: trophy-float 3.6s ease-in-out infinite;
+}
+.trophy--legendary img {
+  animation: trophy-glow 2.4s ease-in-out infinite;
+}
+.trophy__shine {
+  background: linear-gradient(110deg, transparent 38%, rgb(255 255 255 / 0.6) 50%, transparent 62%);
+  background-size: 250% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  animation: trophy-shine 4.2s ease-in-out infinite;
+  animation-delay: inherit;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trophy--earned,
+  .trophy--legendary img {
+    animation: none;
+  }
+  .trophy__shine {
+    display: none;
+  }
+}
