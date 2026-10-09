@@ -118,13 +118,24 @@ export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: num
     });
 }
 
+export type QuizQuality = {
+  /** Conferência às cegas (question-quality.ts): devolve as aprovadas e se a conferência rodou de fato. */
+  verify?: (questions: GeneratedQuizQuestion[]) => Promise<{ items: GeneratedQuizQuestion[]; verified: boolean }>;
+  /** Questão que não pode entrar (ex.: cópia de uma questão usada como referência). */
+  reject?: (question: GeneratedQuizQuestion) => boolean;
+  /** Recebe as questões aprovadas pela conferência, para guardar e reaproveitar com outros alunos. */
+  onVerified?: (questions: GeneratedQuizQuestion[]) => void;
+};
+
 /**
- * Gera as questões e confere cada uma. Se a IA devolver questões quebradas (ex.: alternativas só com a letra),
- * pede de novo só as que faltam, até 2 vezes, antes de aceitar (mínimo de 70%) ou desistir com erro.
+ * Gera as questões e confere cada uma: primeiro as regras do sistema (enunciado, 4 alternativas de verdade,
+ * sem repetição), depois a conferência às cegas da IA. O que não passa é pedido de novo, até 2 vezes,
+ * antes de aceitar (mínimo de 70%) ou desistir com erro.
  */
 export async function generateQuizQuestions(
   count: number,
   generate: (missing: number, round: number) => Promise<unknown[]>,
+  quality: QuizQuality = {},
 ): Promise<GeneratedQuizQuestion[]> {
   const accepted: GeneratedQuizQuestion[] = [];
   const seen = new Set<string>();
@@ -137,12 +148,16 @@ export async function generateQuizQuestions(
       if (!accepted.length) throw error;
       break;
     }
+    const candidates: GeneratedQuizQuestion[] = [];
     for (const question of sanitizeGeneratedQuizQuestions(raw, missing)) {
       const key = questionDedupeKey(question);
-      if (seen.has(key)) continue;
+      if (seen.has(key) || quality.reject?.(question)) continue;
       seen.add(key);
-      accepted.push(question);
+      candidates.push(question);
     }
+    const checked = quality.verify ? await quality.verify(candidates) : { items: candidates, verified: false };
+    if (checked.verified && checked.items.length) quality.onVerified?.(checked.items);
+    accepted.push(...checked.items);
   }
   return fillQuestionCount(accepted, count);
 }

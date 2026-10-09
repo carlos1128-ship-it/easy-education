@@ -484,3 +484,40 @@ model QuestionReport {
   @@index([questionId])
   @@map("question_reports")
 }
+
+/// Questão gerada por IA e já conferida (a IA resolveu sem ver o gabarito e acertou). Fica guardada para
+/// outros alunos que pedem o mesmo assunto, no mesmo estilo de prova: reaproveitar não gasta IA.
+/// Questões de material do próprio aluno (PDF, foto, vídeo) não entram aqui.
+model SharedQuestion {
+  id            String   @id @default(uuid())
+  /// Matéria e assunto normalizados (ex.: "biologia|celula").
+  subjectKey    String   @map("subject_key")
+  /// Estilo de prova normalizado (ex.: ENEM, concurso para PM-SP banca Vunesp).
+  styleKey      String   @map("style_key")
+  difficulty    String
+  question      String
+  options       Json
+  correctAnswer String   @map("correct_answer")
+  explanation   String
+  sourceUserId  String?  @map("source_user_id")
+  timesUsed     Int      @default(0) @map("times_used")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  uses SharedQuestionUse[]
+
+  @@index([subjectKey, styleKey, difficulty])
+  @@map("shared_questions")
+}
+
+/// Quem já recebeu cada questão guardada (para não repetir a mesma questão para o mesmo aluno).
+model SharedQuestionUse {
+  userId     String   @map("user_id")
+  questionId String   @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  question SharedQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, questionId])
+  @@index([questionId])
+  @@map("shared_question_uses")
+}

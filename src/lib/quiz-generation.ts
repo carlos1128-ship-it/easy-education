@@ -1,15 +1,7 @@
 import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
-import { generateJSONList } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
-import {
-  describeSubjectForPrompt,
-  generateQuizQuestions,
-  partInstruction,
-  QUIZ_CHUNK_SIZE,
-  questionDedupeKey,
-  quizQuestionsSchema,
-} from "@/lib/quiz-questions";
-import type { GeneratedQuizQuestion } from "@/types";
+import { produceQuestions } from "@/lib/checked-questions";
+import { describeSubjectForPrompt, partInstruction } from "@/lib/quiz-questions";
 import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
 
 export type QuizGenerationInput = {
@@ -33,17 +25,25 @@ export async function createQuizForUser(input: QuizGenerationInput) {
   const promptScope = describeSubjectForPrompt(input.subject, topic);
   const learner = await getLearnerPromptProfile(input.userId);
   const style = input.model ?? learner.style;
-  const buildPrompt = (count: number, part: number, parts: number) => `Gere exatamente ${count} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${input.difficulty} no estilo de ${style}.
+  const buildPrompt = (count: number, part: number, parts: number, references: string) => `Gere exatamente ${count} questoes ineditas de multipla escolha sobre ${JSON.stringify(promptScope)} no nivel ${input.difficulty} no estilo de ${style}.
 Regras obrigatorias:
 - Cada enunciado deve conter uma situacao, dado, texto curto, fenomeno ou contexto real; nao use "resolva a situacao-problema proposta" sem apresentar a situacao.
 - As alternativas devem ser conteudos concretos, nunca "Alternativa correta", "Distrator plausivel", "Distrator comum" ou placeholders.
 - Se houver mais de uma materia, distribua as questoes entre elas e cite a materia no enunciado de forma natural.
 - A explicacao deve justificar a alternativa correta e mencionar por que ao menos um distrator esta errado.
-- Explicacao objetiva, em ate 3 frases.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${learnerPromptBlock(learner)}
+- Explicacao objetiva, em ate 3 frases.
+- Confira cada questao: exatamente UMA alternativa correta, e o gabarito e a explicacao precisam bater com ela.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${references}${learnerPromptBlock(learner)}
 Retorne APENAS um array JSON valido com exatamente estes campos: question (string), options (array com o TEXTO completo de cada uma das 4 alternativas, na ordem A, B, C e D, sem a letra na frente; nunca escreva so a letra), correctAnswer (apenas A, B, C ou D), explanation (string).`;
-  const questions = await generateQuizQuestions(input.questionCount, (missing) =>
-    generateJSONList<GeneratedQuizQuestion>({ total: missing, chunkSize: QUIZ_CHUNK_SIZE, schema: quizQuestionsSchema, buildPrompt, dedupeKey: questionDedupeKey }),
-  );
+  const questions = await produceQuestions({
+    userId: input.userId,
+    count: input.questionCount,
+    subject: input.subject,
+    topic: file ? null : input.topic,
+    style,
+    difficulty: input.difficulty,
+    personalMaterial: Boolean(file),
+    buildPrompt,
+  });
 
   return prisma.quiz.create({
     data: {

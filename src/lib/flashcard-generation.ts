@@ -2,6 +2,7 @@ import { Type, type Schema } from "@google/genai";
 import { generateJSONList } from "@/lib/gemini";
 import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
 import { getPrisma } from "@/lib/prisma";
+import { verifyFlashcards } from "@/lib/question-quality";
 import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
 import type { GeneratedFlashcard } from "@/types";
 
@@ -29,7 +30,7 @@ const flashcardsSchema: Schema = {
 /** Cards são curtos: 10 por parte, todas as partes ao mesmo tempo. */
 const FLASHCARD_CHUNK_SIZE = 10;
 
-function normalizeFlashcards(rawCards: unknown, count: number) {
+function normalizeFlashcards(rawCards: unknown, count: number, minimum = true) {
   const seen = new Set<string>();
   const cards = (Array.isArray(rawCards) ? rawCards : [])
     .map((item) => {
@@ -50,7 +51,7 @@ function normalizeFlashcards(rawCards: unknown, count: number) {
     .slice(0, count);
 
   // Uma parte pode falhar no prazo: aceita a partir de 70% do pedido em vez de perder tudo.
-  if (cards.length < Math.min(count, Math.max(3, Math.ceil(count * 0.7)))) {
+  if (minimum && cards.length < Math.min(count, Math.max(3, Math.ceil(count * 0.7)))) {
     throw new Error("A IA retornou poucos flashcards validos.");
   }
 
@@ -81,14 +82,18 @@ Regras obrigatorias:
 - Nao repita cards nem mude apenas poucas palavras.
 - Linguagem e nivel adequados a ${learner.style}.${video ? videoMaterialInstruction("flashcards") : ""}${learnerPromptBlock(learner)}${parts > 1 ? `\n- Esta e a parte ${part} de ${parts} do mesmo deck: cubra a ${part}a fatia do conteudo (do mais basico ao mais avancado), sem repetir outras partes.` : ""}
 Retorne APENAS um array JSON valido com front e back.`;
-  const rawCards = await generateJSONList<GeneratedFlashcard>({
-    total: input.count,
-    chunkSize: FLASHCARD_CHUNK_SIZE,
-    schema: flashcardsSchema,
-    buildPrompt,
-    dedupeKey: (card) => normalizeForMatch(cleanText(card.front)),
-  });
-  const cards = normalizeFlashcards(rawCards, input.count);
+  const generate = (total: number) =>
+    generateJSONList<GeneratedFlashcard>({ total, chunkSize: FLASHCARD_CHUNK_SIZE, schema: flashcardsSchema, buildPrompt, dedupeKey: (card) => normalizeForMatch(cleanText(card.front)) });
+
+  // A IA cria, o sistema confere (regras acima) e a IA revisa cada cartão; o que reprovar é refeito uma vez.
+  let cards = (await verifyFlashcards(normalizeFlashcards(await generate(input.count), input.count, false))).items;
+  if (cards.length < input.count) {
+    const extra = await generate(input.count - cards.length).catch(() => []);
+    const fronts = new Set(cards.map((card) => normalizeForMatch(card.front)));
+    const more = normalizeFlashcards(extra, input.count, false).filter((card) => !fronts.has(normalizeForMatch(card.front)));
+    cards = [...cards, ...(await verifyFlashcards(more)).items];
+  }
+  cards = normalizeFlashcards(cards, input.count);
 
   return prisma.flashcardDeck.create({
     data: {

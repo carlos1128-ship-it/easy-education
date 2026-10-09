@@ -46,3 +46,31 @@ describe("validação das questões geradas pela IA", () => {
     await expect(generateQuizQuestions(10, async () => [{ ...good(1), options: ["A", "B", "C", "D"] }])).rejects.toThrow();
   });
 });
+
+describe("conferência e reaproveitamento", () => {
+  it("só entram as questões aprovadas na conferência às cegas, e as faltantes são pedidas de novo", async () => {
+    const approved: unknown[] = [];
+    let rounds = 0;
+    const result = await generateQuizQuestions(
+      3,
+      async (missing) => Array.from({ length: missing }, (_, i) => good(10 + i + missing * 10)),
+      {
+        // Reprova a primeira questão da primeira rodada; a rodada seguinte repõe a que faltou.
+        verify: async (questions) => ({ items: (rounds += 1) === 1 ? questions.slice(1) : questions, verified: true }),
+        onVerified: (questions) => approved.push(...questions),
+      },
+    );
+    expect(result).toHaveLength(3);
+    expect(approved).toHaveLength(3);
+  });
+
+  it("chave do banco compartilhado ignora acentos e maiúsculas", async () => {
+    const { poolKey, copiesReference } = await import("@/lib/question-pool");
+    expect(poolKey({ subject: "Biologia", topic: "Genética", style: "ENEM", difficulty: "medio" })).toEqual(
+      poolKey({ subject: "biologia", topic: "genetica", style: "enem", difficulty: "medio" }),
+    );
+    const reference = "Um pesquisador cruzou plantas de ervilha de sementes amarelas com plantas de sementes verdes e obteve";
+    expect(copiesReference({ ...good(1), question: `${reference} apenas amarelas. Isso indica` }, [reference])).toBe(true);
+    expect(copiesReference(good(1), [reference])).toBe(false);
+  });
+});

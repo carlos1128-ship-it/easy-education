@@ -1,18 +1,10 @@
 import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
 import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
-import { generateJSONList } from "@/lib/gemini";
 import type { User } from "@supabase/supabase-js";
 import { getPrisma } from "@/lib/prisma";
 import { PlanLimitError, withFeature } from "@/lib/usage";
-import {
-  describeSubjectForPrompt,
-  generateQuizQuestions,
-  partInstruction,
-  QUIZ_CHUNK_SIZE,
-  questionDedupeKey,
-  quizQuestionsSchema,
-} from "@/lib/quiz-questions";
-import type { GeneratedQuizQuestion } from "@/types";
+import { produceQuestions } from "@/lib/checked-questions";
+import { describeSubjectForPrompt, partInstruction } from "@/lib/quiz-questions";
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -38,16 +30,24 @@ export async function createSimuladoForUser({
   const promptScope = describeSubjectForPrompt(subject, topic ?? file?.textContent?.slice(0, video ? 14000 : 5000));
   const learner = await getLearnerPromptProfile(userId);
   const style = learner.style;
-  const buildPrompt = (count: number, part: number, parts: number) => `Crie exatamente ${count} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
+  const buildPrompt = (count: number, part: number, parts: number, references: string) => `Crie exatamente ${count} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
 Regras obrigatorias:
 - Siga o estilo de ${style}, com contexto concreto em cada enunciado.
 - Nao use placeholders como "Alternativa correta", "Distrator plausivel" ou "resolva a situacao-problema proposta" sem apresentar a situacao.
 - Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
-- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${learnerPromptBlock(learner)}
+- Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.
+- Confira cada questao: exatamente UMA alternativa correta, e o gabarito e a explicacao precisam bater com ela.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${references}${learnerPromptBlock(learner)}
 Retorne APENAS um array JSON valido com question, options (array com o TEXTO completo de cada uma das 4 alternativas, na ordem A, B, C e D, sem a letra na frente; nunca escreva so a letra), correctAnswer (A, B, C ou D) e explanation.`;
-  const safeQuestions = await generateQuizQuestions(questionCount, (missing) =>
-    generateJSONList<GeneratedQuizQuestion>({ total: missing, chunkSize: QUIZ_CHUNK_SIZE, schema: quizQuestionsSchema, buildPrompt, dedupeKey: questionDedupeKey }),
-  );
+  const safeQuestions = await produceQuestions({
+    userId,
+    count: questionCount,
+    subject,
+    topic: file ? null : topic,
+    style,
+    difficulty: "simulado",
+    personalMaterial: Boolean(file),
+    buildPrompt,
+  });
 
   return prisma.quiz.create({
     data: {
