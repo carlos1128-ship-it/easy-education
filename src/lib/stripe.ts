@@ -1,9 +1,25 @@
 import Stripe from "stripe";
+import { PLANS as PLAN_CONFIG, formatPriceBRL } from "@/lib/plans";
 
-/** Planos à venda. O preço fica no Stripe (lookup key); aqui só o que o app precisa saber. */
+/**
+ * Planos à venda. Nome e preço vêm de src/lib/plans.ts; o Stripe guarda o mesmo valor num Price
+ * achado pelo lookup key (o checkout recusa cobrar se os dois estiverem diferentes).
+ */
 export const PLANS = {
-  basic: { id: "basic", name: "Básico", lookupKey: "easy_basic_monthly", price: "R$ 26,90" },
-  full: { id: "full", name: "Completo", lookupKey: "easy_full_monthly", price: "R$ 46,90" },
+  basic: {
+    id: "basic",
+    name: PLAN_CONFIG.basic.name,
+    lookupKey: "easy_basic_monthly",
+    price: formatPriceBRL(PLAN_CONFIG.basic.priceCents),
+    priceCents: PLAN_CONFIG.basic.priceCents,
+  },
+  full: {
+    id: "full",
+    name: PLAN_CONFIG.full.name,
+    lookupKey: "easy_full_monthly",
+    price: formatPriceBRL(PLAN_CONFIG.full.priceCents),
+    priceCents: PLAN_CONFIG.full.priceCents,
+  },
 } as const;
 
 export type PlanId = keyof typeof PLANS;
@@ -41,18 +57,18 @@ export function getStripe() {
   return stripeClient;
 }
 
-const priceCache = new Map<PlanId, { id: string; expiresAt: number }>();
+const priceCache = new Map<PlanId, { price: Stripe.Price; expiresAt: number }>();
 
 /** Busca o preço pelo lookup key (troca de preço no Stripe não exige deploy). Cache de 10 min. */
-export async function getPriceIdForPlan(plan: PlanId) {
+export async function getPriceForPlan(plan: PlanId) {
   const cached = priceCache.get(plan);
-  if (cached && cached.expiresAt > Date.now()) return cached.id;
+  if (cached && cached.expiresAt > Date.now()) return cached.price;
 
   const prices = await getStripe().prices.list({ lookup_keys: [PLANS[plan].lookupKey], active: true, limit: 1 });
   const price = prices.data[0];
   if (!price) throw new Error(`Preco do plano ${plan} nao encontrado no Stripe.`);
-  priceCache.set(plan, { id: price.id, expiresAt: Date.now() + 10 * 60_000 });
-  return price.id;
+  priceCache.set(plan, { price, expiresAt: Date.now() + 10 * 60_000 });
+  return price;
 }
 
 /** Descobre o plano a partir do preço da assinatura (lookup key ou metadata). */

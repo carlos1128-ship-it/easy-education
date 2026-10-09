@@ -1,7 +1,7 @@
 import { CalendarClock, CreditCard, ShieldCheck } from "lucide-react";
 import { GuaranteeRefundButton, ManageSubscriptionButton } from "@/components/billing/subscription-actions";
 import { getAccessState, getSubscriptionForUser, guaranteeDeadline, isGuaranteeEligible, planName } from "@/lib/billing";
-import { getPaidUserOrRedirect } from "@/lib/server-user";
+import { getStudentOrRedirect } from "@/lib/server-user";
 import { PLANS } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ const STATUS_LABEL: Record<string, { label: string; tone: string }> = {
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
 
 export default async function AssinaturaPage() {
-  const { user } = await getPaidUserOrRedirect();
+  const { user } = await getStudentOrRedirect();
   const [access, subscription] = await Promise.all([getAccessState(user), getSubscriptionForUser(user.id)]);
   const status = STATUS_LABEL[access.status] ?? { label: access.status, tone: "bg-surface-muted text-ink" };
   const name = planName(subscription?.plan ?? access.plan) ?? "Completo";

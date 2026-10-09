@@ -4,12 +4,12 @@ import { ProductTour } from "@/components/onboarding/product-tour";
 import { RealtimeRefresh } from "@/components/realtime/realtime-refresh";
 import { StudyTimer } from "@/components/study-plan/study-timer";
 import { ensureProfileForUser } from "@/lib/profile";
-import { getPaidUserOrRedirect } from "@/lib/server-user";
+import { getStudentOrRedirect } from "@/lib/server-user";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user } = await getPaidUserOrRedirect();
+  const { user } = await getStudentOrRedirect();
   const profile = await ensureProfileForUser(user);
 
   return (

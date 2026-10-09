@@ -1,10 +1,12 @@
 import { revalidatePath } from "next/cache";
+import type { User } from "@supabase/supabase-js";
 import { createFlashcardDeckForUser } from "@/lib/flashcard-generation";
 import { getPrisma } from "@/lib/prisma";
 import { createQuizForUser } from "@/lib/quiz-generation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { startOfToday } from "@/lib/study-stats";
+import { withFeature } from "@/lib/usage";
 
 export type StudyBlockInput = {
   subject: string;
@@ -35,9 +37,10 @@ function revalidateStudyPages() {
  * simulado, revisão e estudo geram simulado, flashcards ou quiz com a IA.
  * Se o aluno já começou o mesmo bloco hoje, reaproveita o que foi gerado.
  */
-export async function startStudyBlockForUser(userId: string, block: StudyBlockInput): Promise<StudyStart> {
+export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, block: StudyBlockInput): Promise<StudyStart> {
   if (isEssay(block)) return { href: "/dashboard/redacao", activity: "redacao", reused: true };
 
+  const userId = user.id;
   const prisma = getPrisma();
   const today = startOfToday();
   const topic = block.topic.trim().slice(0, 160) || block.subject;
@@ -51,7 +54,8 @@ export async function startStudyBlockForUser(userId: string, block: StudyBlockIn
     });
     if (existing) return { href: `/dashboard/simulados/${existing.id}`, activity: "simulado", reused: true };
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
-    const quiz = await createSimuladoForUser({ userId, subject: block.subject, topic, title, questionCount: 10 });
+    // Gerar com IA gasta o limite do plano (só quando realmente gera; reaproveitar o de hoje é grátis).
+    const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject: block.subject, topic, title, questionCount: 10 }));
     revalidateStudyPages();
     return { href: `/dashboard/simulados/${quiz.id}`, activity: "simulado", reused: false };
   }
@@ -65,7 +69,7 @@ export async function startStudyBlockForUser(userId: string, block: StudyBlockIn
     });
     if (existing) return { href: `/dashboard/flashcards/${existing.id}`, activity: "flashcards", reused: true };
     if (!checkRateLimit(`flashcards:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
-    const deck = await createFlashcardDeckForUser({ userId, title, subject: block.subject, topic, count: 10 });
+    const deck = await withFeature(user, "ai_flashcards", () => createFlashcardDeckForUser({ userId, title, subject: block.subject, topic, count: 10 }));
     revalidateStudyPages();
     return { href: `/dashboard/flashcards/${deck.id}`, activity: "flashcards", reused: false };
   }
@@ -77,7 +81,7 @@ export async function startStudyBlockForUser(userId: string, block: StudyBlockIn
   });
   if (existing) return { href: `/dashboard/quizzes/${existing.id}`, activity: "quiz", reused: true };
   if (!checkRateLimit(`quiz:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
-  const quiz = await createQuizForUser({ userId, subject: block.subject, topic, difficulty: "medio", questionCount: 10 });
+  const quiz = await withFeature(user, "ai_quiz", () => createQuizForUser({ userId, subject: block.subject, topic, difficulty: "medio", questionCount: 10 }));
   revalidateStudyPages();
   return { href: `/dashboard/quizzes/${quiz.id}`, activity: "quiz", reused: false };
 }

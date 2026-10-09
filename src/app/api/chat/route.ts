@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { apiErrorResponse } from "@/lib/api-error";
-import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { ChatActionError, chatSystemPrompt, chatTools, runChatTool, type ChatAction } from "@/lib/chat-agent";
 import { getLearnerPromptProfile } from "@/lib/exam-style";
@@ -8,6 +7,7 @@ import { generateChatWithTools } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { truncateForContext } from "@/lib/text";
+import { consumeFeature, type UsageTicket } from "@/lib/usage";
 import { chatSchema } from "@/lib/validators";
 import type { ChatInputMessage } from "@/types";
 
@@ -27,15 +27,18 @@ function toPlainText(value: string) {
 }
 
 export async function POST(request: Request) {
+  let ticket: UsageTicket | null = null;
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user, "chat");
 
     const rateLimit = checkRateLimit(`chat:${user.id}`);
     if (!rateLimit.ok) return NextResponse.json({ error: "Limite de 20 mensagens por minuto atingido." }, { status: 429 });
 
     const payload = chatSchema.parse(await request.json());
+    // Limite do plano (mensagens por dia), aplicado aqui no servidor antes de gastar IA.
+    ticket = await consumeFeature(user, "chat_message");
+
     const prisma = getPrisma();
     let context = "";
 
@@ -64,11 +67,14 @@ ${learner.guidance}` : ""}`
 
     if (result.kind === "call") {
       try {
-        const executed = await runChatTool(user.id, result.name, result.args);
+        const executed = await runChatTool(user, ticket.tier, result.name, result.args);
         content = executed.reply;
         action = executed.action;
       } catch (error) {
-        if (error instanceof ChatActionError) return NextResponse.json({ error: error.message }, { status: error.status });
+        if (error instanceof ChatActionError) {
+          await ticket.refund();
+          return NextResponse.json({ error: error.message }, { status: error.status });
+        }
         throw error;
       }
     } else {
@@ -83,8 +89,14 @@ ${learner.guidance}` : ""}`
       ],
     });
 
-    return NextResponse.json({ content, action });
+    return NextResponse.json({
+      content,
+      action,
+      usage: { remaining: ticket.remaining, max: ticket.max, resetAt: ticket.resetAt },
+    });
   } catch (error) {
+    // A mensagem só conta se a resposta chegou: se algo falhou, o uso volta para o aluno.
+    await ticket?.refund();
     return apiErrorResponse(error, {
       scope: "chat",
       fallback: "Não foi possível conversar com a IA.",

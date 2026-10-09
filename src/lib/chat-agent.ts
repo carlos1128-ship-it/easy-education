@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { Type, type FunctionDeclaration } from "@google/genai";
+import type { User } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createFlashcardDeckForUser } from "@/lib/flashcard-generation";
 import { buildLearnerContext, parsePersonalization } from "@/lib/learner-profile";
@@ -8,6 +9,8 @@ import { createQuizForUser } from "@/lib/quiz-generation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
+import type { PlanTier } from "@/lib/plans";
+import { withFeature } from "@/lib/usage";
 
 /** Ação executada pela IA no app; o chat mostra o link e leva o aluno até ela. */
 export type ChatAction = { type: "quiz" | "simulado" | "plano" | "flashcards"; href: string; label: string };
@@ -120,9 +123,13 @@ export class ChatActionError extends Error {
   }
 }
 
-/** Executa a função pedida pela IA e devolve a resposta do chat + a ação para abrir. */
-export async function runChatTool(userId: string, name: string, args: Record<string, unknown>): Promise<{ reply: string; action: ChatAction }> {
+/**
+ * Executa a função pedida pela IA e devolve a resposta do chat + a ação para abrir.
+ * Cada ação gasta o limite do plano do aluno (quiz, simulado, plano, flashcards), igual aos botões do app.
+ */
+export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTier, name: string, args: Record<string, unknown>): Promise<{ reply: string; action: ChatAction }> {
   const prisma = getPrisma();
+  const userId = user.id;
 
   if (name === "criar_quiz") {
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new ChatActionError("Muitos quizzes em pouco tempo. Tente de novo em um minuto.", 429);
@@ -130,7 +137,7 @@ export async function runChatTool(userId: string, name: string, args: Record<str
     const topic = text(args.assunto);
     const questionCount = clampInt(args.quantidade, 5, 20, 10);
     const difficulty = difficultyEnum.includes(String(args.dificuldade)) ? String(args.dificuldade) : "medio";
-    const quiz = await createQuizForUser({ userId, subject, topic, questionCount, difficulty, model: text(args.estilo) });
+    const quiz = await withFeature(user, "ai_quiz", () => createQuizForUser({ userId, subject, topic, questionCount, difficulty, model: text(args.estilo) }), { tier });
     revalidateAll();
     return {
       reply: `Pronto. Criei o quiz "${quiz.title}" com ${quiz.questionCount} questões de ${subject}. Vou abrir para você responder.`,
@@ -141,7 +148,7 @@ export async function runChatTool(userId: string, name: string, args: Record<str
   if (name === "criar_simulado") {
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new ChatActionError("Muitos simulados em pouco tempo. Tente de novo em um minuto.", 429);
     const subject = text(args.materia) ?? "Multidisciplinar";
-    const quiz = await createSimuladoForUser({ userId, subject, topic: text(args.assunto), questionCount: clampInt(args.quantidade, 5, 20, 20) });
+    const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject, topic: text(args.assunto), questionCount: clampInt(args.quantidade, 5, 20, 20) }), { tier });
     revalidateAll();
     return {
       reply: `Pronto. Criei o simulado "${quiz.title}" com ${quiz.questionCount} questões. Vou abrir para você começar.`,
@@ -159,16 +166,22 @@ export async function runChatTool(userId: string, name: string, args: Record<str
     const hours = Number(args.horas_por_dia);
     const dailyHours = Number.isFinite(hours) ? Math.min(8, Math.max(1, hours)) : Math.min(8, Math.max(1, (profile?.dailyMinutes ?? 60) / 60));
     const goal = text(args.objetivo) ?? profile?.studyGoal ?? "Estudos gerais";
-    const { plan } = await createStudyPlanForUser(userId, {
-      goal,
-      targetDate: text(args.data_prova) ?? profile?.targetDate?.toISOString().slice(0, 10) ?? null,
-      dailyHours,
-      subjects: subjects.length ? subjects : [{ name: "Matematica", difficulty: 3 }],
-      method: text(args.metodo) ?? profile?.studyMethod ?? "Active Recall",
-      studyDays: parsePersonalization(profile?.personalization)?.studyDays,
-      period: parsePersonalization(profile?.personalization)?.period,
-      learnerContext: buildLearnerContext(profile),
-    });
+    const { plan } = await withFeature(
+      user,
+      "study_plan",
+      () =>
+        createStudyPlanForUser(userId, {
+          goal,
+          targetDate: text(args.data_prova) ?? profile?.targetDate?.toISOString().slice(0, 10) ?? null,
+          dailyHours,
+          subjects: subjects.length ? subjects : [{ name: "Matematica", difficulty: 3 }],
+          method: text(args.metodo) ?? profile?.studyMethod ?? "Active Recall",
+          studyDays: parsePersonalization(profile?.personalization)?.studyDays,
+          period: parsePersonalization(profile?.personalization)?.period,
+          learnerContext: buildLearnerContext(profile),
+        }),
+      { tier },
+    );
     revalidateAll();
     const blocks = plan.days.reduce((sum, day) => sum + day.blocks.length, 0);
     return {
@@ -181,13 +194,19 @@ export async function runChatTool(userId: string, name: string, args: Record<str
     if (!checkRateLimit(`flashcards:${userId}`).ok) throw new ChatActionError("Muitos decks em pouco tempo. Tente de novo em um minuto.", 429);
     const subject = text(args.materia) ?? "Revisão";
     const topic = text(args.assunto);
-    const deck = await createFlashcardDeckForUser({
-      userId,
-      title: text(args.titulo) ?? `Flashcards de ${topic ?? subject}`,
-      subject,
-      topic,
-      count: clampInt(args.quantidade, 5, 30, 12),
-    });
+    const deck = await withFeature(
+      user,
+      "ai_flashcards",
+      () =>
+        createFlashcardDeckForUser({
+          userId,
+          title: text(args.titulo) ?? `Flashcards de ${topic ?? subject}`,
+          subject,
+          topic,
+          count: clampInt(args.quantidade, 5, 30, 12),
+        }),
+      { tier },
+    );
     revalidateAll();
     return {
       reply: `Pronto. Criei o deck "${deck.title}". Vou abrir para você revisar.`,

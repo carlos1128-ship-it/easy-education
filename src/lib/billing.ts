@@ -1,9 +1,10 @@
 import type Stripe from "stripe";
 import type { User } from "@supabase/supabase-js";
+import type { PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
-import { getPriceIdForPlan, getStripe, isStripeConfigured, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
+import { getPriceForPlan, getStripe, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
 
-/** Status do Stripe que liberam o app. `past_due`: o Stripe ainda está tentando cobrar de novo. */
+/** Status do Stripe que dão direito ao plano pago. `past_due`: o Stripe ainda está tentando cobrar de novo. */
 const ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 /** Dias da garantia (direito de arrependimento) contados a partir do primeiro pagamento. */
@@ -18,9 +19,12 @@ export class BillingError extends Error {
   }
 }
 
-/** A cobrança só é exigida com o Stripe configurado. `BILLING_REQUIRED=false` desliga o bloqueio. */
+/**
+ * Os limites dos planos sempre valem. `BILLING_REQUIRED=false` é o modo aberto (só para desenvolvimento):
+ * todo mundo usa o plano Completo.
+ */
 export function isBillingEnforced() {
-  return isStripeConfigured() && process.env.BILLING_REQUIRED !== "false";
+  return process.env.BILLING_REQUIRED !== "false";
 }
 
 /** E-mails liberados sem assinatura (equipe, contas de teste). Lista separada por vírgula. */
@@ -42,29 +46,28 @@ export async function getSubscriptionForUser(userId: string) {
 }
 
 export type AccessState = {
-  hasAccess: boolean;
+  /** Todo aluno logado entra no app: sem assinatura ativa ele fica no plano Gratuito. */
+  hasAccess: true;
+  /** Plano em vigor, que define os limites de uso. */
+  tier: PlanTier;
+  /** Plano pago do Stripe (null no Gratuito). */
   plan: PlanId | null;
+  /** Estado da assinatura no Stripe (`none` se nunca assinou). */
   status: string;
+  /** Tem plano pago em vigor (ou conta liberada pela equipe). */
+  isPaid: boolean;
 };
 
-/** Diz se o aluno pode usar o app e com qual plano. */
+/** Diz com qual plano o aluno usa o app. Sem assinatura ativa, é o Gratuito. */
 export async function getAccessState(user: Pick<User, "id" | "email">): Promise<AccessState> {
   if (!isBillingEnforced() || isExemptEmail(user.email)) {
-    return { hasAccess: true, plan: "full", status: "exempt" };
+    return { hasAccess: true, tier: "full", plan: "full", status: "exempt", isPaid: true };
   }
   const subscription = await getSubscriptionForUser(user.id);
   const status = subscription?.status ?? "none";
   const plan = subscription?.plan === "basic" || subscription?.plan === "full" ? subscription.plan : null;
-  return { hasAccess: subscriptionGivesAccess(status), plan, status };
-}
-
-/** Usado nas rotas de IA: sem assinatura ativa, nada de gastar a API. */
-export async function assertActiveSubscription(user: Pick<User, "id" | "email">) {
-  const state = await getAccessState(user);
-  if (!state.hasAccess) {
-    throw new BillingError("Sua assinatura não está ativa. Escolha um plano para continuar.", 402);
-  }
-  return state;
+  if (plan && subscriptionGivesAccess(status)) return { hasAccess: true, tier: plan, plan, status, isPaid: true };
+  return { hasAccess: true, tier: "free", plan: null, status, isPaid: false };
 }
 
 /** Cliente Stripe do aluno; cria na primeira vez (com chave de idempotência contra cliques duplos). */
@@ -162,13 +165,17 @@ export async function createCheckoutSession(
 ) {
   const stripe = getStripe();
   const customer = await getOrCreateStripeCustomer(user);
-  const price = await getPriceIdForPlan(plan);
+  const price = await getPriceForPlan(plan);
+  // Trava de segurança: o app nunca cobra um valor diferente do que mostra (plans.ts).
+  if (price.unit_amount !== PLANS[plan].priceCents) {
+    throw new BillingError("O preço deste plano está sendo atualizado. Tente novamente em alguns minutos.", 503);
+  }
 
   return stripe.checkout.sessions.create({
     mode: "subscription",
     customer,
     client_reference_id: user.id,
-    line_items: [{ price, quantity: 1 }],
+    line_items: [{ price: price.id, quantity: 1 }],
     locale: "pt-BR",
     allow_promotion_codes: true,
     billing_address_collection: "auto",

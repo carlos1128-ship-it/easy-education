@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     // Já assinante: em vez de uma segunda assinatura, abre o portal para trocar de plano.
     const access = await getAccessState(user);
-    if (access.hasAccess && access.status !== "exempt") {
+    if (access.isPaid && access.status !== "exempt") {
       const portal = await createPortalSession(user.id, origin);
       return NextResponse.json({ url: portal.url });
     }

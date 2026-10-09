@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
-import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
+import { getAccessState } from "@/lib/billing";
 import { buildLearnerContext, goalLabel } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
+import { assertWithinSafetyCaps, consumeFeature } from "@/lib/usage";
 import { onboardingSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user, "generation");
 
     const payload = onboardingSchema.parse(await request.json());
     const prisma = getPrisma();
@@ -45,24 +45,38 @@ export async function POST(request: Request) {
       select: { id: true },
     });
 
-    // Refez a personalização: o plano antigo é arquivado e um novo é montado com as respostas novas.
-    if (existingPlan && payload.regeneratePlan) {
-      await prisma.studyPlan.updateMany({ where: { userId: user.id, status: "active" }, data: { status: "archived" } });
+    // O primeiro plano do aluno não gasta o limite de planos; refazer a personalização gasta (é um plano novo).
+    const { tier } = await getAccessState(user);
+    const regenerate = Boolean(existingPlan && payload.regeneratePlan);
+    const ticket = regenerate ? await consumeFeature(user, "study_plan", { tier }) : null;
+    if (!existingPlan) await assertWithinSafetyCaps(user, { tier });
+
+    let planResult: Awaited<ReturnType<typeof createStudyPlanForUser>> | null = null;
+    try {
+      if (!existingPlan || regenerate) {
+        planResult = await createStudyPlanForUser(user.id, {
+          goal: studyGoal,
+          targetDate: payload.targetDate,
+          dailyHours: payload.dailyMinutes / 60,
+          subjects: payload.subjects,
+          method: payload.studyMethod,
+          studyDays: personalization?.studyDays,
+          period: personalization?.period,
+          learnerContext: buildLearnerContext(profile),
+        });
+      }
+    } catch (error) {
+      await ticket?.refund();
+      throw error;
     }
 
-    const planResult =
-      existingPlan && !payload.regeneratePlan
-        ? null
-        : await createStudyPlanForUser(user.id, {
-            goal: studyGoal,
-            targetDate: payload.targetDate,
-            dailyHours: payload.dailyMinutes / 60,
-            subjects: payload.subjects,
-            method: payload.studyMethod,
-            studyDays: personalization?.studyDays,
-            period: personalization?.period,
-            learnerContext: buildLearnerContext(profile),
-          });
+    // Refez a personalização: o plano antigo é arquivado e o novo (criado acima) passa a valer.
+    if (existingPlan && regenerate && planResult) {
+      await prisma.studyPlan.updateMany({
+        where: { userId: user.id, status: "active", id: { not: planResult.record.id } },
+        data: { status: "archived" },
+      });
+    }
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/plano");

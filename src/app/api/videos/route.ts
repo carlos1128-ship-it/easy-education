@@ -2,12 +2,12 @@ import { NextResponse, after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
-import { assertActiveSubscription } from "@/lib/billing";
 import { requireUser } from "@/lib/auth";
+import { runWithAiCallContext } from "@/lib/ai-cost";
 import { getPrisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { consumeFeature } from "@/lib/usage";
 import {
-  assertDailyVideoQuota,
   fetchVideoMeta,
   formatTimestamp,
   parseTimestamp,
@@ -32,7 +32,6 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertActiveSubscription(user);
     if (!checkRateLimit(`video:${user.id}`, 5, 60_000).ok) {
       return NextResponse.json({ error: "Muitos vídeos em pouco tempo. Tente de novo em um minuto." }, { status: 429 });
     }
@@ -50,8 +49,6 @@ export async function POST(request: Request) {
     }
     const endSeconds = requestedEnd ?? startSeconds + maxSeconds;
 
-    await assertDailyVideoQuota(user);
-    const meta = await fetchVideoMeta(parsed.id);
     const sourceUrl = videoSourceKey(parsed.id, startSeconds, endSeconds);
     const prisma = getPrisma();
 
@@ -59,8 +56,14 @@ export async function POST(request: Request) {
     const existing = await prisma.uploadedFile.findFirst({ where: { userId: user.id, sourceUrl }, select: { id: true } });
     if (existing) return NextResponse.json({ fileId: existing.id, reused: true });
 
+    const meta = await fetchVideoMeta(parsed.id);
+    // Vídeos por dia dependem do plano (bloqueado no Gratuito). O trecho repetido acima não gasta o limite.
+    const ticket = await consumeFeature(user, "video_material");
+
     const range = startSeconds > 0 || requestedEnd !== null ? ` (${formatTimestamp(startSeconds)}–${requestedEnd !== null ? formatTimestamp(endSeconds) : "fim"})` : "";
-    const file = await prisma.uploadedFile.create({
+    let file;
+    try {
+    file = await prisma.uploadedFile.create({
       data: {
         userId: user.id,
         name: `${meta.title}${range}`.slice(0, 200),
@@ -70,9 +73,14 @@ export async function POST(request: Request) {
         sourceUrl,
       },
     });
+    } catch (error) {
+      await ticket.refund();
+      throw error;
+    }
+    const fileId = file.id;
 
     after(async () => {
-      await processVideoMaterial(file.id);
+      await runWithAiCallContext({ userId: user.id, plan: ticket.tier, feature: "video_material" }, () => processVideoMaterial(fileId));
       try {
         revalidatePath("/dashboard/arquivos");
       } catch {

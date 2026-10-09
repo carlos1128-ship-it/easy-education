@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
-import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { createFlashcardDeckForUser } from "@/lib/flashcard-generation";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { withFeature } from "@/lib/usage";
 import { flashcardGenerateSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user, "generation");
     if (!checkRateLimit(`flashcards:${user.id}`).ok) return NextResponse.json({ error: "Limite atingido." }, { status: 429 });
 
     const payload = flashcardGenerateSchema.parse(await request.json());
-    const deck = await createFlashcardDeckForUser({ userId: user.id, ...payload });
+    const deck = await withFeature(user, "ai_flashcards", () => createFlashcardDeckForUser({ userId: user.id, ...payload }));
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/flashcards");

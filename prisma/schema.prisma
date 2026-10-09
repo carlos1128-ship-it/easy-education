@@ -200,6 +200,39 @@ model ChatMessage {
   @@map("chat_messages")
 }
 
+/// Um uso de um recurso com limite (mensagem do chat, redação, upload...). O limite do plano é contado aqui.
+model UsageEvent {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  feature   String
+  /// Peso no teto global de segurança do dia (ver FEATURES em src/lib/plans.ts).
+  units     Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, feature, createdAt])
+  @@index([userId, createdAt])
+  @@map("usage_events")
+}
+
+/// Uma chamada à IA com tokens e custo estimado. Responde "quanto custa o aluno que mais usa o plano X?".
+model AiCallLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  /// Plano do aluno no momento da chamada (free, basic, full) ou null fora de uma requisição de aluno.
+  plan         String?
+  /// Recurso que originou a chamada (chat_message, ai_quiz, batch_questions...).
+  feature      String?
+  model        String
+  inputTokens  Int      @default(0) @map("input_tokens")
+  outputTokens Int      @default(0) @map("output_tokens")
+  costUsd      Decimal  @default(0) @map("cost_usd") @db.Decimal(12, 6)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("ai_call_logs")
+}
+
 /// Assinatura Stripe do aluno. Só o servidor grava (webhook e retorno do checkout); o aluno só lê.
 model Subscription {
   id                   String    @id @default(uuid())

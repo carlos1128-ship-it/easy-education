@@ -8,6 +8,7 @@ import {
   type Schema,
   type ThinkingConfig,
 } from "@google/genai";
+import { recordAiCall } from "@/lib/ai-cost";
 import type { ChatInputMessage } from "@/types";
 
 const defaultModel = "gemini-2.5-flash";
@@ -157,6 +158,7 @@ Importante: responda somente JSON valido, compacto, sem markdown e sem campos ex
         abortSignal: attemptSignal(options.attemptTimeoutMs ?? 45_000),
       },
     });
+    await recordAiCall(model, response.usageMetadata);
     return parseJSON<T>(response.text ?? "");
   });
 }
@@ -224,7 +226,8 @@ async function generateChunk<T>(prompt: string, schema: Schema, deadline: number
             abortSignal: attemptSignal(remaining, controller.signal),
           },
         })
-        .then((response) => {
+        .then(async (response) => {
+          await recordAiCall(model, response.usageMetadata);
           const parsed = parseJSON<unknown>(response.text ?? "");
           if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("A IA retornou uma lista vazia.");
           finish(() => resolve(parsed as T[]));
@@ -327,6 +330,7 @@ export async function generateChatText(messages: ChatInputMessage[], systemPromp
         thinkingConfig: { thinkingBudget: CHAT_THINKING_BUDGET },
       },
     });
+    await recordAiCall(model, response.usageMetadata);
     const text = response.text?.trim();
     if (!text) throw new Error("A IA retornou resposta vazia.");
     return text;
@@ -359,6 +363,7 @@ export async function generateChatWithTools(
         toolConfig: { functionCallingConfig: { mode: FunctionCallingConfigMode.AUTO } },
       },
     });
+    await recordAiCall(model, response.usageMetadata);
 
     const call = response.functionCalls?.[0];
     if (call?.name) return { kind: "call", name: call.name, args: (call.args ?? {}) as Record<string, unknown> };
@@ -382,6 +387,7 @@ export async function generateTextFromImage(image: Buffer, mimeType: string, ins
       ],
       config: { maxOutputTokens: 8192, temperature: 0, thinkingConfig: { thinkingBudget: 0 } },
     });
+    await recordAiCall(model, response.usageMetadata);
     const text = response.text?.trim();
     if (!text) throw new Error("A IA não encontrou texto na imagem.");
     return text;
@@ -426,6 +432,7 @@ export async function generateTextFromYouTube(
           abortSignal: attemptSignal(remaining),
         },
       });
+      await recordAiCall(model, response.usageMetadata);
       const text = response.text?.trim();
       if (!text) throw new Error("A IA retornou resposta vazia.");
       return { text, model, inputTokens: response.usageMetadata?.promptTokenCount ?? 0, outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0 };

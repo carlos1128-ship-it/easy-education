@@ -1,20 +1,11 @@
-import type { User } from "@supabase/supabase-js";
-import { getAccessState } from "@/lib/billing";
 import { generateTextFromYouTube } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
-import { startOfToday } from "@/lib/study-stats";
 
 /** Tipo salvo em `uploaded_files.type` para vídeos do YouTube. */
 export const YOUTUBE_FILE_TYPE = "video/youtube";
 
 /** Trecho máximo lido de uma vez. Vídeos maiores: o aluno escolhe o trecho. */
 export const VIDEO_MAX_MINUTES = Number(process.env.VIDEO_MAX_MINUTES ?? 60);
-
-/** Vídeos por dia em cada plano (o custo é ~100 tokens por segundo de vídeo). */
-const DAILY_VIDEOS = {
-  basic: Number(process.env.AI_DAILY_VIDEOS_BASIC ?? 3),
-  full: Number(process.env.AI_DAILY_VIDEOS ?? 10),
-};
 
 export class VideoError extends Error {
   constructor(
@@ -110,21 +101,6 @@ export async function fetchVideoMeta(id: string) {
   if (!response.ok) throw new VideoError("Não foi possível ler este vídeo agora. Tente de novo em instantes.", 503);
   const data = (await response.json()) as { title?: string; author_name?: string };
   return { title: (data.title ?? "Vídeo do YouTube").slice(0, 180), channel: (data.author_name ?? "").slice(0, 120) };
-}
-
-/** Limite diário de vídeos do plano. */
-export async function assertDailyVideoQuota(user: Pick<User, "id" | "email">) {
-  const access = await getAccessState(user);
-  const limit = DAILY_VIDEOS[access.plan ?? "full"];
-  const used = await getPrisma().uploadedFile.count({
-    where: { userId: user.id, type: YOUTUBE_FILE_TYPE, createdAt: { gte: startOfToday() } },
-  });
-  if (used >= limit) {
-    throw new VideoError(
-      `Você chegou ao limite de ${limit} vídeos por hoje.${access.plan === "basic" ? " No plano Completo o limite é maior." : " Volte amanhã!"}`,
-      429,
-    );
-  }
 }
 
 function notesInstruction(meta: { title: string; channel: string }, range: { startSeconds: number; endSeconds: number }) {

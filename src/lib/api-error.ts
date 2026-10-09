@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { AiQuotaError } from "@/lib/ai-quota";
 import { BillingError } from "@/lib/billing";
 import { isAiOverloadError } from "@/lib/gemini";
+import { PlanLimitError } from "@/lib/usage";
 
 type ApiErrorOptions = {
   fallback: string;
@@ -18,7 +18,7 @@ function publicErrorMessage(error: unknown, fallback: string) {
     return fallback;
   }
 
-  if (error instanceof AiQuotaError) return error.message;
+  if (error instanceof PlanLimitError) return error.message;
   if (error instanceof BillingError) return error.message;
 
   if (isDatabaseBusyError(error)) {
@@ -46,7 +46,7 @@ function publicErrorMessage(error: unknown, fallback: string) {
 
 function statusForError(error: unknown) {
   if (error instanceof ZodError) return 400;
-  if (error instanceof AiQuotaError) return 429;
+  if (error instanceof PlanLimitError) return error.status;
   if (error instanceof BillingError) return error.status;
   if (isDatabaseBusyError(error)) return 503;
   if (isAiUnavailableError(error)) return 503;
@@ -81,6 +81,11 @@ function isAiUnavailableError(error: unknown) {
 }
 
 export function apiErrorResponse(error: unknown, options: ApiErrorOptions) {
+  // Limite de plano é uma resposta esperada, não um erro do servidor: a interface usa os detalhes para abrir o modal de upgrade.
+  if (error instanceof PlanLimitError) {
+    return NextResponse.json({ error: error.message, ...error.info }, { status: error.status });
+  }
+
   console.error(`[${options.scope}]`, error);
 
   return NextResponse.json(

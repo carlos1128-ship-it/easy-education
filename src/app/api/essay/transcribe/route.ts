@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { apiErrorResponse } from "@/lib/api-error";
-import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
+import { getAccessState } from "@/lib/billing";
 import { generateTextFromImage } from "@/lib/gemini";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { assertFeatureAvailable, withFeature } from "@/lib/usage";
 
 const imageTypes = ["image/png", "image/jpeg", "image/webp"];
 
@@ -16,7 +17,6 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user, "generation");
     if (!checkRateLimit(`essay-transcribe:${user.id}`).ok) {
       return NextResponse.json({ error: "Muitas fotos em pouco tempo. Tente de novo em um minuto." }, { status: 429 });
     }
@@ -27,7 +27,13 @@ export async function POST(request: Request) {
     if (!imageTypes.includes(file.type)) return NextResponse.json({ error: "Envie a foto em PNG, JPG ou WebP." }, { status: 400 });
     if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "Imagem acima de 10MB." }, { status: 400 });
 
-    const text = await generateTextFromImage(Buffer.from(await file.arrayBuffer()), file.type, INSTRUCTION);
+    // Redação por foto: bloqueada no Gratuito e incluída no limite de redações dos planos pagos
+    // (a leitura só acontece se ainda sobrar redação; o teto técnico de leituras fica em plans.ts).
+    const { tier } = await getAccessState(user);
+    await assertFeatureAvailable(user, "essay_photo_read", { tier });
+    await assertFeatureAvailable(user, "essay_correction", { tier });
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const text = await withFeature(user, "essay_photo_read", () => generateTextFromImage(buffer, file.type, INSTRUCTION), { tier });
     return NextResponse.json({ text });
   } catch (error) {
     return apiErrorResponse(error, {

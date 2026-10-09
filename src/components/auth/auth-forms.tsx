@@ -114,7 +114,8 @@ function GoogleIcon() {
 export function SignUpForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const checkoutPath = `/assinar${planQuery(params)}`;
+  // Sem plano escolhido na landing, a conta nasce no plano Gratuito e vai direto para o onboarding.
+  const checkoutPath = planQuery(params) ? `/assinar${planQuery(params)}` : "/onboarding";
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -180,7 +181,7 @@ export function SignUpForm() {
       }
 
       toast.success(data.message ?? "Conta criada com sucesso.");
-      // Conta criada: próximo passo é escolher o plano e pagar (sem cobrança ativa, a tela segue direto para o app).
+      // Conta criada: com plano pago escolhido na landing, segue para o pagamento; senão, para o onboarding (plano Gratuito).
       router.push(checkoutPath);
       router.refresh();
     } catch {

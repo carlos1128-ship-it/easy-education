@@ -1,14 +1,14 @@
 import { OnboardingForm, type OnboardingInitial } from "@/components/onboarding/onboarding-form";
 import { parsePersonalization } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
-import { getPaidUserOrRedirect } from "@/lib/server-user";
+import { getStudentOrRedirect } from "@/lib/server-user";
 
 export const dynamic = "force-dynamic";
 
 const LEVEL_LABELS: Record<string, string> = { iniciante: "Iniciante", "intermediário": "Intermediário", "avançado": "Avançado" };
 
 export default async function OnboardingPage() {
-  const { user } = await getPaidUserOrRedirect();
+  const { user } = await getStudentOrRedirect();
   const prisma = getPrisma();
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
   const redo = Boolean(profile?.onboardingDone);

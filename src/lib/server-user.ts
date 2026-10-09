@@ -22,10 +22,15 @@ export async function getCurrentUserOrRedirect() {
   return user;
 }
 
-/** Usuário logado e com assinatura ativa; sem assinatura, vai para a escolha do plano. */
-export async function getPaidUserOrRedirect() {
+/** O plano do aluno também é pedido uma vez por request (layout e páginas compartilham). */
+const getCachedAccess = cache(async (userId: string, email: string | undefined) => getAccessState({ id: userId, email }));
+
+/**
+ * Aluno logado e o plano dele. Todo aluno entra no app: sem assinatura ativa ele usa o plano Gratuito,
+ * com os limites de src/lib/plans.ts aplicados nas rotas do servidor.
+ */
+export async function getStudentOrRedirect() {
   const user = await getCurrentUserOrRedirect();
-  const access = await getAccessState(user);
-  if (!access.hasAccess) redirect("/assinar");
+  const access = await getCachedAccess(user.id, user.email);
   return { user, access };
 }

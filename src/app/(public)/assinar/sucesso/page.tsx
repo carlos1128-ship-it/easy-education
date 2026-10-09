@@ -25,7 +25,7 @@ export default async function AssinaturaSucessoPage({ searchParams }: { searchPa
   }
 
   const access = await getAccessState(user);
-  if (access.hasAccess) {
+  if (access.isPaid) {
     const profile = await getPrisma().profile.findUnique({ where: { userId: user.id } });
     redirect(profile?.onboardingDone ? "/dashboard" : "/onboarding");
   }

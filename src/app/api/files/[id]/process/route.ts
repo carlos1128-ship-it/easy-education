@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
-import { assertDailyAiQuota } from "@/lib/ai-quota";
 import { requireUser } from "@/lib/auth";
 import { generateTextFromImage } from "@/lib/gemini";
 import { extractTextFromPDF } from "@/lib/pdf";
@@ -9,6 +8,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { getPrisma } from "@/lib/prisma";
 import { createStorageServerClient } from "@/lib/supabase/storage";
 import { extractTextFromBuffer } from "@/lib/text";
+import { assertWithinSafetyCaps } from "@/lib/usage";
 import { isVideoFile, processVideoMaterial } from "@/lib/youtube";
 
 /** Vídeo do YouTube pode levar até alguns minutos para ser lido de novo. */
@@ -23,7 +23,8 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    await assertDailyAiQuota(user, "generation");
+    // O envio já gastou o limite do plano; aqui só vale o teto global de segurança do dia (leitura de foto e vídeo gastam IA).
+    await assertWithinSafetyCaps(user);
 
     const { id } = await context.params;
     const prisma = getPrisma();
