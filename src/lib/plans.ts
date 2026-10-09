@@ -148,7 +148,10 @@ export type PlanConfig = {
   limits: Record<FeatureKey, Allowance>;
   /** Tamanho máximo de cada arquivo enviado. */
   uploadMaxBytes: number;
-  /** Maior trecho de vídeo do YouTube por envio, em minutos (vídeo é o que mais custa de IA). */
+  /**
+   * Maior trecho de vídeo do YouTube por envio, em minutos, quando o vídeo NÃO tem legenda (a IA precisa assistir,
+   * o que custa caro). Com legenda, aceita até VIDEO_MAX_MINUTES (youtube.ts), porque a IA só resume o texto.
+   */
   videoMaxMinutes: number;
   /**
    * Tetos globais de segurança por aluno por dia. Servem para um bug ou abuso não gerar uma conta enorme;
@@ -201,7 +204,8 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       // Redação por foto entra no limite de redações; este é só o teto técnico de leituras (2x o limite de redações).
       essay_photo_read: perWeek(6),
       file_upload: perDay(2),
-      video_material: perWeek(2),
+      // Vídeo com legenda sai barato (a IA resume o texto); sem legenda, o trecho fica limitado (videoMaxMinutes).
+      video_material: perDay(1),
       study_plan: perWeek(1),
       trail: open,
       ai_quiz: perDay(2),
@@ -223,7 +227,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       essay_correction: perDay(1),
       essay_photo_read: perDay(2),
       file_upload: perDay(5),
-      video_material: perWeek(4),
+      video_material: perDay(3),
       study_plan: perWeek(3),
       trail: open,
       ai_quiz: perDay(5),

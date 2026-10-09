@@ -8,6 +8,7 @@ import { getPrisma } from "@/lib/prisma";
 import { getAccessState } from "@/lib/billing";
 import { PLANS } from "@/lib/plans";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { fetchCaptionInfo } from "@/lib/youtube-transcript";
 import { consumeFeature } from "@/lib/usage";
 import {
   fetchVideoMeta,
@@ -15,6 +16,7 @@ import {
   parseTimestamp,
   parseYouTubeUrl,
   processVideoMaterial,
+  VIDEO_MAX_MINUTES,
   VideoError,
   videoSourceKey,
   YOUTUBE_FILE_TYPE,
@@ -43,15 +45,19 @@ export async function POST(request: Request) {
 
     const startSeconds = parseTimestamp(payload.start) ?? parsed.startSeconds ?? 0;
     const requestedEnd = parseTimestamp(payload.end);
-    // Vídeo é o recurso que mais gasta IA: o trecho máximo depende do plano (ver plans.ts).
+    // Com legenda, a IA resume só o texto (barato) e aceita trechos longos. Sem legenda a IA precisa assistir
+    // o vídeo, o que custa muito mais: aí vale o trecho máximo do plano (ver plans.ts).
     const { tier } = await getAccessState(user);
-    const maxMinutes = PLANS[tier].videoMaxMinutes;
-    const maxSeconds = maxMinutes * 60;
+    const captions = await fetchCaptionInfo(parsed.id).catch(() => null);
+    const planMaxSeconds = PLANS[tier].videoMaxMinutes * 60;
+    const maxSeconds = captions ? Math.max(planMaxSeconds, VIDEO_MAX_MINUTES * 60) : planMaxSeconds;
     if (requestedEnd !== null && requestedEnd <= startSeconds) throw new VideoError("O fim do trecho precisa vir depois do início.");
     if (requestedEnd !== null && requestedEnd - startSeconds > maxSeconds) {
-      throw new VideoError(`No seu plano, escolha um trecho de até ${maxMinutes} minutos por vez.`);
+      throw new VideoError("Esse trecho é longo demais para o seu plano. Escolha um trecho menor.");
     }
-    const endSeconds = requestedEnd ?? startSeconds + maxSeconds;
+    const videoEnd = captions?.lengthSeconds ?? null;
+    const endSeconds = Math.min(requestedEnd ?? startSeconds + maxSeconds, videoEnd ?? Number.POSITIVE_INFINITY);
+    if (endSeconds <= startSeconds) throw new VideoError("O início do trecho passa do fim do vídeo.");
 
     const sourceUrl = videoSourceKey(parsed.id, startSeconds, endSeconds);
     const prisma = getPrisma();
@@ -84,7 +90,7 @@ export async function POST(request: Request) {
     const fileId = file.id;
 
     after(async () => {
-      await runWithAiCallContext({ userId: user.id, plan: ticket.tier, feature: "video_material" }, () => processVideoMaterial(fileId));
+      await runWithAiCallContext({ userId: user.id, plan: ticket.tier, feature: "video_material" }, () => processVideoMaterial(fileId, { fallbackMaxSeconds: planMaxSeconds }));
       try {
         revalidatePath("/dashboard/arquivos");
       } catch {

@@ -63,7 +63,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           <PlanPicker initialPlan={plan ?? "full"} freeHref={profileDone ? "/dashboard" : "/onboarding"} />
         </div>
         <div className="mt-10">
-          <h2 className="m-0 mb-3 text-lg font-bold text-ink">Compare os planos, número por número</h2>
+          <h2 className="m-0 mb-3 text-lg font-bold text-ink">Compare os planos</h2>
           <PlanComparisonTable current="free" />
         </div>
         <p className="m-0 mt-6 text-center text-sm text-ink-muted">

@@ -374,6 +374,21 @@ export async function generateChatText(messages: ChatInputMessage[], systemPromp
   });
 }
 
+/** Texto longo a partir de um pedido (ex.: anotações de estudo de uma transcrição). Sem raciocínio, para sair barato. */
+export async function generateLongText(prompt: string, maxOutputTokens = 8192) {
+  return withModels(async (model) => {
+    const response = await getGemini().models.generateContent({
+      model,
+      contents: prompt,
+      config: { maxOutputTokens, temperature: 0.3, thinkingConfig: thinkingFor(model, 0) },
+    });
+    await recordAiCall(model, response.usageMetadata);
+    const text = response.text?.trim();
+    if (!text) throw new Error("A IA retornou resposta vazia.");
+    return { text, model };
+  });
+}
+
 export type ChatToolResult =
   | { kind: "text"; text: string }
   | { kind: "call"; name: string; args: Record<string, unknown> };

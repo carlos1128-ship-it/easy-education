@@ -43,13 +43,11 @@ export function windowReset(window: LimitWindow, now: Date = new Date()): Date {
   return new Date(start.getTime() + (window === "day" ? DAY_MS : 7 * DAY_MS));
 }
 
-const timeFormat = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 const weekdayFormat = new Intl.DateTimeFormat("pt-BR", { weekday: "long", timeZone: "America/Sao_Paulo" });
 
 /** "amanhã às 00:00" ou "segunda-feira às 00:00" (horário de Brasília), para as mensagens de limite. */
 export function describeReset(window: LimitWindow, now: Date = new Date()): string {
-  const reset = windowReset(window, now);
-  const time = timeFormat.format(reset);
-  if (window === "day") return `amanhã às ${time}`;
-  return `${weekdayFormat.format(reset)} às ${time}`;
+  // Sem horário nem data: a interface não mostra números de limite.
+  if (window === "day") return "amanhã";
+  return `na ${weekdayFormat.format(windowReset(window, now))}`;
 }

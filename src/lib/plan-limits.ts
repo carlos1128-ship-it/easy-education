@@ -1,11 +1,8 @@
 import {
   FEATURES,
   PLANS,
-  allowanceFor,
-  describeAllowance,
   nextTier,
   upgradeTargetFor,
-  uploadLimitMB,
   type Allowance,
   type FeatureKey,
   type LimitWindow,
@@ -32,7 +29,7 @@ export type PlanLimitInfo = {
   resetAt?: string;
   /** Plano que resolve (null se o aluno já está no mais alto). */
   upgradeTo: PlanTier | null;
-  /** O que o plano de cima oferece para este recurso, em texto ("20 mensagens no chat por dia"). */
+  /** O que o plano de cima oferece para este recurso, em texto, sem números ("mais mensagens no chat"). */
   upgradeOffer?: string;
   message: string;
 };
@@ -65,7 +62,7 @@ export function lockedInfo(tier: PlanTier, feature: FeatureKey): PlanLimitInfo {
     feature,
     tier,
     upgradeTo: target,
-    upgradeOffer: target ? (describeAllowance(feature, allowanceFor(target, feature)) ?? undefined) : undefined,
+    upgradeOffer: target ? meta.unlocks : undefined,
     message: targetName
       ? `${meta.label} não está disponível no plano ${PLANS[tier].name}. No plano ${targetName} você libera ${meta.unlocks}.`
       : `${meta.label} não está disponível no seu plano.`,
@@ -75,9 +72,8 @@ export function lockedInfo(tier: PlanTier, feature: FeatureKey): PlanLimitInfo {
 export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<AllowanceStatus, { state: "limit" }>, now: Date): PlanLimitInfo {
   const meta = FEATURES[feature];
   const target = upgradeTargetFor(tier, feature);
-  const offer = target ? describeAllowance(feature, allowanceFor(target, feature)) : null;
+  const offer = target ? `mais ${meta.plural}` : null;
   const period = status.window === "day" ? "de hoje" : "desta semana";
-  const noun = status.max === 1 ? meta.singular : meta.plural;
   return {
     code: "limit_reached",
     feature,
@@ -88,8 +84,8 @@ export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<A
     upgradeTo: target,
     upgradeOffer: offer ?? undefined,
     message:
-      `Você usou ${status.max} ${noun} ${period} no plano ${PLANS[tier].name}. ` +
-      `O limite volta ${describeReset(status.window, now)} (horário de Brasília).` +
+      `Você usou todo o seu limite de ${meta.plural} ${period} no plano ${PLANS[tier].name}. ` +
+      `Ele volta ${describeReset(status.window, now)}.` +
       (target && offer ? ` No plano ${PLANS[target].name} você tem ${offer}.` : ""),
   };
 }
@@ -103,7 +99,7 @@ export function monthlyCapInfo(tier: PlanTier): PlanLimitInfo {
     window: "week",
     resetAt: reset.toISOString(),
     upgradeTo: nextTier(tier),
-    message: `Você chegou ao teto de uso justo de IA deste mês no plano ${PLANS[tier].name}. Ele volta no dia 1º, à meia-noite (horário de Brasília).`,
+    message: `Você chegou ao teto de uso justo de IA deste mês no plano ${PLANS[tier].name}. Ele volta no começo do mês que vem.`,
   };
 }
 
@@ -115,14 +111,13 @@ export function dailyCapInfo(tier: PlanTier): PlanLimitInfo {
     window: "day",
     resetAt: windowReset("day").toISOString(),
     upgradeTo: nextTier(tier),
-    message: `Você chegou ao limite de segurança de uso de hoje. Ele volta ${describeReset("day")} (horário de Brasília).`,
+    message: `Você chegou ao limite de segurança de uso de hoje. Ele volta ${describeReset("day")}.`,
   };
 }
 
-export function fileTooLargeInfo(tier: PlanTier, bytes: number): PlanLimitInfo {
+export function fileTooLargeInfo(tier: PlanTier): PlanLimitInfo {
   const target = upgradeTargetFor(tier, "file_upload") ?? nextTier(tier);
-  const upgradeOffer = target ? `arquivos de até ${uploadLimitMB(target)} MB` : undefined;
-  const mb = (bytes / (1024 * 1024)).toFixed(1).replace(".", ",");
+  const upgradeOffer = target ? "arquivos maiores" : undefined;
   return {
     code: "file_too_large",
     feature: "file_upload",
@@ -130,7 +125,7 @@ export function fileTooLargeInfo(tier: PlanTier, bytes: number): PlanLimitInfo {
     upgradeTo: target,
     upgradeOffer,
     message:
-      `Este arquivo tem ${mb} MB e o plano ${PLANS[tier].name} aceita até ${uploadLimitMB(tier)} MB por arquivo.` +
-      (target ? ` No plano ${PLANS[target].name} o limite é de ${uploadLimitMB(target)} MB.` : ""),
+      `Este arquivo é maior do que o plano ${PLANS[tier].name} aceita.` +
+      (target ? ` No plano ${PLANS[target].name} você envia arquivos maiores.` : " Tente um arquivo menor ou divida em partes."),
   };
 }

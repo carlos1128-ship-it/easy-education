@@ -262,7 +262,7 @@ export default async function DashboardPage() {
               {enem
                 ? "Simulados de 90 questões, como no dia da prova, com o resumo do que você acertou."
                 : concurso
-                  ? `Um simulado novo por dia${concurso.role ? ` para ${concurso.role}` : ""}, no estilo da banca.`
+                  ? `Simulados${concurso.role ? ` para ${concurso.role}` : " do seu concurso"}, no estilo da banca.`
                   : "Treino no ritmo de prova, no estilo do que você estuda."}
             </span>
           </span>

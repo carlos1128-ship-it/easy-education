@@ -91,7 +91,7 @@ export function ConcursoCard({ role, board, todayQuizId }: Props) {
           {board ? <span className="font-normal text-ink-muted"> · banca {board}</span> : null}
         </p>
         <p className="m-0 mt-1 text-sm text-ink-muted">
-          30 questões no estilo da banca, com as matérias que costumam cair no edital. Um novo a cada dia.{" "}
+          Questões no estilo da banca, com as matérias que costumam cair no edital.{" "}
           <button type="button" onClick={() => setEditing(true)} className="font-semibold text-brand-strong underline underline-offset-2">
             Trocar concurso
           </button>

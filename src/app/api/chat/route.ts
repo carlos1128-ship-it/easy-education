@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     if (response) return response;
 
     const rateLimit = checkRateLimit(`chat:${user.id}`);
-    if (!rateLimit.ok) return NextResponse.json({ error: "Limite de 20 mensagens por minuto atingido." }, { status: 429 });
+    if (!rateLimit.ok) return NextResponse.json({ error: "Muitas mensagens em pouco tempo. Aguarde um instante e tente de novo." }, { status: 429 });
 
     const payload = chatSchema.parse(await request.json());
     // Limite do plano (mensagens por dia), aplicado aqui no servidor antes de gastar IA.

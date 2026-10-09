@@ -176,7 +176,7 @@ export const landingResources = {
   cards: {
     simulado: {
       title: "Simulados",
-      text: "Treine no tempo de prova. Quem estuda para o ENEM faz provas anteriores de 90 questões; quem estuda para concurso recebe um simulado do seu concurso por dia.",
+      text: "Treine no tempo de prova. Quem estuda para o ENEM faz provas anteriores de 90 questões; quem estuda para concurso recebe simulados do seu concurso, no estilo da banca.",
       mock: {
         name: "Simulado da semana",
         timer: "1:12:40 restantes",
@@ -331,11 +331,11 @@ export const landingFaq = {
     },
     {
       q: "Como funcionam os limites de uso?",
-      a: "Cada plano tem números claros, que aparecem na tabela de planos. Os limites diários voltam à meia-noite e os semanais, na segunda-feira, no horário de Brasília. Todo limite tem um teto: não existe uso ilimitado. Antes de acabar, o app avisa quantos usos restam.",
+      a: "Cada plano tem um uso justo de IA, maior nos planos pagos. No app, uma barra mostra quanto você já usou de cada recurso e avisa antes de acabar. O uso do dia volta à meia-noite e o da semana, na segunda-feira.",
     },
     {
       q: "Como funcionam os simulados?",
-      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe, nos planos pagos, um simulado por dia no estilo da banca, gerado por IA e marcado como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
+      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe, nos planos pagos, simulados no estilo da banca, gerado por IA e marcado como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
     },
     {
       q: "A nota estimada do simulado é a nota do ENEM?",
@@ -355,7 +355,7 @@ export const landingFaq = {
     },
     {
       q: "Qual a diferença entre o Gratuito, o Básico e o Completo?",
-      a: "O Gratuito tem poucas mensagens no chat, uma redação por semana e o desempenho. O Básico libera quizzes, flashcards e simulados gerados por IA, vídeos do YouTube e a trilha. O Completo tem os limites mais altos. A tabela de planos mostra cada número.",
+      a: "O Gratuito tem chat com IA, correção de redação, plano de estudos e desempenho, com um uso menor. O Básico libera quizzes, flashcards e simulados gerados por IA, redação por foto, vídeos do YouTube e a trilha. O Completo tem o maior uso de IA do app. A tabela de planos compara cada recurso.",
     },
     {
       q: "Preciso ter a apostila em PDF?",

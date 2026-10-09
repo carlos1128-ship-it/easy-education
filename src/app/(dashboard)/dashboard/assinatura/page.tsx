@@ -125,7 +125,7 @@ export default async function AssinaturaPage() {
                 <div className="flex items-baseline justify-between gap-2 text-sm">
                   <span className="font-medium text-ink">{meta.label}</span>
                   <span className="text-ink-muted">
-                    {item.used} de {item.max} {item.window === "day" ? "hoje" : "esta semana"}
+                    {item.remaining === 0 ? "Acabou" : item.window === "day" ? "Hoje" : "Esta semana"}
                   </span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-track" role="progressbar" aria-valuenow={item.used} aria-valuemin={0} aria-valuemax={item.max ?? 0}>

@@ -117,7 +117,7 @@ export function ChatInterface() {
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Imagem acima de 10MB.");
+      toast.error("Imagem grande demais. Tente uma foto menor.");
       return;
     }
     const previewUrl = URL.createObjectURL(file);

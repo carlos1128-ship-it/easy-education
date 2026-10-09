@@ -30,7 +30,7 @@ const STEPS: TourStep[] = [
   { target: "/dashboard/flashcards", title: "Flashcards", text: "Para memorizar: pergunta na frente, resposta atrás. O app decide quando cada cartão volta, pouco antes de você esquecer." },
   { target: "/dashboard/plano", title: "Plano de estudo", text: "Sua semana organizada. Clique em Iniciar num bloco: o cronômetro liga e a atividade já abre pronta." },
   { target: "/dashboard/redacao", title: "Redação", text: "Digite ou fotografe sua redação. A nota sai de 0 a 1000 pela grade do Enem, com o que melhorar em cada competência." },
-  { target: "/dashboard/simulados", title: "Simulados", text: "Treino no ritmo de prova. Quem estuda para o ENEM faz provas anteriores completas, de 90 questões; quem estuda para concurso recebe um simulado do seu concurso por dia (planos pagos). No fim, o resumo mostra quanto você acertou por área e por matéria." },
+  { target: "/dashboard/simulados", title: "Simulados", text: "Treino no ritmo de prova. Quem estuda para o ENEM faz provas anteriores completas, de 90 questões; quem estuda para concurso recebe simulados do seu concurso (planos pagos). No fim, o resumo mostra quanto você acertou por área e por matéria." },
   { target: "/dashboard/desempenho", title: "Desempenho", text: "Veja sua evolução por matéria e onde você mais erra, para saber o que revisar." },
   { target: "notificacoes", title: "Avisos", text: "Ofensiva, meta do dia e flashcards para revisar aparecem aqui." },
   { target: "/dashboard/configuracoes", title: "Configurações", text: "Mude sua personalização quando quiser: a IA se adapta ao que você está estudando." },

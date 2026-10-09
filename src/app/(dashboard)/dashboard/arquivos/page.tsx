@@ -6,7 +6,7 @@ import { YouTubeLinkForm } from "@/components/files/youtube-link-form";
 import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatBytes } from "@/lib/format";
-import { allowanceFor, PLANS } from "@/lib/plans";
+import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { parseVideoSourceKey, watchUrl, YOUTUBE_FILE_TYPE } from "@/lib/youtube";
@@ -55,7 +55,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
             description="Cole o link de uma aula e a IA gera anotações com o minuto de cada assunto, para virar quiz, flashcards ou simulado."
           />
         ) : (
-          <YouTubeLinkForm maxMinutes={PLANS[access.tier].videoMaxMinutes} />
+          <YouTubeLinkForm />
         )}
       </div>
 

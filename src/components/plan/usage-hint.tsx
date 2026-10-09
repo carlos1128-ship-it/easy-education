@@ -8,8 +8,9 @@ import { describeReset } from "@/lib/time-window";
 import { cn } from "@/lib/utils";
 
 /**
- * Aviso de uso: "Restam 2 de 3 mensagens no chat hoje". Fica âmbar quando falta pouco
- * e vira um convite de upgrade (sem culpa) quando acaba. Não mostra nada se o recurso não tem limite.
+ * Aviso de uso: o nome do recurso e uma barra que enche conforme o aluno usa, sem números de limite.
+ * Fica âmbar quando falta pouco e vira um convite de upgrade (sem culpa) quando acaba.
+ * Não mostra nada se o recurso não tem limite.
  */
 export function UsageHint({ feature, className }: { feature: FeatureKey; className?: string }) {
   const plan = usePlanOptional();
@@ -17,36 +18,40 @@ export function UsageHint({ feature, className }: { feature: FeatureKey; classNa
   if (!plan || !item || item.state !== "limit" || item.max === null || item.remaining === null || !item.window) return null;
 
   const meta = FEATURES[feature];
-  const noun = item.max === 1 ? meta.singular : meta.plural;
   const period = item.window === "day" ? "hoje" : "esta semana";
   const empty = item.remaining === 0;
   const low = !empty && item.remaining <= Math.max(1, Math.floor(item.max * 0.2));
+  const used = Math.min(100, Math.round(((item.max - item.remaining) / Math.max(1, item.max)) * 100));
   const upgrade = item.upgradeTo;
+  const label = empty ? `Acabou ${period}. Volta ${describeReset(item.window)}` : low ? `Está acabando ${period}` : `Uso ${period}`;
 
   return (
-    <p
+    <div
       role="status"
       className={cn(
-        "m-0 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full px-3 py-1.5 text-[13px] font-medium",
-        empty ? "bg-warning-tint text-warning" : low ? "bg-warning-tint text-warning" : "bg-surface-muted text-ink-muted",
+        "m-0 inline-flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-full px-3 py-1.5 text-[13px] font-medium",
+        empty || low ? "bg-warning-tint text-warning" : "bg-surface-muted text-ink-muted",
         className,
       )}
     >
-      {empty ? (
-        <span>
-          Acabou: {item.max} {noun} {period}. Volta {describeReset(item.window)}.
-        </span>
-      ) : (
-        <span>
-          {item.remaining === 1 ? "Resta" : "Restam"} {item.remaining} de {item.max} {noun} {period}
-        </span>
-      )}
+      <span>{meta.label}</span>
+      <span
+        className="h-1.5 w-20 overflow-hidden rounded-full bg-track"
+        role="progressbar"
+        aria-label={`${meta.label}: ${label.toLowerCase()}`}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={used}
+      >
+        <span className={cn("block h-full rounded-full", empty || low ? "bg-warning" : "bg-brand")} style={{ width: `${Math.max(used, 4)}%` }} />
+      </span>
+      <span>{label}</span>
       {(empty || low) && upgrade ? (
         <Link href={`/assinar?plano=${upgrade === "full" ? "completo" : "basico"}`} className="font-semibold underline underline-offset-2">
           Ver plano {PLANS[upgrade].name}
         </Link>
       ) : null}
-    </p>
+    </div>
   );
 }
 

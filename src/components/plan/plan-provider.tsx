@@ -34,14 +34,6 @@ export function usePlanOptional() {
   return useContext(PlanContext);
 }
 
-const timeFormat = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
-const dayFormat = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "2-digit", month: "long", timeZone: "America/Sao_Paulo" });
-
-function formatReset(resetAt?: string) {
-  if (!resetAt) return null;
-  const date = new Date(resetAt);
-  return `${dayFormat.format(date)}, às ${timeFormat.format(date)} (horário de Brasília)`;
-}
 
 function dialogCopy(info: PlanLimitInfo) {
   const featureLabel = info.feature ? FEATURES[info.feature].label : "Uso do dia";
@@ -64,7 +56,6 @@ function UpgradeDialog({ info, onClose }: { info: PlanLimitInfo | null; onClose:
   const copy = info ? dialogCopy(info) : null;
   const Icon = copy?.icon ?? Lock;
   const target = info?.upgradeTo ?? null;
-  const resetText = info?.code === "limit_reached" || info?.code === "daily_cap" || info?.code === "monthly_cap" ? formatReset(info.resetAt) : null;
   // O cartão do plano logo abaixo já diz o que o upgrade inclui; a frase final da mensagem só repetiria isso.
   const message = info && target ? info.message.replace(/ No plano S+ você (?:tem|libera) .*$/, "") : (info?.message ?? "");
 
@@ -81,18 +72,12 @@ function UpgradeDialog({ info, onClose }: { info: PlanLimitInfo | null; onClose:
               <DialogDescription className="text-[15px] leading-relaxed text-ink-muted">{message}</DialogDescription>
             </DialogHeader>
 
-            {resetText ? (
-              <p className="m-0 rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink">
-                <span className="font-semibold">O limite volta:</span> {resetText}
-              </p>
-            ) : null}
-
             {target ? (
               <div className="rounded-xl border border-border bg-surface p-4">
                 <p className="m-0 text-sm font-semibold text-ink">
                   Plano {PLANS[target].name} · {planPriceLabel(target)}/mês
                 </p>
-                {info.upgradeOffer ? <p className="m-0 mt-1 text-sm text-ink-muted">Inclui {info.upgradeOffer}.</p> : null}
+                {info.upgradeOffer ? <p className="m-0 mt-1 text-sm text-ink-muted">Com ele: {info.upgradeOffer}.</p> : null}
               </div>
             ) : null}
 

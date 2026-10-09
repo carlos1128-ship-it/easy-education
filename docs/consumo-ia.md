@@ -47,7 +47,7 @@ Os limites foram recalculados para o teto de custo combinado: **Gratuito até R$
 | Chat com IA | 3/dia | 12/dia | 30/dia |
 | Redação (texto ou foto) | 1/semana (só texto) | 3/semana | 1/dia |
 | Envio de arquivos | 1/dia, 5 MB | 2/dia, 15 MB | 5/dia, 50 MB |
-| Vídeos do YouTube | bloqueado | 2/semana, trechos de até 20 min | 4/semana, trechos de até 30 min |
+| Vídeos do YouTube | bloqueado | 1/dia (com legenda até 60 min; sem legenda, 20 min) | 3/dia (com legenda até 60 min; sem legenda, 30 min) |
 | Plano de estudos | 1/semana | 1/semana | 3/semana |
 | Trilha | bloqueada | liberada | liberada |
 | Quiz por IA | bloqueado | 2/dia | 5/dia |
@@ -56,6 +56,8 @@ Os limites foram recalculados para o teto de custo combinado: **Gratuito até R$
 | Simulados de provas anteriores do ENEM | livre | livre | livre |
 
 ## Pior caso: usar todo o limite, todos os dias
+
+**Vídeos:** desde 09/10/2026 o app lê primeiro a legenda do YouTube (sem custo, `src/lib/youtube-transcript.ts`) e a IA só resume o texto. Medido no vídeo de 14 min usado nos testes: US$ 0,0028 (antes, assistindo o vídeo, ~US$ 0,01 a 0,03). Sem legenda, a IA assiste o vídeo, limitado ao trecho do plano. A conta abaixo considera vídeos com legenda.
 
 Cada operação no maior tamanho permitido (quiz de 20 questões de um material, 30 flashcards, simulado de 30 questões, redação por foto, todo arquivo como foto, vídeo no trecho máximo), mês de 30 dias, limite semanal × 4,29. Tokens estimados com folga (o chat medido em 09/10 usou ~1.000 de entrada e ~270 de saída; a conta usa 4.000 e 800, para cobrir o histórico da conversa).
 
@@ -68,14 +70,15 @@ Cada operação no maior tamanho permitido (quiz de 20 questões de um material,
 | Quiz de 20 questões de um material | 12.000 / 4.500 | US$ 0,0035 | — |
 | Flashcards (30) | 9.000 / 3.500 | US$ 0,0026 | — |
 | Simulado de 30 questões | 9.000 / 6.500 | US$ 0,0040 | — |
-| Vídeo de 20 min | 120.000 / 3.500 | US$ 0,0154 | — |
-| Vídeo de 30 min | 180.000 / 4.000 | US$ 0,0225 | — |
+| Vídeo de 20 min (a IA assiste, vídeo sem legenda) | 120.000 / 3.500 | US$ 0,0154 | — |
+| Vídeo de 30 min (a IA assiste, vídeo sem legenda) | 180.000 / 4.000 | US$ 0,0225 | — |
+| Vídeo de 60 min pela legenda (padrão desde 09/10) | 15.000 / 4.000 | US$ 0,0036 | — |
 
 | Plano | Pior caso estimado | Teto mensal no servidor | Teto combinado |
 |---|---|---|---|
 | Gratuito | US$ 0,10 ≈ **R$ 0,58** | US$ 0,17 ≈ R$ 0,94 | R$ 1,00 |
-| Básico | US$ 0,86 ≈ **R$ 4,74** | US$ 0,85 ≈ R$ 4,68 | R$ 4,90 |
-| Completo | US$ 2,65 ≈ **R$ 14,58** | US$ 2,62 ≈ R$ 14,41 | R$ 14,90 |
+| Básico | US$ 0,84 ≈ **R$ 4,60** | US$ 0,85 ≈ R$ 4,68 | R$ 4,90 |
+| Completo | US$ 2,59 ≈ **R$ 14,24** | US$ 2,62 ≈ R$ 14,41 | R$ 14,90 |
 
 O teto mensal (`safety.monthlyCostUsd` em `plans.ts`) soma o custo real gravado em `ai_call_logs` e bloqueia o uso de IA ao chegar nele (volta no dia 1º). Ele é conferido antes de cada uso, então a última operação do mês pode passar um pouco (no máximo uma operação, cerca de US$ 0,02 a 0,04 com um vídeo). Ele garante o teto mesmo quando a IA cai no modelo de reserva, que é mais caro: nesse caso o aluno só chega no teto alguns dias antes.
 

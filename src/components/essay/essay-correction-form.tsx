@@ -27,7 +27,7 @@ export function EssayCorrectionForm() {
   async function readPhoto(file?: File) {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Imagem acima de 10MB.");
+      toast.error("Imagem grande demais. Tente uma foto menor.");
       return;
     }
     const formData = new FormData();

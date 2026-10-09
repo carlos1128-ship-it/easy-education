@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { readApiJson } from "@/lib/client-response";
 import { uploadMaterial } from "@/lib/client-upload";
 import { fileTooLargeInfo } from "@/lib/plan-limits";
-import { PLANS, uploadLimitMB } from "@/lib/plans";
+import { PLANS } from "@/lib/plans";
 
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const ACCEPT = ".pdf,.txt,.png,.jpg,.jpeg,.webp,text/plain,application/pdf,image/png,image/jpeg,image/webp";
@@ -18,7 +18,6 @@ export function FileUploader() {
   const router = useRouter();
   const plan = usePlanOptional();
   const tier = plan?.tier ?? "full";
-  const maxMB = uploadLimitMB(tier);
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "processing">("idle");
 
@@ -26,13 +25,13 @@ export function FileUploader() {
     if (!file) return;
     const isImage = IMAGE_TYPES.includes(file.type);
     if (isImage && file.size > 10 * 1024 * 1024) {
-      toast.error("Imagem acima de 10MB.");
+      toast.error("Imagem grande demais. Tente uma foto menor.");
       return;
     }
     // Tamanho máximo do plano: avisa antes de enviar (o servidor confere de novo).
     if (file.size > PLANS[tier].uploadMaxBytes) {
-      plan?.openLimit(fileTooLargeInfo(tier, file.size));
-      if (!plan) toast.error(`Arquivo acima de ${maxMB} MB.`);
+      plan?.openLimit(fileTooLargeInfo(tier));
+      if (!plan) toast.error("Arquivo maior do que o seu plano aceita.");
       return;
     }
 
@@ -70,7 +69,7 @@ export function FileUploader() {
     >
       <Upload className="mx-auto size-8 text-brand-strong" aria-hidden="true" />
       <h3 className="mt-4 text-lg font-bold text-ink">Arraste seu arquivo aqui</h3>
-      <p className="mt-2 text-sm text-ink-muted">PDF ou TXT até {maxMB} MB · Foto (PNG, JPG ou WebP) até {Math.min(maxMB, 10)} MB</p>
+      <p className="mt-2 text-sm text-ink-muted">PDF, TXT ou foto (PNG, JPG ou WebP)</p>
       <input
         ref={inputRef}
         type="file"

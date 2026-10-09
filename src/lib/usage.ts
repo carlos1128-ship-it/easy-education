@@ -30,7 +30,7 @@ export class PlanLimitError extends Error {
 
 /** Recusa arquivo maior que o limite do plano (antes de gastar o uso diário de envios). */
 export function assertUploadSize(tier: PlanTier, bytes: number) {
-  if (bytes > PLANS[tier].uploadMaxBytes) throw new PlanLimitError(fileTooLargeInfo(tier, bytes));
+  if (bytes > PLANS[tier].uploadMaxBytes) throw new PlanLimitError(fileTooLargeInfo(tier));
 }
 
 /** Confere só os tetos globais de segurança do dia, sem gastar nenhum uso (para repetir tentativas, por exemplo). */

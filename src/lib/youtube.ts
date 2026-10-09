@@ -1,5 +1,6 @@
-import { generateTextFromYouTube } from "@/lib/gemini";
+import { generateLongText, generateTextFromYouTube } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
+import { fetchTranscript, type Transcript } from "@/lib/youtube-transcript";
 
 /** Tipo salvo em `uploaded_files.type` para vídeos do YouTube. */
 export const YOUTUBE_FILE_TYPE = "video/youtube";
@@ -118,6 +119,16 @@ Se o vídeo não tiver conteúdo que dê para estudar, responda só: SEM_CONTEUD
 Texto simples, sem markdown.`;
 }
 
+/** Mesmo pedido das anotações, mas a partir da transcrição (legenda) do trecho. */
+function transcriptNotesPrompt(meta: { title: string; channel: string }, range: { startSeconds: number; endSeconds: number }, transcript: Transcript) {
+  return `${notesInstruction(meta, range)}
+
+Você não vai ver o vídeo: abaixo está a TRANSCRIÇÃO da fala do trecho${transcript.automatic ? " (legenda automática: pode ter erros de reconhecimento; corrija pelo contexto, sem inventar)" : ""}${transcript.language.startsWith("pt") ? "" : `, no idioma "${transcript.language}" (escreva as anotações em português)`}. Cada linha começa com a marca de tempo do vídeo original: use essas marcas nos tópicos.
+
+TRANSCRIÇÃO:
+${transcript.text.slice(0, 120_000)}`;
+}
+
 function publicVideoError(error: unknown) {
   if (error instanceof VideoError) return error.message;
   const message = error instanceof Error ? error.message.toLowerCase() : "";
@@ -137,7 +148,7 @@ function publicVideoError(error: unknown) {
  * Lê o vídeo e grava as anotações no material. Se o mesmo vídeo/trecho já foi lido
  * (por qualquer aluno: é conteúdo público), copia as anotações sem gastar IA de novo.
  */
-export async function processVideoMaterial(fileId: string) {
+export async function processVideoMaterial(fileId: string, options: { fallbackMaxSeconds?: number } = {}) {
   const prisma = getPrisma();
   const file = await prisma.uploadedFile.findUnique({ where: { id: fileId } });
   const source = parseVideoSourceKey(file?.sourceUrl);
@@ -152,7 +163,17 @@ export async function processVideoMaterial(fileId: string) {
     let notes = cached?.textContent ?? null;
     if (!notes) {
       const meta = { title: file.name, channel: "" };
-      const result = await generateTextFromYouTube(watchUrl(source.id), source, notesInstruction(meta, source));
+      // 1º a legenda do YouTube (sem custo): a IA só resume o texto, ~40x mais barato que assistir o vídeo.
+      // Sem legenda, a IA assiste o vídeo, como antes.
+      const transcript = await fetchTranscript(source.id, source.startSeconds, source.endSeconds);
+      // Sem legenda, a IA assiste no máximo o trecho do plano (o vídeo inteiro custaria caro demais).
+      const watched = options.fallbackMaxSeconds && source.endSeconds - source.startSeconds > options.fallbackMaxSeconds
+        ? { ...source, endSeconds: source.startSeconds + options.fallbackMaxSeconds }
+        : source;
+      const result = transcript
+        ? await generateLongText(transcriptNotesPrompt(meta, source, transcript))
+        : await generateTextFromYouTube(watchUrl(source.id), watched, notesInstruction(meta, watched));
+      console.info("[video.process] fonte:", transcript ? `legenda (${transcript.language}${transcript.automatic ? ", automática" : ""})` : "vídeo");
       if (result.text.includes("SEM_CONTEUDO_UTIL") || result.text.length < 200) {
         throw new VideoError("Não encontramos conteúdo para estudar neste trecho (sem fala ou explicação). Tente outro vídeo ou trecho.");
       }
@@ -162,7 +183,7 @@ export async function processVideoMaterial(fileId: string) {
         .replace(/^(?:claro|certamente|aqui est[aã]o)[^\n]*\n+/i, "")
         .trim();
       notes = `Vídeo: ${file.name}\nLink: ${watchUrl(source.id)}\nTrecho: ${formatTimestamp(source.startSeconds)} a ${formatTimestamp(source.endSeconds)}\n\n${clean}`;
-      console.info("[video.process]", { model: result.model, inputTokens: result.inputTokens, outputTokens: result.outputTokens });
+      console.info("[video.process]", { model: result.model });
     }
     await prisma.uploadedFile.update({
       where: { id: file.id },

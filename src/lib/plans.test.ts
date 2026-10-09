@@ -144,10 +144,10 @@ describe("janelas de limite no horário de Brasília", () => {
     expect(startOfNextMonthSP(new Date("2026-12-20T15:00:00Z")).toISOString()).toBe("2027-01-01T03:00:00.000Z");
   });
 
-  it("descreve quando o limite volta", () => {
+  it("descreve quando o limite volta, sem números", () => {
     const now = new Date("2026-10-09T15:00:00Z");
-    expect(describeReset("day", now)).toBe("amanhã às 00:00");
-    expect(describeReset("week", now)).toBe("segunda-feira às 00:00");
+    expect(describeReset("day", now)).toBe("amanhã");
+    expect(describeReset("week", now)).toBe("na segunda-feira");
   });
 });
 
@@ -179,5 +179,23 @@ describe("custo estimado de IA", () => {
 
   it("modelo desconhecido não é subestimado", () => {
     expect(estimateCostUsd("modelo-novo", 1_000_000, 0)).toBeCloseTo(0.345, 5);
+  });
+});
+
+describe("interface sem números de limite", () => {
+  it("mensagens de limite, tabela e cartões dos planos não mostram números", async () => {
+    const { comparisonRows, planHighlights } = await import("@/lib/plan-comparison");
+    const { fileTooLargeInfo, limitInfo, lockedInfo, monthlyCapInfo, dailyCapInfo } = await import("@/lib/plan-limits");
+    const now = new Date("2026-10-09T15:00:00Z");
+    const texts = [
+      ...comparisonRows().flatMap((row) => [row.label, ...Object.values(row.values)]),
+      ...(["free", "basic", "full"] as const).flatMap((tier) => planHighlights(tier)),
+      limitInfo("free", "chat_message", { state: "limit", max: 3, used: 3, remaining: 0, window: "day", resetAt: now }, now).message,
+      lockedInfo("free", "ai_quiz").message,
+      monthlyCapInfo("basic").message,
+      dailyCapInfo("full").message,
+      fileTooLargeInfo("free").message,
+    ].filter((text): text is string => typeof text === "string");
+    for (const text of texts) expect(text, text).not.toMatch(/\d/);
   });
 });

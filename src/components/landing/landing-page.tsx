@@ -37,7 +37,6 @@ import { cn } from "@/lib/utils";
 import { EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
-import { uploadLimitMB } from "@/lib/plans";
 
 const container = "mx-auto max-w-[1520px] px-5 lg:px-12 2xl:px-16";
 const sectionTop = "pt-16 lg:pt-24";
@@ -805,27 +804,13 @@ function PricingCard({ tier }: { tier: "free" | "basic" | "full" }) {
         {perDay ? <span className="text-sm font-medium text-brand-strong">{perDay}</span> : <span className="text-sm font-medium text-brand-strong">Sem cartão de crédito</span>}
       </div>
       <div className="flex flex-col gap-3">
+        {tier !== "free" ? (
+          <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">Tudo do plano anterior, mais</span>
+        ) : null}
         {planHighlights(tier).map((item) => (
-          <PlanFeature key={item}>
-            <strong className="font-medium">{item}</strong>
-          </PlanFeature>
+          <PlanFeature key={item}>{item}</PlanFeature>
         ))}
-        <span className="mt-1 text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">{tier === "free" ? p.includedTitle : "Tudo do plano anterior, mais"}</span>
-        {tier === "free" ? (
-          p.included.map((item) => <PlanFeature key={item}>{item}</PlanFeature>)
-        ) : tier === "basic" ? (
-          <>
-            <PlanFeature>Quizzes e flashcards gerados por IA</PlanFeature>
-            <PlanFeature>Redação por foto e vídeos do YouTube</PlanFeature>
-            <PlanFeature>Trilha de estudos com troféus</PlanFeature>
-          </>
-        ) : (
-          <>
-            <PlanFeature>Os limites mais altos de IA</PlanFeature>
-            <PlanFeature>Simulados gerados por IA todo dia</PlanFeature>
-            <PlanFeature>Arquivos de até {uploadLimitMB("full")} MB</PlanFeature>
-          </>
-        )}
+        {tier === "free" ? <PlanFeature>Simulados com provas anteriores do ENEM, para quem estuda para o ENEM</PlanFeature> : null}
       </div>
       <Link
         href={tier === "full" ? landingLinks.signUpFull : tier === "basic" ? landingLinks.signUpBasic : landingLinks.signUp}
@@ -855,10 +840,10 @@ function PlansSection() {
         <PricingCard tier="full" />
       </div>
       <div className="flex flex-col gap-4">
-        <h3 className="m-0 text-xl font-bold text-ink">Compare os planos, número por número</h3>
+        <h3 className="m-0 text-xl font-bold text-ink">Compare os planos</h3>
         <PlanComparisonTable />
         <p className="m-0 text-[13px] text-ink-muted">
-          Os limites diários voltam à meia-noite e os semanais, na segunda-feira, no horário de Brasília. Todo limite tem um teto: não existe uso ilimitado.
+          Cada plano tem um uso justo de IA. O app mostra quanto você já usou e avisa antes de acabar.
         </p>
       </div>
       <div className="flex items-center justify-center gap-2.5 text-center text-ink-muted">
