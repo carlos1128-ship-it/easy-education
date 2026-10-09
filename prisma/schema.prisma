@@ -3,37 +3,42 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model Profile {
-  id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
+  id              String    @id @default(uuid())
+  userId          String    @unique @map("user_id")
   name            String
   email           String
-  studyGoal       String   @default("ENEM") @map("study_goal")
+  studyGoal       String    @default("ENEM") @map("study_goal")
   targetDate      DateTime? @map("target_date")
-  dailyMinutes    Int      @default(60) @map("daily_minutes")
-  level           String   @default("beginner")
-  studyMethod     String   @default("pomodoro") @map("study_method")
-  onboardingDone  Boolean  @default(false) @map("onboarding_done")
+  dailyMinutes    Int       @default(60) @map("daily_minutes")
+  level           String    @default("beginner")
+  studyMethod     String    @default("pomodoro") @map("study_method")
+  onboardingDone  Boolean   @default(false) @map("onboarding_done")
   /// Respostas detalhadas do onboarding (motivo, prova, série, idioma, dificuldades, preferências).
   personalization Json?
   /// Quando o aluno terminou (ou pulou) o tutorial guiado do app.
   tourCompletedAt DateTime? @map("tour_completed_at")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  studyPlans     StudyPlan[]
-  uploadedFiles  UploadedFile[]
-  quizzes        Quiz[]
-  flashcardDecks FlashcardDeck[]
-  essays         Essay[]
-  chatMessages   ChatMessage[]
-  studySessions  StudySession[]
-  subscription   Subscription?
+  studyPlans      StudyPlan[]
+  uploadedFiles   UploadedFile[]
+  quizzes         Quiz[]
+  flashcardDecks  FlashcardDeck[]
+  essays          Essay[]
+  chatMessages    ChatMessage[]
+  studySessions   StudySession[]
+  subscription    Subscription?
+  bankSessions    BankSession[]
+  bankAnswers     BankAnswer[]
+  bookmarks       QuestionBookmark[]
+  questionReviews QuestionReview[]
+  questionReports QuestionReport[]
 
   @@map("profiles")
 }
@@ -50,7 +55,7 @@ model StudyPlan {
   planData     Json     @map("plan_data")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  profile  Profile @relation(fields: [userId], references: [userId])
+  profile  Profile            @relation(fields: [userId], references: [userId])
   subjects StudyPlanSubject[]
 
   @@map("study_plans")
@@ -86,19 +91,19 @@ model StudySession {
 }
 
 model UploadedFile {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  name        String
-  type        String
-  sizeBytes   Int      @map("size_bytes")
-  storagePath String   @map("storage_path")
-  processed   Boolean  @default(false)
-  textContent String?  @map("text_content") @db.Text
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  name            String
+  type            String
+  sizeBytes       Int      @map("size_bytes")
+  storagePath     String   @map("storage_path")
+  processed       Boolean  @default(false)
+  textContent     String?  @map("text_content") @db.Text
   /// Link de origem (vídeo do YouTube); vazio para arquivos enviados.
-  sourceUrl   String?  @map("source_url")
+  sourceUrl       String?  @map("source_url")
   /// Motivo da última falha de processamento, mostrado ao aluno.
-  processingError String? @map("processing_error")
-  createdAt   DateTime @default(now()) @map("created_at")
+  processingError String?  @map("processing_error")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   profile Profile @relation(fields: [userId], references: [userId])
   quizzes Quiz[]
@@ -108,34 +113,34 @@ model UploadedFile {
 }
 
 model Quiz {
-  id            String   @id @default(uuid())
-  userId        String   @map("user_id")
-  fileId        String?  @map("file_id")
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  fileId        String?   @map("file_id")
   title         String
   subject       String
-  difficulty    String   @default("medium")
-  questionCount Int      @map("question_count")
+  difficulty    String    @default("medium")
+  questionCount Int       @map("question_count")
   score         Float?
   completedAt   DateTime? @map("completed_at")
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
 
-  profile   Profile      @relation(fields: [userId], references: [userId])
-  file      UploadedFile? @relation(fields: [fileId], references: [id])
+  profile   Profile        @relation(fields: [userId], references: [userId])
+  file      UploadedFile?  @relation(fields: [fileId], references: [id])
   questions QuizQuestion[]
 
   @@map("quizzes")
 }
 
 model QuizQuestion {
-  id            String  @id @default(uuid())
-  quizId        String  @map("quiz_id")
-  question      String  @db.Text
+  id            String   @id @default(uuid())
+  quizId        String   @map("quiz_id")
+  question      String   @db.Text
   options       Json
-  correctAnswer String  @map("correct_answer")
-  explanation   String  @db.Text
-  userAnswer    String? @map("user_answer")
+  correctAnswer String   @map("correct_answer")
+  explanation   String   @db.Text
+  userAnswer    String?  @map("user_answer")
   isCorrect     Boolean? @map("is_correct")
-  order         Int     @default(0)
+  order         Int      @default(0)
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
@@ -156,15 +161,15 @@ model FlashcardDeck {
 }
 
 model Flashcard {
-  id          String    @id @default(uuid())
-  deckId      String    @map("deck_id")
-  front       String    @db.Text
-  back        String    @db.Text
-  easeFactor  Float     @default(2.5) @map("ease_factor")
-  interval    Int       @default(1)
-  repetitions Int       @default(0)
-  nextReview  DateTime  @default(now()) @map("next_review")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  deckId      String   @map("deck_id")
+  front       String   @db.Text
+  back        String   @db.Text
+  easeFactor  Float    @default(2.5) @map("ease_factor")
+  interval    Int      @default(1)
+  repetitions Int      @default(0)
+  nextReview  DateTime @default(now()) @map("next_review")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   deck FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
 
@@ -261,4 +266,221 @@ model StripeEvent {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("stripe_events")
+}
+
+// ---------------------------------------------------------------------------------------------
+// Banco de questões (qualquer exame). Exames, matérias e assuntos são dados, não constantes.
+// ---------------------------------------------------------------------------------------------
+
+/// Um exame (ENEM, SAT, um vestibular, um concurso...). Novos exames entram como linhas, sem mudar código.
+model Exam {
+  id         String   @id @default(uuid())
+  slug       String   @unique
+  name       String
+  /// Frase usada nos textos ("no estilo do ENEM").
+  styleLabel String   @map("style_label")
+  active     Boolean  @default(true)
+  sortOrder  Int      @default(0) @map("sort_order")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  questions BankQuestion[]
+  sessions  BankSession[]
+
+  @@map("exams")
+}
+
+model BankSubject {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  /// Grande área quando o exame tem (ex.: ciencias-natureza no ENEM).
+  area      String?
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  topics    BankTopic[]
+  questions BankQuestion[]
+
+  @@map("bank_subjects")
+}
+
+model BankTopic {
+  id        String   @id @default(uuid())
+  subjectId String   @map("subject_id")
+  slug      String
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  subject   BankSubject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions BankQuestion[]
+
+  @@unique([subjectId, slug])
+  @@map("bank_topics")
+}
+
+/// Questão do banco. `origin` separa prova oficial (com fonte) de questão gerada por IA (com selo).
+model BankQuestion {
+  id      String  @id @default(uuid())
+  examId  String  @map("exam_id")
+  /// Ano/edição da prova (0 em questão gerada por IA).
+  year    Int
+  /// Caderno/cor quando houver; vazio se a fonte não informa.
+  edition String  @default("")
+  /// Número original na prova.
+  number  Int
+  /// Variante da questão na mesma posição (ex.: inglês/espanhol nas questões 1 a 5 do ENEM).
+  variant String  @default("")
+  /// Grande área segundo a fonte (ex.: matematica, ciencias-humanas).
+  area    String?
+
+  /// Enunciado: a pergunta propriamente dita.
+  statement    String  @db.Text
+  /// Texto de apoio (markdown simples, pode ter imagens).
+  supportText  String? @map("support_text") @db.Text
+  /// Lista de imagens da questão (URLs) já conferidas na importação.
+  images       Json?
+  /// Alternativas: [{ label, text, imageUrl }].
+  options      Json
+  correctLabel String  @map("correct_label")
+
+  subjectId  String? @map("subject_id")
+  topicId    String? @map("topic_id")
+  subtopic   String?
+  /// Habilidade/competência (ex.: H12 do ENEM), quando houver.
+  skill      String?
+  /// facil | medio | dificil (estimada pela IA, não é calibração oficial).
+  difficulty String?
+
+  /// prova_oficial | gerada_ia
+  origin     String
+  sourceName String  @map("source_name")
+  sourceUrl  String? @map("source_url")
+  license    String?
+
+  /// nao_revisada | amostra_revisada | revisada
+  reviewStatus      String   @default("nao_revisada") @map("review_status")
+  /// Resolução comentada.
+  explanation       String?  @db.Text
+  /// pendente | validada | divergente (a resolução da IA discordou do gabarito oficial: não publica).
+  explanationStatus String   @default("pendente") @map("explanation_status")
+  /// Só questões publicadas aparecem para os alunos.
+  isPublished       Boolean  @default(false) @map("is_published")
+  /// Questão gerada por IA fica visível só para quem pediu (vazio nas provas oficiais).
+  ownerUserId       String   @default("") @map("owner_user_id")
+  importBatch       String?  @map("import_batch")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  exam    Exam         @relation(fields: [examId], references: [id])
+  subject BankSubject? @relation(fields: [subjectId], references: [id])
+  topic   BankTopic?   @relation(fields: [topicId], references: [id])
+
+  answers   BankAnswer[]
+  reports   QuestionReport[]
+  reviews   QuestionReview[]
+  bookmarks QuestionBookmark[]
+
+  @@unique([examId, year, edition, number, variant, origin, ownerUserId])
+  @@index([examId, year])
+  @@index([subjectId, topicId])
+  @@index([isPublished, origin])
+  @@map("bank_questions")
+}
+
+/// Uma sessão de prática, simulado ou diagnóstico.
+model BankSession {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  /// practice | simulado | diagnostic
+  kind         String
+  examId       String?   @map("exam_id")
+  title        String
+  /// IDs das questões, na ordem em que aparecem.
+  questionIds  Json      @map("question_ids")
+  /// Tempo limite em segundos (simulado); null = sem limite.
+  timeLimitSec Int?      @map("time_limit_sec")
+  startedAt    DateTime  @default(now()) @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+
+  profile Profile      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  exam    Exam?        @relation(fields: [examId], references: [id])
+  answers BankAnswer[]
+
+  @@index([userId, startedAt])
+  @@map("bank_sessions")
+}
+
+model BankAnswer {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  questionId String   @map("question_id")
+  sessionId  String?  @map("session_id")
+  selected   String
+  isCorrect  Boolean  @map("is_correct")
+  /// Tempo gasto na questão, em milissegundos.
+  timeMs     Int      @default(0) @map("time_ms")
+  answeredAt DateTime @default(now()) @map("answered_at")
+
+  profile  Profile      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  question BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  session  BankSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId])
+  @@index([userId, questionId])
+  @@index([userId, answeredAt])
+  @@map("bank_answers")
+}
+
+/// Questão marcada pelo aluno para revisar.
+model QuestionBookmark {
+  userId     String   @map("user_id")
+  questionId String   @map("question_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profile  Profile      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  question BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, questionId])
+  @@map("question_bookmarks")
+}
+
+/// Flashcard de revisão de uma questão que o aluno errou ou marcou (repetição espaçada).
+model QuestionReview {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  questionId     String    @map("question_id")
+  /// erro | marcada
+  source         String
+  easeFactor     Float     @default(2.5) @map("ease_factor")
+  intervalDays   Int       @default(1) @map("interval_days")
+  repetitions    Int       @default(0)
+  nextReview     DateTime  @default(now()) @map("next_review")
+  lastReviewedAt DateTime? @map("last_reviewed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  profile  Profile      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  question BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+  @@index([userId, nextReview])
+  @@map("question_reviews")
+}
+
+/// Aviso de problema numa questão (enunciado, gabarito, imagem...).
+model QuestionReport {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  questionId String   @map("question_id")
+  /// enunciado_errado | gabarito_errado | imagem_quebrada | outro
+  kind       String
+  note       String?  @db.Text
+  /// aberto | resolvido | descartado
+  status     String   @default("aberto")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  profile  Profile      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  question BankQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([questionId])
+  @@map("question_reports")
 }

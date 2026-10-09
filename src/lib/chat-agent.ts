@@ -9,7 +9,8 @@ import { createQuizForUser } from "@/lib/quiz-generation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
-import type { PlanTier } from "@/lib/plans";
+import { startBankPractice } from "@/lib/bank/fallback";
+import { allowanceFor, type PlanTier } from "@/lib/plans";
 import { withFeature } from "@/lib/usage";
 
 /** Ação executada pela IA no app; o chat mostra o link e leva o aluno até ela. */
@@ -136,6 +137,15 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
     const subject = text(args.materia) ?? "Conhecimentos gerais";
     const topic = text(args.assunto);
     const questionCount = clampInt(args.quantidade, 5, 20, 10);
+    // Plano Gratuito: o quiz sai do banco de questões (busca por matéria e assunto), sem IA generativa.
+    if (allowanceFor(tier, "ai_quiz").kind === "locked") {
+      const practice = await startBankPractice(userId, { subject, topic, count: questionCount });
+      if (!practice) return { reply: "O banco de questões ainda não tem questões disponíveis. Abri o banco para você olhar o que já tem.", action: { type: "quiz", href: "/dashboard/banco", label: "Abrir o banco de questões" } };
+      return {
+        reply: `Montei ${practice.total} questões de provas anteriores${practice.subject ? ` de ${practice.subject}` : ""}${practice.topic ? ` sobre ${practice.topic}` : ""}, com gabarito e resolução comentada.${practice.matched ? "" : " Não achei essa matéria no banco, então sorteei questões variadas."} Vou abrir para você.`,
+          action: { type: "quiz", href: `/dashboard/banco/sessao/${practice.sessionId}`, label: "Abrir questões" },
+        };
+      }
     const difficulty = difficultyEnum.includes(String(args.dificuldade)) ? String(args.dificuldade) : "medio";
     const quiz = await withFeature(user, "ai_quiz", () => createQuizForUser({ userId, subject, topic, questionCount, difficulty, model: text(args.estilo) }), { tier });
     revalidateAll();
@@ -148,6 +158,12 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
   if (name === "criar_simulado") {
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new ChatActionError("Muitos simulados em pouco tempo. Tente de novo em um minuto.", 429);
     const subject = text(args.materia) ?? "Multidisciplinar";
+    if (allowanceFor(tier, "ai_simulado").kind === "locked") {
+      return {
+        reply: "No plano Gratuito os simulados são os de provas anteriores, com as questões originais e cronômetro. Vou abrir a lista para você escolher a prova.",
+        action: { type: "simulado", href: "/dashboard/banco/simulados", label: "Escolher um simulado" },
+      };
+    }
     const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject, topic: text(args.assunto), questionCount: clampInt(args.quantidade, 5, 20, 20) }), { tier });
     revalidateAll();
     return {
@@ -194,6 +210,12 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
     if (!checkRateLimit(`flashcards:${userId}`).ok) throw new ChatActionError("Muitos decks em pouco tempo. Tente de novo em um minuto.", 429);
     const subject = text(args.materia) ?? "Revisão";
     const topic = text(args.assunto);
+    if (allowanceFor(tier, "ai_flashcards").kind === "locked") {
+      return {
+        reply: "No plano Gratuito os flashcards vêm das questões que você errou ou marcou, e voltam na hora certa para revisar. Vou abrir a sua revisão.",
+        action: { type: "flashcards", href: "/dashboard/revisao", label: "Abrir a revisão" },
+      };
+    }
     const deck = await withFeature(
       user,
       "ai_flashcards",

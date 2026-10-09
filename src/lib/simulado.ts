@@ -1,7 +1,9 @@
 import { getLearnerPromptProfile, learnerPromptBlock } from "@/lib/exam-style";
 import { isVideoFile, videoMaterialInstruction } from "@/lib/youtube";
 import { generateJSONList } from "@/lib/gemini";
+import type { User } from "@supabase/supabase-js";
 import { getPrisma } from "@/lib/prisma";
+import { PlanLimitError, withFeature } from "@/lib/usage";
 import {
   describeSubjectForPrompt,
   fillQuestionCount,
@@ -75,7 +77,12 @@ Retorne APENAS um array JSON valido com question, options (4 strings), correctAn
   });
 }
 
-export async function ensureWeeklySimuladoForUser(userId: string) {
+/**
+ * Simulado semanal automático. Gera com IA, então respeita o limite de simulados do plano:
+ * no Gratuito (recurso fechado) ou com o limite gasto, simplesmente não gera.
+ */
+export async function ensureWeeklySimuladoForUser(user: Pick<User, "id" | "email">) {
+  const userId = user.id;
   const prisma = getPrisma();
   const firstSession = await prisma.studySession.findFirst({
     where: { userId },
@@ -99,11 +106,18 @@ export async function ensureWeeklySimuladoForUser(userId: string) {
   const subjects = [...new Set(sessions.map((session) => session.subject))].slice(0, 6);
   const subject = subjects.length > 1 ? "Multidisciplinar" : subjects[0] ?? "Conhecimentos gerais";
 
-  return createSimuladoForUser({
-    userId,
-    subject,
-    topic: `Simulado semanal com base nas materias estudadas: ${subjects.join(", ") || "conhecimentos gerais"}`,
-    title: "Simulado semanal automatico",
-    questionCount: 20,
-  });
+  try {
+    return await withFeature(user, "ai_simulado", () =>
+      createSimuladoForUser({
+        userId,
+        subject,
+        topic: `Simulado semanal com base nas materias estudadas: ${subjects.join(", ") || "conhecimentos gerais"}`,
+        title: "Simulado semanal automatico",
+        questionCount: 20,
+      }),
+    );
+  } catch (error) {
+    if (error instanceof PlanLimitError) return null;
+    throw error;
+  }
 }

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { after } from "next/server";
-import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, Flame, PenTool, PlayCircle, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, Flame, Library, Lock, PenTool, PlayCircle, RotateCcw, Sparkles, Target } from "lucide-react";
 import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
-import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { allowanceFor, PLANS } from "@/lib/plans";
+import { getStudentOrRedirect } from "@/lib/server-user";
 import { getTrailForUser } from "@/lib/study-trail";
 import { ensureWeeklySimuladoForUser } from "@/lib/simulado";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
@@ -40,14 +41,15 @@ function badgeTone(badge: string) {
 }
 
 export default async function DashboardPage() {
-  const user = await getCurrentUserOrRedirect();
+  const { user, access } = await getStudentOrRedirect();
   const prisma = getPrisma();
+  const trailLocked = allowanceFor(access.tier, "trail").kind === "locked";
   const weekStart = startOfWindow(6);
   // Gerar o simulado semanal chama a IA; roda depois da resposta para não travar o dashboard.
-  after(() => ensureWeeklySimuladoForUser(user.id).catch((error) => console.error("[simulado-semanal]", error)));
+  after(() => ensureWeeklySimuladoForUser(user).catch((error) => console.error("[simulado-semanal]", error)));
 
-  const [trail, profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks] = await Promise.all([
-    getTrailForUser(user.id),
+  const [trail, profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks, bankAnswers, diagnostics, reviewsDue, bankQuestions] = await Promise.all([
+    trailLocked ? Promise.resolve(null) : getTrailForUser(user.id),
     prisma.profile.findUnique({ where: { userId: user.id } }),
     prisma.studySession.findMany({ where: { userId: user.id, date: { gte: weekStart } }, orderBy: { date: "desc" } }),
     prisma.quiz.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 6 }),
@@ -56,6 +58,10 @@ export default async function DashboardPage() {
     prisma.studyPlan.findFirst({ where: { userId: user.id, status: "active" }, orderBy: { createdAt: "desc" } }),
     prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 3, select: { id: true, name: true, processed: true } }),
     prisma.flashcardDeck.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 2 }),
+    prisma.bankAnswer.count({ where: { userId: user.id } }),
+    prisma.bankSession.count({ where: { userId: user.id, kind: "diagnostic" } }),
+    prisma.questionReview.count({ where: { userId: user.id, nextReview: { lte: new Date() } } }),
+    prisma.bankQuestion.count({ where: { isPublished: true, origin: "prova_oficial" } }),
   ]);
 
   const completedQuizzes = quizzes.filter((quiz) => quiz.score !== null);
@@ -129,9 +135,10 @@ export default async function DashboardPage() {
   // Primeiros passos: some quando o aluno já usou cada parte principal do app.
   const firstSteps = [
     { label: "Criar seu plano de estudos", done: Boolean(latestPlan), href: "/dashboard/plano" },
+    { label: "Responder questões de provas anteriores", done: bankAnswers > 0, href: "/dashboard/banco" },
+    ...(bankQuestions > 0 ? [{ label: "Fazer o simulado diagnóstico", done: diagnostics > 0, href: "/dashboard/banco/simulados" }] : []),
     { label: "Enviar um material (PDF ou foto)", done: files.length > 0, href: "/dashboard/arquivos" },
-    { label: "Responder seu primeiro quiz", done: completedQuizzes.length > 0, href: "/dashboard/quizzes" },
-    { label: "Criar flashcards para revisar", done: decks.length > 0, href: "/dashboard/flashcards" },
+    ...(allowanceFor(access.tier, "ai_quiz").kind === "locked" ? [] : [{ label: "Responder seu primeiro quiz", done: completedQuizzes.length > 0, href: "/dashboard/quizzes" }]),
     { label: "Corrigir uma redação", done: essays.length > 0, href: "/dashboard/redacao" },
   ];
   const firstStepsDone = firstSteps.filter((item) => item.done).length;
@@ -239,7 +246,46 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      {trail.currentUnit ? (
+      {/* Banco de questões e revisão: funcionam em todos os planos, sem custo de IA. */}
+      <section className="grid gap-4 md:grid-cols-3" aria-label="Banco de questões">
+        <Link href="/dashboard/banco" className={cn(card, "flex items-start gap-3 p-4 no-underline transition-colors hover:border-border-strong lg:p-5")}>
+          <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><Library size={20} aria-hidden="true" /></span>
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[15px] font-bold text-ink">Banco de questões</span>
+            <span className="text-sm text-ink-muted">{bankQuestions > 0 ? `${bankQuestions} questões de provas anteriores, com resolução comentada.` : "Questões de provas anteriores com resolução comentada."}</span>
+          </span>
+        </Link>
+        <Link href="/dashboard/revisao" className={cn(card, "flex items-start gap-3 p-4 no-underline transition-colors hover:border-border-strong lg:p-5")}>
+          <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><RotateCcw size={20} aria-hidden="true" /></span>
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[15px] font-bold text-ink">Revisão espaçada</span>
+            <span className="text-sm text-ink-muted">{reviewsDue > 0 ? `${plural(reviewsDue, "questão para revisar", "questões para revisar")} hoje.` : "As questões que você errar voltam aqui na hora certa."}</span>
+          </span>
+        </Link>
+        <div className={cn(card, "flex items-start gap-3 p-4 lg:p-5")}>
+          <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><Target size={20} aria-hidden="true" /></span>
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[15px] font-bold text-ink">Sua personalização</span>
+            <span className="text-sm text-ink-muted">{profile?.studyGoal ?? "Estudos gerais"} · {formatMinutes(goalMinutes)} por dia · plano {PLANS[access.tier].name}.</span>
+            <Link href="/onboarding" className="text-sm font-semibold text-brand-strong underline underline-offset-2">Ajustar</Link>
+          </span>
+        </div>
+      </section>
+
+      {trailLocked ? (
+        <section className={cn(card, "flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:gap-6 lg:p-6")} aria-label="Sua trilha">
+          <span className="grid size-11 flex-none place-items-center rounded-full bg-brand-tint text-brand-strong"><Lock size={20} aria-hidden="true" /></span>
+          <div className="min-w-0 flex-1">
+            <h2 className={h2}>Trilha de estudos</h2>
+            <p className="m-0 mt-1 text-sm text-ink-muted">Cada dia do plano vira um nível, com troféus. Faz parte dos planos pagos.</p>
+          </div>
+          <Link href="/assinar?plano=basico" className="inline-flex min-h-11 flex-none items-center justify-center rounded-lg border border-border-strong px-5 text-[15px] font-medium text-ink no-underline hover:bg-surface-muted">
+            Ver o que libera
+          </Link>
+        </section>
+      ) : null}
+
+      {trail?.currentUnit ? (
         <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-8 lg:p-6")} aria-label="Sua trilha">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="m-0 text-[13px] font-bold uppercase tracking-[0.6px] text-brand-strong">

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await ensureWeeklySimuladoForUser(user.id).catch(() => null);
+    await ensureWeeklySimuladoForUser(user).catch(() => null);
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/plano");

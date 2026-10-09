@@ -21,6 +21,7 @@ const activityLabel: Record<string, string> = {
   simulado: "Simulado pronto",
   flashcards: "Flashcards prontos",
   quiz: "Quiz pronto",
+  banco: "Questões do banco prontas",
 };
 
 /**

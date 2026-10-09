@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { EssayLineChart, SubjectBarChart, SubjectEvolutionChart, WeeklyHoursChart } from "@/components/charts/performance-charts";
+import { BankPerformance } from "@/components/bank/bank-performance";
 import { dayKey, shortDate } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
@@ -95,6 +96,8 @@ export default async function DesempenhoPage({ searchParams }: { searchParams: P
         </button>
       </form>
       </header>
+
+      <BankPerformance userId={user.id} dateWhere={dateWhere} />
 
       <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
         <section className="rounded-2xl border border-border bg-surface p-6 shadow-card">

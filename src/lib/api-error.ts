@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { BankError } from "@/lib/bank/service";
 import { BillingError } from "@/lib/billing";
 import { isAiOverloadError } from "@/lib/gemini";
 import { PlanLimitError } from "@/lib/usage";
@@ -20,6 +21,7 @@ function publicErrorMessage(error: unknown, fallback: string) {
 
   if (error instanceof PlanLimitError) return error.message;
   if (error instanceof BillingError) return error.message;
+  if (error instanceof BankError) return error.message;
 
   if (isDatabaseBusyError(error)) {
     return "Sistema temporariamente ocupado. Tente novamente em instantes.";
@@ -48,6 +50,7 @@ function statusForError(error: unknown) {
   if (error instanceof ZodError) return 400;
   if (error instanceof PlanLimitError) return error.status;
   if (error instanceof BillingError) return error.status;
+  if (error instanceof BankError) return error.status;
   if (isDatabaseBusyError(error)) return 503;
   if (isAiUnavailableError(error)) return 503;
   if (error instanceof Error && error.message.includes("GEMINI_API_KEY")) return 503;

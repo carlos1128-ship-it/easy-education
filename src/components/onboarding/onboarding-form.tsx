@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { OnboardingDone, type OnboardingSummary } from "@/components/onboarding/onboarding-done";
 import { useRouter } from "next/navigation";
 import { BookOpen, CalendarCheck, Clock, Compass, Layers, Plus, Sparkles } from "lucide-react";
 import { SubjectChecklist } from "@/components/subjects/subject-fields";
@@ -122,6 +123,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
   const [otherInterest, setOtherInterest] = useState(savedInterests.filter((item) => !(INTEREST_OPTIONS as readonly string[]).includes(item)).join(", "));
   const [otherOpen, setOtherOpen] = useState(Boolean(otherInterest));
   const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState<OnboardingSummary | null>(null);
 
   // Quem estuda por conta própria escolhe os temas na etapa 2: não repete a etapa de matérias.
   const steps: StepId[] = purpose === "conhecimento" ? ["purpose", "details", "routine", "learning"] : ["purpose", "details", "routine", "subjects", "learning"];
@@ -218,11 +220,28 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
     }
 
     toast.success(redo ? "Personalização atualizada e plano refeito." : "Seu plano de estudos está pronto.");
-    router.push("/dashboard");
+    // Mostra o resumo do que foi configurado e oferece o simulado diagnóstico, em vez de ir direto ao painel.
+    setDone({
+      goal: goalLabel(personalization),
+      targetDate,
+      level: levelValue,
+      dailyMinutes,
+      methods: methodsChosen,
+      subjects: subjects.map((item) => item.name),
+    });
+    setSaving(false);
     router.refresh();
   }
 
   const showExamDate = purpose !== "conhecimento";
+
+  if (done) {
+    return (
+      <div className="rounded-lg border border-slate-200 dark:border-[#1A2744] bg-white p-6 shadow-sm">
+        <OnboardingDone summary={done} redo={redo} />
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-slate-200 dark:border-[#1A2744] bg-white p-6 shadow-sm">

@@ -141,14 +141,25 @@ function attemptSignal(ms: number, parent?: AbortSignal) {
  */
 export async function generateJSON<T>(
   prompt: string,
-  options: { thinkingBudget?: number; attemptTimeoutMs?: number; schema?: Schema; temperature?: number } = {},
+  options: {
+    thinkingBudget?: number;
+    attemptTimeoutMs?: number;
+    schema?: Schema;
+    temperature?: number;
+    /** Imagens da questão/material (base64), enviadas junto com o texto. */
+    images?: Array<{ mimeType: string; data: string }>;
+  } = {},
 ): Promise<T> {
+  const text = `${prompt}
+
+Importante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`;
+  const contents = options.images?.length
+    ? [{ role: "user", parts: [...options.images.map((image) => ({ inlineData: image })), { text }] }]
+    : text;
   return withModels(async (model, attempt) => {
     const response = await getGemini().models.generateContent({
       model,
-      contents: `${prompt}
-
-Importante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
+      contents,
       config: {
         maxOutputTokens: Number(process.env.GEMINI_MAX_OUTPUT_TOKENS ?? 8192),
         responseMimeType: "application/json",
