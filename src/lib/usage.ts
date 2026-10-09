@@ -4,6 +4,7 @@ import { getAccessState } from "@/lib/billing";
 import {
   dailyCapInfo,
   evaluateAllowance,
+  monthlyCapInfo,
   fileTooLargeInfo,
   limitInfo,
   lockedInfo,
@@ -11,7 +12,7 @@ import {
 } from "@/lib/plan-limits";
 import { FEATURES, FEATURE_KEYS, PLANS, allowanceFor, upgradeTargetFor, type FeatureKey, type LimitWindow, type PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
-import { startOfDaySP, startOfWeekSP, windowStart } from "@/lib/time-window";
+import { startOfDaySP, startOfMonthSP, startOfWeekSP, windowStart } from "@/lib/time-window";
 
 export { evaluateAllowance, type PlanLimitCode, type PlanLimitInfo } from "@/lib/plan-limits";
 
@@ -38,10 +39,12 @@ export async function assertWithinSafetyCaps(user: UserRef, options: { tier?: Pl
   const plan = PLANS[tier];
   const dayStart = startOfDaySP();
   const prisma = getPrisma();
-  const [day, cost] = await Promise.all([
+  const [day, cost, month] = await Promise.all([
     prisma.usageEvent.aggregate({ _sum: { units: true }, where: { userId: user.id, createdAt: { gte: dayStart } } }),
     prisma.aiCallLog.aggregate({ _sum: { costUsd: true }, where: { userId: user.id, createdAt: { gte: dayStart } } }),
+    prisma.aiCallLog.aggregate({ _sum: { costUsd: true }, where: { userId: user.id, createdAt: { gte: startOfMonthSP() } } }),
   ]);
+  if (Number(month._sum.costUsd ?? 0) >= plan.safety.monthlyCostUsd) throw new PlanLimitError(monthlyCapInfo(tier));
   if ((day._sum.units ?? 0) >= plan.safety.dailyUnits || Number(cost._sum.costUsd ?? 0) >= plan.safety.dailyCostUsd) {
     throw new PlanLimitError(dailyCapInfo(tier));
   }
@@ -109,8 +112,12 @@ export async function consumeFeature(user: UserRef, feature: FeatureKey, options
       if ((day._sum.units ?? 0) + units > plan.safety.dailyUnits) throw new PlanLimitError(dailyCapInfo(tier));
     }
     if (meta.usesAi) {
-      const cost = await tx.aiCallLog.aggregate({ _sum: { costUsd: true }, where: { userId: user.id, createdAt: { gte: dayStart } } });
-      if (Number(cost._sum.costUsd ?? 0) >= plan.safety.dailyCostUsd) throw new PlanLimitError(dailyCapInfo(tier));
+      const [today, month] = await Promise.all([
+        tx.aiCallLog.aggregate({ _sum: { costUsd: true }, where: { userId: user.id, createdAt: { gte: dayStart } } }),
+        tx.aiCallLog.aggregate({ _sum: { costUsd: true }, where: { userId: user.id, createdAt: { gte: startOfMonthSP(now) } } }),
+      ]);
+      if (Number(month._sum.costUsd ?? 0) >= plan.safety.monthlyCostUsd) throw new PlanLimitError(monthlyCapInfo(tier));
+      if (Number(today._sum.costUsd ?? 0) >= plan.safety.dailyCostUsd) throw new PlanLimitError(dailyCapInfo(tier));
     }
 
     const created = await tx.usageEvent.createManyAndReturn({

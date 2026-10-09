@@ -16,7 +16,7 @@ const priceBasic = formatPriceBRL(PLANS.basic.priceCents);
 const priceFull = formatPriceBRL(PLANS.full.priceCents);
 
 export const landingLinks = {
-  signUp: "/cadastro", // Cadastro -> escolha do plano -> pagamento no Stripe.
+  signUp: "/cadastro", // Cadastro grátis -> onboarding. Com ?plano=, segue para o pagamento no Stripe.
   signUpBasic: "/cadastro?plano=basico",
   signUpFull: "/cadastro?plano=completo",
   login: "/login",
@@ -24,28 +24,29 @@ export const landingLinks = {
 
 export const landingNav = [
   { label: "Recursos", href: "#recursos" },
+  { label: "Banco de questões", href: "#banco" },
   { label: "Como funciona", href: "#como-funciona" },
   { label: "Planos", href: "#planos" },
   { label: "Perguntas", href: "#perguntas" },
 ] as const;
 
 export const landingHeader = {
-  cta: "Assinar",
+  cta: "Começar grátis",
   login: "Entrar",
-  loginHint: "Já é assinante?",
+  loginHint: "Já tem conta?",
   openMenu: "Abrir menu",
   closeMenu: "Fechar menu",
 } as const;
 
 export const landingHero = {
-  title: "Transforme qualquer material de estudo em treino",
+  title: "Estude do seu jeito. O futuro é decisão sua.",
   // Trecho do título destacado em azul
-  titleKeyword: "treino",
+  titleKeyword: "do seu jeito",
   subtitle:
-    "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
+    "Questões de provas anteriores com resolução comentada, flashcards que voltam na hora certa, correção de redação e um plano de estudos que se adapta ao seu objetivo. Para quem está no ensino médio, se prepara para ENEM, vestibular ou concurso, ou só quer melhorar as notas.",
   boxText: `Plano gratuito de verdade · planos pagos a partir de ${priceBasic}/mês`,
-  cta: "Criar meu plano",
-  highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
+  cta: "Começar grátis",
+  highlights: ["Para estudantes de todos os níveis", "Questões com resolução comentada", "Revisão do que você erra"],
   image: {
     src: "/images/estudante-jeans-recorte.webp",
     width: 792,
@@ -105,7 +106,7 @@ export const landingSolution = {
 export const illustrativeLabel = "Exemplo ilustrativo";
 
 export const landingMeta = {
-  title: "Easy Education: estude com IA usando o seu próprio material",
+  title: "Easy Education: estude mais fácil, do seu jeito",
   description:
     `Banco de questões de provas anteriores, quiz com explicação, flashcards com revisão espaçada, plano de estudos e correção de redação. Plano gratuito e planos pagos a partir de ${priceBasic} por mês.`,
 } as const;
@@ -214,9 +215,9 @@ export const landingSteps = {
   eyebrow: "Como funciona",
   title: "Do cadastro ao primeiro quiz em três passos",
   steps: [
-    { n: 1, title: "Conte o que você estuda", text: "Escola, faculdade, vestibular ou concurso, a data da próxima prova e quantas horas por dia você tem. O plano da semana sai na hora." },
-    { n: 2, title: "Mande seu material", text: "PDF da escola, foto do caderno ou só o nome da matéria. A IA monta quiz, flashcards e simulado." },
-    { n: 3, title: "Pratique e veja sua evolução", text: "Cada resposta entra no painel e mostra o que você já domina e o que precisa revisar." },
+    { n: 1, title: "Conte o que você estuda", text: "Escola, vestibular, ENEM, concurso ou só melhorar as notas, a data da próxima prova e quantas horas por dia você tem. O plano da semana sai na hora." },
+    { n: 2, title: "Pratique com questões de verdade", text: "Responda questões de provas anteriores com resolução comentada. Nos planos pagos, envie também o seu material para a IA montar quiz e flashcards." },
+    { n: 3, title: "Revise e veja sua evolução", text: "O que você erra volta na hora certa. Cada resposta entra no painel e mostra o que você já domina e o que precisa revisar." },
   ],
 } as const;
 
@@ -305,12 +306,19 @@ export const landingPerformance = {
   },
 } as const;
 
-/** TODO: seção "Avaliações" desligada até haver depoimentos reais, com autorização. */
-export const landingTestimonials = {
-  enabled: false,
+/**
+ * Avaliações. Só entra depoimento REAL e autorizado, copiado exatamente como foi escrito (sem melhorar o texto).
+ * A seção só aparece quando `items` tiver pelo menos um item. Para preencher, acrescente em `items`:
+ *   { name: "Nome como aparece na avaliação", text: "Texto exato", photo: "/images/avaliacoes/arquivo.webp" (opcional), source: "De onde veio (opcional)" }
+ * Se a avaliação for de uma versão antiga do produto, deixe isso claro em `source`.
+ */
+export type Testimonial = { name: string; text: string; photo?: string; source?: string };
+
+export const landingTestimonials: { eyebrow: string; title: string; items: Testimonial[] } = {
   eyebrow: "Avaliações",
   title: "O que os alunos dizem",
-} as const;
+  items: [],
+};
 
 export const landingFaq = {
   eyebrow: "Perguntas",
@@ -319,11 +327,39 @@ export const landingFaq = {
   contactLine: null as string | null,
   items: [
     {
+      q: "Preciso pagar para usar?",
+      a: "Não. O plano Gratuito não tem prazo e inclui o banco de questões de provas anteriores, os simulados, o painel de desempenho e a revisão das questões que você errou. Os planos pagos liberam mais conversas com a IA, quizzes e flashcards gerados por IA, vídeos do YouTube e a trilha.",
+    },
+    {
+      q: "Como funcionam os limites de uso?",
+      a: "Cada plano tem números claros, que aparecem na tabela de planos. Os limites diários voltam à meia-noite e os semanais, na segunda-feira, no horário de Brasília. Todo limite tem um teto: não existe uso ilimitado. Antes de acabar, o app avisa quantos usos restam.",
+    },
+    {
+      q: "De onde vêm as questões do banco?",
+      a: "São questões de provas anteriores, publicadas pelos órgãos que aplicam as provas. Hoje o banco começa pelo ENEM. Cada questão mostra a prova, o ano e a fonte. As resoluções comentadas são escritas por IA e conferidas contra o gabarito oficial; se discordarem dele, a questão não é publicada. Mesmo assim podem ter erros, por isso toda questão tem o botão \"Reportar\".",
+    },
+    {
+      q: "As questões geradas por IA são questões de prova?",
+      a: "Não. Elas aparecem sempre com o selo \"Gerada por IA\" e a frase \"no estilo do\" exame, e nunca são apresentadas como questões reais nem como previsão da prova. A IA cria a questão e depois a resolve sem ver o gabarito, para conferir.",
+    },
+    {
+      q: "A nota estimada do simulado é a nota do ENEM?",
+      a: "Não. É uma estimativa baseada no seu percentual de acerto, numa escala de 300 a 900 por área, sem usar a Teoria de Resposta ao Item (TRI) do INEP. A nota real pode ser bem diferente. Use como ordem de grandeza e para acompanhar sua evolução.",
+    },
+    {
+      q: "Como cancelo?",
+      a: "Em Assinatura, dentro do app, você abre o portal do Stripe, cancela quando quiser e continua usando até o fim do período pago. Nos primeiros 7 dias após o primeiro pagamento, você também pode pedir o dinheiro de volta.",
+    },
+    {
+      q: "Quais formas de pagamento?",
+      a: "O pagamento dos planos pagos é feito pelo Stripe, com cartão. Pix e boleto não estão disponíveis para assinatura por enquanto.",
+    },
+    {
       q: "Quanto custa o Easy Education?",
       a: `O plano Gratuito não custa nada. O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}. Nos planos pagos você cancela quando quiser e tem 7 dias de garantia.`,
     },
     {
-      q: "Qual a diferença entre o Básico e o Completo?",
+      q: "Qual a diferença entre o Gratuito, o Básico e o Completo?",
       a: "O Gratuito tem o banco de questões, os simulados de provas anteriores e o desempenho, com poucas mensagens no chat e uma redação por semana. O Básico libera quizzes e flashcards gerados por IA, vídeos do YouTube e a trilha. O Completo tem os limites mais altos. A tabela de planos mostra cada número.",
     },
     {
@@ -358,9 +394,9 @@ export const landingFaq = {
 } as const;
 
 export const landingFinalCta = {
-  title: "Comece seu plano de estudos hoje",
+  title: "Estude mais fácil com a Easy Education",
   text: "Crie sua conta grátis, conte o que você está estudando e receba o plano da semana na hora. Nos planos pagos, a garantia de 7 dias devolve seu dinheiro.",
-  cta: "Criar meu plano",
+  cta: "Começar grátis",
   image: { src: "/images/formatura-azul.jpg" },
 } as const;
 

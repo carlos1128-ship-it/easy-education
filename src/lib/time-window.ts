@@ -21,6 +21,18 @@ export function startOfWeekSP(now: Date = new Date()): Date {
   return new Date(dayStart.getTime() - sinceMonday * DAY_MS);
 }
 
+/** Dia 1º do mês, 00:00 de Brasília, do mês de `now`. */
+export function startOfMonthSP(now: Date = new Date()): Date {
+  const local = new Date(now.getTime() + SP_OFFSET_MS);
+  return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), 1) - SP_OFFSET_MS);
+}
+
+/** Dia 1º do mês seguinte, 00:00 de Brasília (quando o teto mensal volta). */
+export function startOfNextMonthSP(now: Date = new Date()): Date {
+  const local = new Date(now.getTime() + SP_OFFSET_MS);
+  return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 1) - SP_OFFSET_MS);
+}
+
 export function windowStart(window: LimitWindow, now: Date = new Date()): Date {
   return window === "day" ? startOfDaySP(now) : startOfWeekSP(now);
 }

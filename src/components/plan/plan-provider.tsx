@@ -52,6 +52,8 @@ function dialogCopy(info: PlanLimitInfo) {
       return { icon: ShieldAlert, title: "Esse arquivo passou do tamanho do seu plano" };
     case "daily_cap":
       return { icon: Clock, title: "Você estudou bastante por hoje" };
+    case "monthly_cap":
+      return { icon: Clock, title: "Você usou bastante a IA neste mês" };
     default:
       return { icon: Clock, title: info.window === "week" ? "Seu limite da semana acabou" : "Seu limite de hoje acabou" };
   }
@@ -62,7 +64,7 @@ function UpgradeDialog({ info, onClose }: { info: PlanLimitInfo | null; onClose:
   const copy = info ? dialogCopy(info) : null;
   const Icon = copy?.icon ?? Lock;
   const target = info?.upgradeTo ?? null;
-  const resetText = info?.code === "limit_reached" || info?.code === "daily_cap" ? formatReset(info.resetAt) : null;
+  const resetText = info?.code === "limit_reached" || info?.code === "daily_cap" || info?.code === "monthly_cap" ? formatReset(info.resetAt) : null;
   // O cartão do plano logo abaixo já diz o que o upgrade inclui; a frase final da mensagem só repetiria isso.
   const message = info && target ? info.message.replace(/ No plano S+ você (?:tem|libera) .*$/, "") : (info?.message ?? "");
 

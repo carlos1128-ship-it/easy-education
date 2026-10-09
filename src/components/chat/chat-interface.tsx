@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { quickSuggestions } from "@/lib/app-data";
 import { readApiJson } from "@/lib/client-response";
+import { uploadMaterial } from "@/lib/client-upload";
 import { cn } from "@/lib/utils";
 import type { ChatInputMessage } from "@/types";
 
@@ -122,12 +123,8 @@ export function ChatInterface() {
     const previewUrl = URL.createObjectURL(file);
     setAttachment({ fileId: null, name: file.name || "Foto", previewUrl, status: "reading" });
     try {
-      const formData = new FormData();
-      formData.append("file", file, file.name || `foto-${Date.now()}.jpg`);
-      const upload = await fetch("/api/files/upload", { method: "POST", body: formData });
-      const uploaded = await readApiJson<{ file?: { id: string }; error?: string }>(upload, "Não foi possível enviar a imagem.");
-      const fileId = uploaded.file?.id;
-      if (!upload.ok || !fileId) throw new Error(uploaded.error ?? "Não foi possível enviar a imagem.");
+      const named = file.name ? file : new File([file], `foto-${Date.now()}.jpg`, { type: file.type });
+      const { id: fileId } = await uploadMaterial(named);
       const processed = await fetch(`/api/files/${fileId}/process`, { method: "POST" });
       const result = await readApiJson<{ error?: string }>(processed, "Não foi possível ler a imagem.");
       if (!processed.ok) throw new Error(result.error ?? "Não foi possível ler a imagem.");

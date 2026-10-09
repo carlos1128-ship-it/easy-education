@@ -34,6 +34,7 @@ import {
   landingSteps,
 } from "@/content/landing";
 import { cn } from "@/lib/utils";
+import { BankSection, EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
 import { uploadLimitMB } from "@/lib/plans";
@@ -163,6 +164,9 @@ export function LandingPage() {
           })}
         </div>
       </section>
+
+      {/* Banco de questões */}
+      <BankSection />
 
       {/* O problema */}
       <section className={cn(container, sectionTop)}>
@@ -303,7 +307,11 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* TODO: seção "Avaliações" desligada até haver depoimentos reais, com autorização. */}
+      {/* Evidências com fonte e ressalva (sem promessa de resultado) */}
+      <EvidenceSection />
+
+      {/* Avaliações reais: só aparece quando houver depoimentos em landingTestimonials.items */}
+      <TestimonialsSection />
 
       {/* Perguntas */}
       <section id="perguntas" className={cn(container, sectionTop, "grid scroll-mt-6 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]")}>

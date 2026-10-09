@@ -11,7 +11,7 @@ import {
   upgradeTargetFor,
   uploadLimitMB,
 } from "@/lib/plans";
-import { describeReset, startOfDaySP, startOfWeekSP, windowReset } from "@/lib/time-window";
+import { describeReset, startOfDaySP, startOfMonthSP, startOfNextMonthSP, startOfWeekSP, windowReset } from "@/lib/time-window";
 import { evaluateAllowance } from "@/lib/plan-limits";
 
 describe("planos e limites (valores combinados com o produto)", () => {
@@ -82,6 +82,14 @@ describe("planos e limites (valores combinados com o produto)", () => {
     expect(PLANS.free.safety.dailyCostUsd).toBeLessThan(PLANS.full.safety.dailyCostUsd);
   });
 
+  it("o teto mensal de uso justo cresce com o plano e não passa do preço", () => {
+    expect(PLANS.free.safety.monthlyCostUsd).toBeLessThan(PLANS.basic.safety.monthlyCostUsd);
+    expect(PLANS.basic.safety.monthlyCostUsd).toBeLessThan(PLANS.full.safety.monthlyCostUsd);
+    // Em reais (câmbio 5,50), o gasto máximo de IA por aluno fica dentro do preço do plano.
+    expect(PLANS.basic.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(PLANS.basic.priceCents / 100);
+    expect(PLANS.full.safety.monthlyCostUsd * 5.5).toBeLessThanOrEqual(PLANS.full.priceCents / 100);
+  });
+
   it("upgrade: Gratuito → Básico, Básico → Completo, Completo sem upgrade", () => {
     expect(nextTier("free")).toBe("basic");
     expect(nextTier("basic")).toBe("full");
@@ -115,6 +123,13 @@ describe("janelas de limite no horário de Brasília", () => {
     const now = new Date("2026-10-09T15:00:00Z");
     expect(windowReset("day", now).toISOString()).toBe("2026-10-10T03:00:00.000Z");
     expect(windowReset("week", now).toISOString()).toBe("2026-10-12T03:00:00.000Z");
+  });
+
+  it("o mês começa no dia 1º à meia-noite de Brasília", () => {
+    expect(startOfMonthSP(new Date("2026-10-09T15:00:00Z")).toISOString()).toBe("2026-10-01T03:00:00.000Z");
+    expect(startOfMonthSP(new Date("2026-11-01T02:00:00Z")).toISOString()).toBe("2026-10-01T03:00:00.000Z");
+    expect(startOfNextMonthSP(new Date("2026-10-09T15:00:00Z")).toISOString()).toBe("2026-11-01T03:00:00.000Z");
+    expect(startOfNextMonthSP(new Date("2026-12-20T15:00:00Z")).toISOString()).toBe("2027-01-01T03:00:00.000Z");
   });
 
   it("descreve quando o limite volta", () => {

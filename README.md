@@ -11,6 +11,14 @@ MVP SaaS educacional com Next.js, Supabase, Prisma e Gemini. Slogan: **Estude me
 - Google Gemini via `@google/genai`
 - `pdf-parse`, React Hook Form, Zod, Recharts, Lucide, Sonner
 
+## Planos, limites e banco de questoes
+
+- **Planos** (Gratuito, Basico R$ 19,90, Completo R$ 34,90): precos e limites num unico arquivo, `src/lib/plans.ts`. O servidor aplica todos os limites (`consumeFeature` em `src/lib/usage.ts`, com lock por aluno); a interface so mostra avisos e cadeados. Janelas diarias e semanais seguem o horario de Brasilia.
+- **Custo de IA**: cada chamada ao Gemini grava tokens e custo estimado em `ai_call_logs`. Tela interna: `/dashboard/interno/custos` (e-mails em `ADMIN_EMAILS`). Ver `docs/consumo-ia.md`.
+- **Banco de questoes**: tabelas `exams`, `bank_subjects`, `bank_topics`, `bank_questions` e relacionadas. Importacao e classificacao por scripts em `scripts/bank/` (ver `docs/fontes-questoes.md`). Reports e revisao de professor em `/dashboard/interno/questoes`.
+- **Evidencias** usadas na landing: `docs/evidencias.md` e `/evidencias`.
+- Testes: `npm test` (Vitest, regras puras) e, contra o banco configurado, `npx tsx --env-file=.env.local scripts/usage-smoke.ts` e `scripts/bank-smoke.ts` (usam alunos de mentira e apagam o que criam).
+
 ## Setup
 
 ```bash

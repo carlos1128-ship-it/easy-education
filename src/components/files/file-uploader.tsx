@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { usePlanOptional } from "@/components/plan/plan-provider";
 import { Button } from "@/components/ui/button";
 import { readApiJson } from "@/lib/client-response";
+import { uploadMaterial } from "@/lib/client-upload";
 import { fileTooLargeInfo } from "@/lib/plan-limits";
 import { PLANS, uploadLimitMB } from "@/lib/plans";
 
@@ -35,21 +36,20 @@ export function FileUploader() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
     setStatus("uploading");
-    const response = await fetch("/api/files/upload", { method: "POST", body: formData });
-    const data = await readApiJson<{ error?: string; file?: { id: string } }>(response, "Falha no envio.");
-    if (!response.ok || !data.file?.id) {
+    let uploaded: { id: string };
+    try {
+      uploaded = await uploadMaterial(file);
+    } catch (error) {
       setStatus("idle");
-      toast.error(data.error ?? "Falha no envio.");
+      toast.error(error instanceof Error ? error.message : "Falha no envio.");
       return;
     }
 
     // Processa na hora: PDF/TXT têm o texto extraído; imagens são lidas pela IA.
     setStatus("processing");
     router.refresh();
-    const processed = await fetch(`/api/files/${data.file.id}/process`, { method: "POST" });
+    const processed = await fetch(`/api/files/${uploaded.id}/process`, { method: "POST" });
     const processData = await readApiJson<{ error?: string }>(processed, "Não foi possível ler o arquivo.");
     setStatus("idle");
     if (processed.ok) toast.success(isImage ? "Imagem lida pela IA e pronta para estudar." : "Arquivo enviado e pronto para estudar.");

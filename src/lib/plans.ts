@@ -166,6 +166,11 @@ export type PlanConfig = {
     dailyUnits: number;
     /** Custo estimado de IA no dia, em dólares (soma de ai_call_logs). */
     dailyCostUsd: number;
+    /**
+     * Custo estimado de IA no mês, em dólares. É o teto de "uso justo": mesmo usando todos os limites diários
+     * todos os dias, o gasto de IA de um aluno não passa deste valor (ver docs/consumo-ia.md).
+     */
+    monthlyCostUsd: number;
   };
 };
 
@@ -189,7 +194,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_question: locked,
     },
     uploadMaxBytes: 5 * MB,
-    safety: { dailyUnits: 30, dailyCostUsd: 0.1 },
+    safety: { dailyUnits: 30, dailyCostUsd: 0.1, monthlyCostUsd: 0.6 },
   },
   basic: {
     id: "basic",
@@ -211,7 +216,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_question: perDay(5),
     },
     uploadMaxBytes: 15 * MB,
-    safety: { dailyUnits: 120, dailyCostUsd: 0.5 },
+    safety: { dailyUnits: 120, dailyCostUsd: 0.5, monthlyCostUsd: 3 },
   },
   full: {
     id: "full",
@@ -232,7 +237,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_question: perDay(30),
     },
     uploadMaxBytes: 50 * MB,
-    safety: { dailyUnits: 300, dailyCostUsd: 1.5 },
+    safety: { dailyUnits: 300, dailyCostUsd: 1.5, monthlyCostUsd: 5.5 },
   },
 };
 

@@ -11,14 +11,14 @@ import {
   type LimitWindow,
   type PlanTier,
 } from "@/lib/plans";
-import { describeReset, windowReset } from "@/lib/time-window";
+import { describeReset, startOfNextMonthSP, windowReset } from "@/lib/time-window";
 
 /**
  * Regras e textos dos limites de plano, sem nada de servidor: o navegador usa as mesmas funções
  * para abrir o modal de upgrade quando o aluno clica num cadeado.
  */
 
-export type PlanLimitCode = "limit_reached" | "feature_locked" | "daily_cap" | "file_too_large";
+export type PlanLimitCode = "limit_reached" | "feature_locked" | "daily_cap" | "monthly_cap" | "file_too_large";
 
 /** Tudo o que a interface precisa para explicar um limite e oferecer o upgrade. */
 export type PlanLimitInfo = {
@@ -91,6 +91,19 @@ export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<A
       `Você usou ${status.max} ${noun} ${period} no plano ${PLANS[tier].name}. ` +
       `O limite volta ${describeReset(status.window, now)} (horário de Brasília).` +
       (target && offer ? ` No plano ${PLANS[target].name} você tem ${offer}.` : ""),
+  };
+}
+
+export function monthlyCapInfo(tier: PlanTier): PlanLimitInfo {
+  const reset = startOfNextMonthSP();
+  return {
+    code: "monthly_cap",
+    feature: null,
+    tier,
+    window: "week",
+    resetAt: reset.toISOString(),
+    upgradeTo: nextTier(tier),
+    message: `Você chegou ao teto de uso justo de IA deste mês no plano ${PLANS[tier].name}. Ele volta no dia 1º, à meia-noite (horário de Brasília).`,
   };
 }
 
