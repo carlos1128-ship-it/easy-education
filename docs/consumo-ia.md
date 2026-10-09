@@ -31,9 +31,10 @@ Atualizado em 09/10/2026. Baseado nos tokens medidos nos testes reais desta vers
 | Vídeo de 20 minutos | 0,044 | 0,24 |
 | Vídeo de 60 minutos | 0,123 | 0,67 |
 | **Questão do banco: resolver e classificar (lote, uma vez só)** | **0,005** | **0,026** (medido em 27 questões reais: US$ 0,128 no total) |
-| Questão nova gerada por IA (gerar + verificar às cegas) | ~0,010 | ~0,06 (estimado: são 2 chamadas; ainda não medido em produção) |
+| Simulado do concurso (30 questões) | 0,030 | 0,17 |
+| Quiz de 20 questões de um material (o maior permitido) | 0,024 | 0,13 |
 
-O banco de questões não gasta IA a cada acesso: a classificação e a resolução comentada são feitas uma vez, em lote, e ficam salvas. Responder, revisar e fazer simulado do banco custa zero de IA, em qualquer plano.
+As provas anteriores do ENEM não gastam IA a cada acesso: a classificação e a resolução comentada são feitas uma vez, em lote, e ficam salvas. Fazer simulado de prova anterior e revisar custa zero de IA, em qualquer plano.
 
 ## Limites por plano (valores atuais de `plans.ts`)
 
@@ -48,18 +49,28 @@ O banco de questões não gasta IA a cada acesso: a classificação e a resoluç
 | Trilha | bloqueada | liberada | liberada |
 | Quiz por IA | bloqueado | 3/dia | 15/dia |
 | Flashcards por IA | bloqueado | 3/dia | 15/dia |
-| Simulado por IA | bloqueado | 1/semana | 1/dia |
-| Questão nova por IA | bloqueada | 5/dia | 30/dia |
+| Simulado por IA (inclui o do concurso) | bloqueado | 1/semana | 1/dia |
 
 ## Pior caso: usar todo o limite, todos os dias
 
-Somando as operações acima (custo por operação × limite × 30 dias; vídeo de 20 min, foto só quando o arquivo é imagem):
+Conta refeita em 09/10/2026 com os limites atuais. Cada operação no maior tamanho permitido: quiz de 20 questões de um material, flashcards de 30 cartões, simulado de 30 questões, redação por foto, todo arquivo enviado como foto e vídeos de 60 minutos (o máximo aceito). Mês de 30 dias; limite semanal × 4,29.
 
-| Plano | Pior caso sem teto mensal | Teto mensal de uso justo | Preço |
+| Recurso | Gratuito | Básico | Completo |
 |---|---|---|---|
-| Gratuito | ≈ R$ 2,80 | US$ 0,60 ≈ R$ 3,30 | R$ 0 |
-| Básico | ≈ R$ 58 | US$ 3,00 ≈ R$ 16,50 | R$ 19,90 |
-| Completo | ≈ R$ 226 | US$ 5,50 ≈ R$ 30,25 | R$ 34,90 |
+| Chat | 90 × 0,003 = US$ 0,27 | 600 × 0,003 = US$ 1,80 | 1.500 × 0,003 = US$ 4,50 |
+| Redação (com foto) | 4,3 × 0,011 = US$ 0,05 | 30 × 0,014 = US$ 0,42 | 90 × 0,014 = US$ 1,26 |
+| Arquivos (foto) | 30 × 0,003 = US$ 0,09 | 60 × 0,003 = US$ 0,18 | 300 × 0,003 = US$ 0,90 |
+| Plano de estudos | 4,3 × 0,006 = US$ 0,03 | 12,9 × 0,006 = US$ 0,08 | 30 × 0,006 = US$ 0,18 |
+| Vídeos de 60 min | — | 90 × 0,123 = US$ 11,07 | 300 × 0,123 = US$ 36,90 |
+| Quiz por IA | — | 90 × 0,024 = US$ 2,16 | 450 × 0,024 = US$ 10,80 |
+| Flashcards por IA | — | 90 × 0,010 = US$ 0,90 | 450 × 0,010 = US$ 4,50 |
+| Simulado por IA | — | 4,3 × 0,030 = US$ 0,13 | 30 × 0,030 = US$ 0,90 |
+| **Total sem teto** | **US$ 0,43 ≈ R$ 2,38** | **US$ 16,74 ≈ R$ 92** | **US$ 59,94 ≈ R$ 330** |
+| Total sem teto, vídeos de 20 min | igual | US$ 9,63 ≈ R$ 53 | US$ 36,24 ≈ R$ 199 |
+| **Teto mensal de uso justo (o que vale)** | não chega no teto (US$ 0,60) | **US$ 3,00 ≈ R$ 16,50** | **US$ 5,50 ≈ R$ 30,25** |
+| Preço | R$ 0 | R$ 19,90 | R$ 34,90 |
+
+O teto é conferido antes de cada uso, então a última operação do mês pode passar um pouco dele (no máximo o custo de uma operação, cerca de US$ 0,12 com um vídeo de 60 min).
 
 Sem teto mensal, um aluno que usasse todos os limites todos os dias daria prejuízo nos planos pagos (o gargalo são os vídeos, o chat e as questões geradas). Por isso existem **dois tetos de segurança por aluno**, aplicados no servidor (`consumeFeature`, `src/lib/usage.ts`) e editáveis em `plans.ts`:
 
