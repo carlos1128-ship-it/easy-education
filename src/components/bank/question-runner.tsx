@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { QuestionCard, ReviewStatusNote } from "@/components/bank/question-card";
 import { QuestionTools } from "@/components/bank/question-tools";
 import { Button } from "@/components/ui/button";
+import { resultHref } from "@/lib/bank/paths";
 import { readApiJson } from "@/lib/client-response";
 import type { ClientQuestion, Reveal } from "@/lib/bank/service";
 import { cn } from "@/lib/utils";
@@ -99,7 +100,7 @@ export function QuestionRunner({ sessionId, kind, title, questions, initialAnswe
       const response = await fetch(`/api/bank/sessions/${sessionId}/finish`, { method: "POST" });
       const data = await readApiJson(response, "Não foi possível encerrar a sessão.");
       if (!response.ok) throw new Error(data.error ?? "Não foi possível encerrar a sessão.");
-      router.push(`/dashboard/banco/sessao/${sessionId}/resultado`);
+      router.push(resultHref(sessionId));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível encerrar a sessão.");
       setFinishing(false);
@@ -132,7 +133,7 @@ export function QuestionRunner({ sessionId, kind, title, questions, initialAnswe
     return (
       <div className="rounded-2xl border border-border bg-surface p-8 text-center shadow-card">
         <p className="m-0 text-ink-muted">Nenhuma questão nesta sessão.</p>
-        <Link href={backHref} className="mt-4 inline-block font-semibold text-brand-strong underline">Voltar ao banco</Link>
+        <Link href={backHref} className="mt-4 inline-block font-semibold text-brand-strong underline">Voltar aos simulados</Link>
       </div>
     );
   }
@@ -207,7 +208,7 @@ export function QuestionRunner({ sessionId, kind, title, questions, initialAnswe
             ) : null}
             {!sessionId && revealed ? (
               <Link href={backHref} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline hover:bg-brand-strong">
-                Voltar ao banco
+                Voltar
               </Link>
             ) : null}
           </div>

@@ -27,8 +27,8 @@ export default async function RevisaoPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="mx-auto w-full max-w-[1100px] space-y-6">
-      <Link href="/dashboard/banco" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-strong no-underline hover:underline">
-        <ArrowLeft className="size-4" aria-hidden="true" /> Banco de questões
+      <Link href="/dashboard/simulados" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-strong no-underline hover:underline">
+        <ArrowLeft className="size-4" aria-hidden="true" /> Simulados
       </Link>
       <header>
         <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
@@ -36,7 +36,7 @@ export default async function RevisaoPage({ searchParams }: { searchParams: Prom
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Questões para revisar</h1>
         <p className="m-0 mt-2 max-w-[660px] text-[15px] text-ink-muted">
-          As questões que você errou ou marcou voltam em intervalos cada vez maiores. Tente lembrar a resposta antes de virar o cartão.
+          As questões que você errou ou marcou nos simulados voltam em intervalos cada vez maiores. Tente lembrar a resposta antes de virar o cartão.
         </p>
         <p className="m-0 mt-3 text-sm text-ink">
           <strong>{dueCount}</strong> para hoje · {upcomingCount} nos próximos dias

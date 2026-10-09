@@ -4,9 +4,10 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { QuestionRunner, type RunnerAnswer } from "@/components/bank/question-runner";
 import { getBookmarkedIds, getSessionForUser, revealsAfterAnswer, toClientQuestion, toReveal } from "@/lib/bank/service";
+import { resultHref, SIMULADOS_HREF } from "@/lib/bank/paths";
 import { getStudentOrRedirect } from "@/lib/server-user";
 
-export const metadata: Metadata = { title: "Prática · Easy Education" };
+export const metadata: Metadata = { title: "Simulado · Easy Education" };
 export const dynamic = "force-dynamic";
 
 export default async function SessaoPage({ params }: { params: Promise<{ id: string }> }) {
@@ -15,7 +16,7 @@ export default async function SessaoPage({ params }: { params: Promise<{ id: str
   const loaded = await getSessionForUser(user.id, id);
   if (!loaded) notFound();
   const { session, questions } = loaded;
-  if (session.finishedAt) redirect(`/dashboard/banco/sessao/${id}/resultado`);
+  if (session.finishedAt) redirect(resultHref(id));
 
   const bookmarked = await getBookmarkedIds(user.id, questions.map((question) => question.id));
   const reveals = revealsAfterAnswer(session.kind);
@@ -29,7 +30,7 @@ export default async function SessaoPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="mx-auto w-full max-w-[1400px] space-y-5">
-      <Link href={session.kind === "practice" ? "/dashboard/banco" : "/dashboard/banco/simulados"} className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-strong no-underline hover:underline">
+      <Link href={SIMULADOS_HREF} className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-strong no-underline hover:underline">
         <ArrowLeft className="size-4" aria-hidden="true" /> Sair (você pode voltar depois)
       </Link>
       <QuestionRunner
@@ -40,7 +41,7 @@ export default async function SessaoPage({ params }: { params: Promise<{ id: str
         initialAnswers={initialAnswers}
         startedAtMs={session.startedAt.getTime()}
         timeLimitSec={session.timeLimitSec}
-        backHref="/dashboard/banco"
+        backHref={SIMULADOS_HREF}
       />
     </div>
   );

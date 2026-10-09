@@ -1,13 +1,17 @@
 import { ORIGIN, slugify } from "@/lib/bank/constants";
 import { createSession, pickQuestionIds } from "@/lib/bank/service";
+import { isEnemStudent } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 
 /**
  * No plano Gratuito não há quiz gerado por IA: quando o aluno pede um quiz (no chat ou pelo plano de estudos),
- * a prática sai do banco de questões, buscando por matéria e assunto, sem IA generativa.
+ * quem estuda para o ENEM pratica com questões de provas anteriores do ENEM (por matéria e assunto), sem IA.
+ * Para os outros objetivos devolve null: questão do ENEM não serve para quem estuda para concurso, por exemplo.
  */
 export async function startBankPractice(userId: string, input: { subject?: string; topic?: string; count?: number }) {
   const prisma = getPrisma();
+  const profile = await prisma.profile.findUnique({ where: { userId }, select: { personalization: true } });
+  if (!isEnemStudent(profile?.personalization)) return null;
   const subjectText = input.subject?.trim();
   const subject = subjectText
     ? await prisma.bankSubject.findFirst({
@@ -27,7 +31,7 @@ export async function startBankPractice(userId: string, input: { subject?: strin
   if (!ids.length) ids = await pickQuestionIds(userId, { origin: ORIGIN.official }, input.count ?? 10);
   if (!ids.length) return null;
 
-  const label = topic?.name ?? subject?.name ?? "Banco de questões";
+  const label = topic?.name ?? subject?.name ?? "ENEM";
   const session = await createSession({ userId, kind: "practice", title: `Prática: ${label}`, questionIds: ids });
   return { sessionId: session.id, total: ids.length, subject: subject?.name ?? null, topic: topic?.name ?? null, matched: Boolean(subject) };
 }

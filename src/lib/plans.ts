@@ -35,8 +35,7 @@ export type FeatureKey =
   | "trail"
   | "ai_quiz"
   | "ai_flashcards"
-  | "ai_simulado"
-  | "ai_question";
+  | "ai_simulado";
 
 export type FeatureMeta = {
   /** Nome curto, para botões e cadeados. */
@@ -129,16 +128,8 @@ export const FEATURES: Record<FeatureKey, FeatureMeta> = {
     label: "Simulado gerado por IA",
     singular: "simulado gerado por IA",
     plural: "simulados gerados por IA",
-    unlocks: "gerar simulados com IA no estilo da sua prova",
+    unlocks: "gerar simulados com IA no estilo da sua prova, inclusive o simulado do seu concurso",
     weight: 6,
-    usesAi: true,
-  },
-  ai_question: {
-    label: "Questão nova gerada por IA",
-    singular: "questão nova gerada por IA",
-    plural: "questões novas geradas por IA",
-    unlocks: "pedir questões novas à IA no estilo da sua prova",
-    weight: 1,
     usesAi: true,
   },
 };
@@ -179,7 +170,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     id: "free",
     name: "Gratuito",
     priceCents: 0,
-    tagline: "Banco de questões, simulados e desempenho, sem pagar nada.",
+    tagline: "Chat com IA, redação, plano de estudos e desempenho, sem pagar nada.",
     limits: {
       chat_message: perDay(3),
       essay_correction: perWeek(1),
@@ -191,7 +182,6 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_quiz: locked,
       ai_flashcards: locked,
       ai_simulado: locked,
-      ai_question: locked,
     },
     uploadMaxBytes: 5 * MB,
     safety: { dailyUnits: 30, dailyCostUsd: 0.1, monthlyCostUsd: 0.6 },
@@ -213,7 +203,6 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_quiz: perDay(3),
       ai_flashcards: perDay(3),
       ai_simulado: perWeek(1),
-      ai_question: perDay(5),
     },
     uploadMaxBytes: 15 * MB,
     safety: { dailyUnits: 120, dailyCostUsd: 0.5, monthlyCostUsd: 3 },
@@ -234,7 +223,6 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_quiz: perDay(15),
       ai_flashcards: perDay(15),
       ai_simulado: perDay(1),
-      ai_question: perDay(30),
     },
     uploadMaxBytes: 50 * MB,
     safety: { dailyUnits: 300, dailyCostUsd: 1.5, monthlyCostUsd: 5.5 },

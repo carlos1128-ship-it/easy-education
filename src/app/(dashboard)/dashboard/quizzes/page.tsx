@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { HelpCircle } from "lucide-react";
-import { BankEntryCard } from "@/components/bank/bank-entry-card";
 import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { QuizCreateForm } from "@/components/quiz/quiz-create-form";
@@ -24,18 +23,11 @@ export default async function QuizzesPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Seus quizzes</h1>
       </div>
 
-      <BankEntryCard
-        title="Responder questões de provas anteriores"
-        description="Banco de questões com gabarito e resolução comentada. Sem custo de IA, em todos os planos."
-        href="/dashboard/banco"
-        action="Abrir o banco de questões"
-      />
-
       {aiLocked ? (
         <LockedNotice
           feature="ai_quiz"
           title="Quizzes gerados por IA fazem parte dos planos pagos"
-          description="No plano Gratuito você pratica com o banco de questões. Para gerar quizzes sobre qualquer assunto ou material seu, escolha um plano pago."
+          description="Para gerar quizzes com explicação sobre qualquer assunto ou material seu, escolha um plano pago."
         />
       ) : (
         <div className="space-y-3">

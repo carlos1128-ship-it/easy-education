@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { after } from "next/server";
-import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Clock, FileText, Flame, Library, Lock, PenTool, PlayCircle, RotateCcw, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Flame, Lock, PenTool, PlayCircle, RotateCcw, Sparkles, Target } from "lucide-react";
 import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
+import { concursoTarget, isEnemStudent } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 import { allowanceFor, PLANS } from "@/lib/plans";
 import { getStudentOrRedirect } from "@/lib/server-user";
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
   // Gerar o simulado semanal chama a IA; roda depois da resposta para não travar o dashboard.
   after(() => ensureWeeklySimuladoForUser(user).catch((error) => console.error("[simulado-semanal]", error)));
 
-  const [trail, profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks, bankAnswers, diagnostics, reviewsDue, bankQuestions] = await Promise.all([
+  const [trail, profile, sessions, quizzes, essays, dueCards, latestPlan, files, decks, bankAnswers, diagnostics, reviewsDue] = await Promise.all([
     trailLocked ? Promise.resolve(null) : getTrailForUser(user.id),
     prisma.profile.findUnique({ where: { userId: user.id } }),
     prisma.studySession.findMany({ where: { userId: user.id, date: { gte: weekStart } }, orderBy: { date: "desc" } }),
@@ -61,8 +62,9 @@ export default async function DashboardPage() {
     prisma.bankAnswer.count({ where: { userId: user.id } }),
     prisma.bankSession.count({ where: { userId: user.id, kind: "diagnostic" } }),
     prisma.questionReview.count({ where: { userId: user.id, nextReview: { lte: new Date() } } }),
-    prisma.bankQuestion.count({ where: { isPublished: true, origin: "prova_oficial" } }),
   ]);
+  const enem = isEnemStudent(profile?.personalization);
+  const concurso = concursoTarget(profile?.personalization);
 
   const completedQuizzes = quizzes.filter((quiz) => quiz.score !== null);
   const totalMinutes = sessions.reduce((sum, session) => sum + session.durationMinutes, 0);
@@ -135,8 +137,12 @@ export default async function DashboardPage() {
   // Primeiros passos: some quando o aluno já usou cada parte principal do app.
   const firstSteps = [
     { label: "Criar seu plano de estudos", done: Boolean(latestPlan), href: "/dashboard/plano" },
-    { label: "Responder questões de provas anteriores", done: bankAnswers > 0, href: "/dashboard/banco" },
-    ...(bankQuestions > 0 ? [{ label: "Fazer o simulado diagnóstico", done: diagnostics > 0, href: "/dashboard/banco/simulados" }] : []),
+    ...(enem
+      ? [
+          { label: "Fazer um simulado com prova anterior do ENEM", done: bankAnswers > 0, href: "/dashboard/simulados" },
+          { label: "Fazer o simulado diagnóstico", done: diagnostics > 0, href: "/dashboard/simulados" },
+        ]
+      : []),
     { label: "Enviar um material (PDF ou foto)", done: files.length > 0, href: "/dashboard/arquivos" },
     ...(allowanceFor(access.tier, "ai_quiz").kind === "locked" ? [] : [{ label: "Responder seu primeiro quiz", done: completedQuizzes.length > 0, href: "/dashboard/quizzes" }]),
     { label: "Corrigir uma redação", done: essays.length > 0, href: "/dashboard/redacao" },
@@ -246,22 +252,30 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      {/* Banco de questões e revisão: funcionam em todos os planos, sem custo de IA. */}
-      <section className="grid gap-4 md:grid-cols-3" aria-label="Banco de questões">
-        <Link href="/dashboard/banco" className={cn(card, "flex items-start gap-3 p-4 no-underline transition-colors hover:border-border-strong lg:p-5")}>
-          <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><Library size={20} aria-hidden="true" /></span>
+      {/* Simulados (provas anteriores do ENEM ou simulado do concurso), revisão e personalização. */}
+      <section className={cn("grid gap-4", enem ? "md:grid-cols-3" : "md:grid-cols-2")} aria-label="Simulados e personalização">
+        <Link href="/dashboard/simulados" className={cn(card, "flex items-start gap-3 p-4 no-underline transition-colors hover:border-border-strong lg:p-5")}>
+          <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><ClipboardCheck size={20} aria-hidden="true" /></span>
           <span className="flex flex-col gap-0.5">
-            <span className="text-[15px] font-bold text-ink">Banco de questões</span>
-            <span className="text-sm text-ink-muted">{bankQuestions > 0 ? `${bankQuestions} questões de provas anteriores, com resolução comentada.` : "Questões de provas anteriores com resolução comentada."}</span>
+            <span className="text-[15px] font-bold text-ink">{enem ? "Provas anteriores do ENEM" : concurso ? "Simulado do seu concurso" : "Simulados"}</span>
+            <span className="text-sm text-ink-muted">
+              {enem
+                ? "Simulados de 90 questões, como no dia da prova, com o resumo do que você acertou."
+                : concurso
+                  ? `Um simulado novo por dia${concurso.role ? ` para ${concurso.role}` : ""}, no estilo da banca.`
+                  : "Treino no ritmo de prova, no estilo do que você estuda."}
+            </span>
           </span>
         </Link>
+        {enem ? (
         <Link href="/dashboard/revisao" className={cn(card, "flex items-start gap-3 p-4 no-underline transition-colors hover:border-border-strong lg:p-5")}>
           <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><RotateCcw size={20} aria-hidden="true" /></span>
           <span className="flex flex-col gap-0.5">
             <span className="text-[15px] font-bold text-ink">Revisão espaçada</span>
-            <span className="text-sm text-ink-muted">{reviewsDue > 0 ? `${plural(reviewsDue, "questão para revisar", "questões para revisar")} hoje.` : "As questões que você errar voltam aqui na hora certa."}</span>
+            <span className="text-sm text-ink-muted">{reviewsDue > 0 ? `${plural(reviewsDue, "questão para revisar", "questões para revisar")} hoje.` : "As questões que você errar nos simulados voltam aqui na hora certa."}</span>
           </span>
         </Link>
+        ) : null}
         <div className={cn(card, "flex items-start gap-3 p-4 lg:p-5")}>
           <span className="grid size-10 flex-none place-items-center rounded-lg bg-brand-tint text-brand-strong"><Target size={20} aria-hidden="true" /></span>
           <span className="flex flex-col gap-0.5">

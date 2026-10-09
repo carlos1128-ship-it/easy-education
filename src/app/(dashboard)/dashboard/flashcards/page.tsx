@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
-import { BankEntryCard } from "@/components/bank/bank-entry-card";
 import { LockedNotice, UsageHint } from "@/components/plan/usage-hint";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FlashcardCreateForm } from "@/components/flashcard/flashcard-create-form";
@@ -28,18 +27,11 @@ export default async function FlashcardsPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Decks de revisão</h1>
       </div>
 
-      <BankEntryCard
-        title="Revisão das questões que você errou"
-        description="Os cartões saem das questões do banco que você errou ou marcou, e voltam na hora certa (repetição espaçada). Em todos os planos."
-        href="/dashboard/revisao"
-        action="Revisar agora"
-      />
-
       {aiLocked ? (
         <LockedNotice
           feature="ai_flashcards"
           title="Flashcards gerados por IA fazem parte dos planos pagos"
-          description="No plano Gratuito você revisa os cartões das questões que respondeu. Para gerar decks sobre qualquer assunto ou material, escolha um plano pago."
+          description="Para gerar decks de flashcards sobre qualquer assunto ou material seu, escolha um plano pago."
         />
       ) : (
         <div className="space-y-3">

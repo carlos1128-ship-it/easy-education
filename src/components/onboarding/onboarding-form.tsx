@@ -22,6 +22,7 @@ import {
   EXPLANATION_STYLES,
   goalLabel,
   INTEREST_OPTIONS,
+  isEnemStudent,
   LANGUAGE_EXAMS,
   LANGUAGE_LEVELS,
   LANGUAGE_SKILLS,
@@ -228,6 +229,7 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
       dailyMinutes,
       methods: methodsChosen,
       subjects: subjects.map((item) => item.name),
+      enem: isEnemStudent(personalization),
     });
     setSaving(false);
     router.refresh();

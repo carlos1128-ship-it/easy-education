@@ -51,7 +51,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           <p className="m-0 mt-4 text-[13px] font-semibold text-brand-strong">Easy Education</p>
           <h1 className="m-0 mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-ink">Escolha seu plano</h1>
           <p className="m-0 mt-2 max-w-[520px] text-[15px] text-ink-muted [text-wrap:balance]">
-            O plano Gratuito continua com você: banco de questões, simulados e desempenho. Os planos pagos liberam mais uso de IA.
+            O plano Gratuito continua com você: chat com IA, redação, plano de estudos, simulados com provas anteriores do ENEM e desempenho. Os planos pagos liberam mais uso de IA.
           </p>
         </div>
         {notice ? (

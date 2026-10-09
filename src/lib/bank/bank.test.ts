@@ -3,6 +3,8 @@ import { ESTIMATE_DISCLAIMER, estimateAreaScore, estimateOverallScore, percent }
 import { collectImages, normalizeEnemDevQuestion, type EnemDevQuestion } from "@/lib/bank/import";
 import { sourceLabel } from "@/lib/bank/labels";
 import { intervalLabel, nextSchedule } from "@/lib/bank/spaced";
+import { ENEM_DAYS, PER_AREA, pickPreferringUnseen } from "@/lib/bank/enem-simulado";
+import { concursoTarget, isEnemStudent } from "@/lib/learner-profile";
 
 const NOW = new Date("2026-10-09T12:00:00Z");
 
@@ -146,5 +148,36 @@ describe("importação sem alterar o conteúdo", () => {
       alternatives: [{ letter: "A", text: null, file: "https://exemplo.com/c.png", isCorrect: false }],
     });
     expect(urls.sort()).toEqual(["https://exemplo.com/a.png", "https://exemplo.com/b.png", "https://exemplo.com/c.png"]);
+  });
+});
+
+describe("simulado de provas anteriores do ENEM", () => {
+  it("prefere as questões que o aluno ainda não respondeu e não repete", () => {
+    const rows = Array.from({ length: 10 }, (_, index) => ({ id: `q${index}` }));
+    const seen = new Set(["q0", "q1", "q2", "q3", "q4", "q5", "q6"]);
+    const picked = pickPreferringUnseen(rows, seen, 5);
+    expect(picked).toHaveLength(5);
+    expect(new Set(picked.map((row) => row.id)).size).toBe(5);
+    expect(picked.slice(0, 3).every((row) => !seen.has(row.id))).toBe(true);
+  });
+
+  it("só quem escolheu o ENEM vê as provas anteriores do ENEM", () => {
+    expect(isEnemStudent({ purpose: "enem_vestibular", exam: "ENEM" })).toBe(true);
+    expect(isEnemStudent({ purpose: "enem_vestibular" })).toBe(true);
+    expect(isEnemStudent({ purpose: "enem_vestibular", exam: "Fuvest" })).toBe(false);
+    expect(isEnemStudent({ purpose: "concurso", role: "Polícia Federal" })).toBe(false);
+    expect(isEnemStudent(null)).toBe(false);
+  });
+
+  it("concurso: lê cargo e banca da personalização", () => {
+    expect(concursoTarget({ purpose: "concurso", role: "INSS técnico", board: "Cebraspe" })).toEqual({ role: "INSS técnico", board: "Cebraspe" });
+    expect(concursoTarget({ purpose: "concurso", board: "Ainda não sei" })).toEqual({ role: null, board: null });
+    expect(concursoTarget({ purpose: "escola" })).toBeNull();
+  });
+
+  it("os dias somam 90 questões e a prova completa, 180", () => {
+    expect(ENEM_DAYS.dia1.areas.length * PER_AREA).toBe(90);
+    expect(ENEM_DAYS.dia2.areas.length * PER_AREA).toBe(90);
+    expect(ENEM_DAYS.completo.areas.length * PER_AREA).toBe(180);
   });
 });

@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { sessionHref } from "@/lib/bank/paths";
 import { readApiJson } from "@/lib/client-response";
 import { cn } from "@/lib/utils";
 
-type Body = { kind: "simulado"; exam: string; year: number; area?: string } | { kind: "diagnostic"; exam: string };
+type Body = { kind: "enem"; day: "dia1" | "dia2" | "completo"; language?: "ingles" | "espanhol" } | { kind: "diagnostic"; exam: string };
 
 /** Cria a sessão (simulado ou diagnóstico) e abre. Sem IA e sem custo. */
 export function StartSessionButton({ body, children, className, disabled }: { body: Body; children: React.ReactNode; className?: string; disabled?: boolean }) {
@@ -20,7 +21,7 @@ export function StartSessionButton({ body, children, className, disabled }: { bo
       const response = await fetch("/api/bank/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await readApiJson<{ sessionId?: string }>(response, "Não foi possível iniciar.");
       if (!response.ok || !data.sessionId) throw new Error(data.error ?? "Não foi possível iniciar.");
-      router.push(`/dashboard/banco/sessao/${data.sessionId}`);
+      router.push(sessionHref(data.sessionId));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível iniciar.");
       setBusy(false);

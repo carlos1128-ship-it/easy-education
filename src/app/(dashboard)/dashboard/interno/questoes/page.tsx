@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AdminActions } from "@/components/bank/admin-actions";
 import { requireAdminPage } from "@/lib/admin";
 import { REPORT_KIND_LABEL, REVIEW_STATUS_LABEL, type ReportKind, type ReviewStatus } from "@/lib/bank/constants";
@@ -43,9 +42,7 @@ export default async function InternoQuestoesPage() {
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <strong className="text-ink">{REPORT_KIND_LABEL[report.kind as ReportKind] ?? report.kind}</strong>
               <span className="text-ink-muted">· {sourceLabel(report.question)} · {dateFormat.format(report.createdAt)}</span>
-              <Link href={`/dashboard/banco/questao/${report.questionId}`} className="ml-auto text-brand-strong underline underline-offset-2">
-                Ver questão
-              </Link>
+              <code className="ml-auto text-xs text-ink-muted">{report.questionId}</code>
             </div>
             {report.note ? <p className="m-0 text-sm text-ink">{report.note}</p> : null}
             <AdminActions

@@ -260,3 +260,16 @@ export function explanationGuidance(profile: ProfileLike | null | undefined) {
   if (p.challenges?.includes("calculo")) rules.push("mostre as contas passo a passo");
   return rules.length ? `Ajuste as explicações a este aluno: ${rules.join("; ")}.` : "";
 }
+
+/** O aluno escolheu o ENEM na personalização? Só ele vê os simulados de provas anteriores do ENEM. */
+export function isEnemStudent(value: unknown) {
+  const p = parsePersonalization(value);
+  return Boolean(p && p.purpose === "enem_vestibular" && (!p.exam || p.exam === "ENEM"));
+}
+
+/** Concurso que o aluno informou (cargo e banca), para o simulado personalizado. */
+export function concursoTarget(value: unknown) {
+  const p = parsePersonalization(value);
+  if (!p || p.purpose !== "concurso") return null;
+  return { role: p.role?.trim() || null, board: p.board && p.board !== "Ainda não sei" && p.board !== "Outra" ? p.board : null };
+}

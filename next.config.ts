@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // O banco de questões virou parte de Simulados: links antigos continuam funcionando.
+  async redirects() {
+    return [
+      { source: "/dashboard/banco/sessao/:id/resultado", destination: "/dashboard/simulados/prova/:id/resultado", permanent: false },
+      { source: "/dashboard/banco/sessao/:id", destination: "/dashboard/simulados/prova/:id", permanent: false },
+      { source: "/dashboard/banco/:path*", destination: "/dashboard/simulados", permanent: false },
+      { source: "/dashboard/banco", destination: "/dashboard/simulados", permanent: false },
+    ];
+  },
   allowedDevOrigins: ["127.0.0.1"],
   outputFileTracingIncludes: {
     "/api/files/[id]/process": ["./node_modules/@napi-rs/canvas*/**/*"],

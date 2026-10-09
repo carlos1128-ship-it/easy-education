@@ -45,10 +45,9 @@ function amountRow(id: string, label: string, feature: FeatureKey, suffix?: (tie
 
 export function comparisonRows(): ComparisonRow[] {
   return [
-    everyone("bank", "Banco de questões de provas anteriores (com resolução comentada)"),
-    everyone("simulados", "Simulados de provas anteriores"),
+    everyone("simulados", "Simulados com provas anteriores do ENEM (para quem estuda para o ENEM)"),
     everyone("performance", "Desempenho e estatísticas"),
-    everyone("review", "Revisão das questões que você errou (repetição espaçada)"),
+    everyone("review", "Revisão das questões que você errou nos simulados"),
     amountRow("chat", "Mensagens no chat com IA", "chat_message"),
     amountRow("essay", "Correção de redação por texto", "essay_correction"),
     {
@@ -64,15 +63,7 @@ export function comparisonRows(): ComparisonRow[] {
     amountRow("video", "Estudar com vídeos do YouTube", "video_material"),
     amountRow("plan", "Criar plano de estudos", "study_plan"),
     amountRow("trail", "Trilha de estudos com troféus", "trail"),
-    {
-      id: "ai_quiz",
-      label: "Quiz",
-      values: {
-        free: "Só com questões do banco",
-        basic: `Banco + gerado por IA (${amount("ai_quiz", "basic")})`,
-        full: `Banco + gerado por IA (${amount("ai_quiz", "full")})`,
-      },
-    },
+    amountRow("ai_quiz", "Quizzes gerados por IA", "ai_quiz"),
     {
       id: "ai_flashcards",
       label: "Flashcards",
@@ -82,8 +73,7 @@ export function comparisonRows(): ComparisonRow[] {
         full: `Revisão + gerados por IA (${amount("ai_flashcards", "full")})`,
       },
     },
-    amountRow("ai_simulado", "Simulados gerados por IA", "ai_simulado"),
-    amountRow("ai_question", "Questões novas geradas por IA", "ai_question"),
+    amountRow("ai_simulado", "Simulados gerados por IA (inclui o simulado do seu concurso)", "ai_simulado"),
   ];
 }
 

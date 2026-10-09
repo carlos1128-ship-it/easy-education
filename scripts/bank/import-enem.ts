@@ -4,10 +4,13 @@
  *
  *   npx tsx --env-file=.env.local scripts/bank/import-enem.ts --years 2022,2023 --sample 100 --batch piloto
  *   npx tsx --env-file=.env.local scripts/bank/import-enem.ts --years 2022 --all --batch ano-2022
+ *   npx tsx --env-file=.env.local scripts/bank/import-enem.ts --years 2019,2020,2021,2022,2023 --all --publish --batch enem-2019-2023
  *
  * - O texto das questões entra exatamente como veio (CC BY-ND: sem modificar).
  * - Questão sem gabarito, incompleta ou com imagem quebrada NÃO é importada (fica no relatório).
- * - Importa como NÃO publicada: só vai para os alunos depois da classificação (classify.ts) validar a resolução.
+ * - Sem --publish: importa como NÃO publicada (vai para os alunos depois que classify.ts validar a resolução).
+ * - Com --publish: publica já com o gabarito OFICIAL, sem resolução comentada (ela entra depois, só se a
+ *   resolução da IA bater com o gabarito; ver classify.ts). É o que alimenta os simulados de provas anteriores.
  * - Pode rodar de novo: o que já existe é ignorado.
  */
 import { ENEM_SOURCE } from "@/lib/bank/constants";
@@ -33,8 +36,19 @@ function seeded(seed: number) {
   };
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** A API pública limita pedidos por minuto (429): espera e tenta de novo. */
+async function fetchWithRetry(url: string, init?: RequestInit) {
+  for (let attempt = 0; ; attempt += 1) {
+    const response = await fetch(url, { ...init, signal: AbortSignal.timeout(30_000) });
+    if (response.status !== 429 || attempt >= 6) return response;
+    await sleep(10_000 * (attempt + 1));
+  }
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+  const response = await fetchWithRetry(url);
   if (!response.ok) throw new Error(`${response.status} em ${url}`);
   return (await response.json()) as T;
 }
@@ -45,14 +59,17 @@ async function fetchYear(year: number) {
     const page = await fetchJson<{ metadata: { hasMore: boolean }; questions: EnemDevQuestion[] }>(`${API}/exams/${year}/questions?limit=50&offset=${offset}`);
     all.push(...page.questions);
     if (!page.metadata.hasMore) break;
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await sleep(1500);
   }
+  // A lista padrão traz as 5 de língua estrangeira em Espanhol; as de Inglês vêm num pedido à parte.
+  const english = await fetchJson<{ questions: EnemDevQuestion[] }>(`${API}/exams/${year}/questions?limit=10&offset=0&language=ingles`);
+  all.push(...english.questions.filter((question) => question.language === "ingles"));
   return all;
 }
 
 async function imageOk(url: string) {
   try {
-    const response = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(15_000) });
+    const response = await fetchWithRetry(url, { method: "HEAD" });
     return response.ok && (response.headers.get("content-type") ?? "").startsWith("image/");
   } catch {
     return false;
@@ -125,7 +142,7 @@ async function main() {
         sourceName: ENEM_SOURCE.name,
         sourceUrl: ENEM_SOURCE.url,
         license: ENEM_SOURCE.license,
-        isPublished: false,
+        isPublished: flag("publish"),
         importBatch: batch,
       },
     });

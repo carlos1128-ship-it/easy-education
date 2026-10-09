@@ -43,7 +43,7 @@ export const evidenceItems: EvidenceItem[] = [
     ],
     caveat:
       "É um estudo de laboratório com textos curtos e universitários. Ele mostra que se testar ajuda a manter a lembrança por mais tempo. Não mede nota em prova e não mede o efeito de usar a Easy Education.",
-    inApp: "O banco de questões, os quizzes e os flashcards pedem que você tente responder antes de ver a resposta.",
+    inApp: "Os simulados, os quizzes e os flashcards pedem que você tente responder antes de ver a resposta.",
     reference: {
       citation: "Roediger, H. L., III, & Karpicke, J. D. (2006). Test-enhanced learning: Taking memory tests improves long-term retention. Psychological Science, 17(3), 249–255.",
       url: "https://pubmed.ncbi.nlm.nih.gov/16507066/",

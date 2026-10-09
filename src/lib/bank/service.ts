@@ -285,35 +285,6 @@ export async function createSession(input: {
   });
 }
 
-/** Questões de um simulado de prova passada: uma edição inteira ou uma área, na ordem original. */
-export async function pickSimuladoQuestionIds(userId: string, input: { exam: string; year: number; area?: string }) {
-  const rows = await getPrisma().bankQuestion.findMany({
-    where: {
-      AND: [buildWhere(userId, { exam: input.exam, year: input.year, area: input.area, origin: ORIGIN.official }), { variant: { not: "espanhol" } }],
-    },
-    select: { id: true },
-    orderBy: { number: "asc" },
-  });
-  return rows.map((row) => row.id);
-}
-
-/** Quantas questões publicadas cada simulado (ano + área) tem hoje. */
-export async function getSimuladoOptions(userId: string) {
-  const grouped = await getPrisma().bankQuestion.groupBy({
-    by: ["examId", "year", "area"],
-    where: { AND: [visibleWhere(userId), { origin: ORIGIN.official }, { variant: { not: "espanhol" } }] },
-    _count: { _all: true },
-  });
-  const exams = await getPrisma().exam.findMany({ select: { id: true, slug: true, name: true } });
-  const byId = new Map(exams.map((exam) => [exam.id, exam]));
-  return grouped
-    .flatMap((item) => {
-      const exam = byId.get(item.examId);
-      return exam ? [{ examSlug: exam.slug, examName: exam.name, year: item.year, area: item.area, count: item._count._all }] : [];
-    })
-    .sort((a, b) => b.year - a.year || String(a.area).localeCompare(String(b.area)));
-}
-
 export async function getSessionForUser(userId: string, sessionId: string) {
   const prisma = getPrisma();
   const session = await prisma.bankSession.findFirst({ where: { id: sessionId, userId }, include: { exam: { select: { name: true, slug: true } }, answers: true } });
@@ -454,7 +425,7 @@ export async function finishSession(userId: string, sessionId: string) {
           subject: questions[0]?.subject?.name && new Set(questions.map((q) => q.subjectId)).size === 1 ? questions[0].subject.name : "Multidisciplinar",
           durationMinutes: Math.max(1, Math.min(240, Math.round(durationSec / 60))),
           method: session.kind === "practice" ? "quiz" : "simulado",
-          notes: `Banco de questões: ${session.title}`,
+          notes: `Prova anterior: ${session.title}`,
         },
       }),
     ]);

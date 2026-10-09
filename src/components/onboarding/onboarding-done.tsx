@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ClipboardCheck } from "lucide-react";
 import { toast } from "sonner";
+import { sessionHref } from "@/lib/bank/paths";
 import { readApiJson } from "@/lib/client-response";
 
 export type OnboardingSummary = {
@@ -14,6 +15,8 @@ export type OnboardingSummary = {
   dailyMinutes: number;
   methods: string[];
   subjects: string[];
+  /** Escolheu o ENEM: oferece o diagnóstico com provas anteriores do ENEM. */
+  enem: boolean;
 };
 
 /**
@@ -31,7 +34,7 @@ export function OnboardingDone({ summary, redo }: { summary: OnboardingSummary; 
       const response = await fetch("/api/bank/sessions", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "diagnostic", exam: "enem" }) });
       const data = await readApiJson<{ sessionId?: string }>(response, "Não foi possível iniciar o diagnóstico.");
       if (!response.ok || !data.sessionId) throw new Error(data.error ?? "Não foi possível iniciar o diagnóstico.");
-      router.push(`/dashboard/banco/sessao/${data.sessionId}`);
+      router.push(sessionHref(data.sessionId));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível iniciar o diagnóstico.");
       setBusy(false);
@@ -72,20 +75,22 @@ export function OnboardingDone({ summary, redo }: { summary: OnboardingSummary; 
           <li>As questões geradas por IA seguem o estilo da sua prova e o seu nível.</li>
           <li>O plano da semana respeita seu tempo e os dias em que você pode estudar.</li>
           <li>As explicações usam o jeito de aprender que você escolheu.</li>
-          <li>O banco de questões te deixa filtrar por matéria e assunto.</li>
+          <li>Os simulados seguem a sua prova{summary.enem ? ", com provas anteriores do ENEM" : ""}.</li>
         </ul>
       </div>
 
+      {summary.enem ? (
       <div className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 dark:border-[#1A2744] sm:flex-row sm:items-center">
         <ClipboardCheck className="size-6 flex-none text-[#1B4FD8] dark:text-[#93C5FD]" aria-hidden="true" />
         <div className="flex-1">
           <p className="m-0 text-sm font-semibold text-slate-950 dark:text-[#F1F5F9]">Simulado diagnóstico (opcional)</p>
-          <p className="m-0 mt-0.5 text-sm text-slate-500 dark:text-[#94A3B8]">Poucas questões de provas anteriores de cada área. Serve de ponto de partida para você ver sua evolução nos próximos simulados.</p>
+          <p className="m-0 mt-0.5 text-sm text-slate-500 dark:text-[#94A3B8]">Poucas questões de provas anteriores do ENEM, de cada área. Serve de ponto de partida para você ver sua evolução nos próximos simulados.</p>
         </div>
         <button type="button" onClick={startDiagnostic} disabled={busy} className="h-10 rounded-lg bg-[#1B4FD8] px-4 text-sm font-medium text-white hover:bg-[#0F2B8A] disabled:opacity-60">
           {busy ? "Preparando..." : "Fazer agora"}
         </button>
       </div>
+      ) : null}
 
       <div className="flex justify-end">
         <Link href="/dashboard" className="inline-flex h-10 items-center rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-900 no-underline hover:bg-slate-50 dark:border-[#1A2744] dark:text-[#F1F5F9] dark:hover:bg-[#131D35]">

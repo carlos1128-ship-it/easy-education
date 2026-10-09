@@ -15,12 +15,12 @@ import {
   gradeReview,
   listQuestions,
   pickQuestionIds,
-  pickSimuladoQuestionIds,
   reportQuestion,
   setBookmark,
   getSessionForUser,
   BankError,
 } from "@/lib/bank/service";
+import { pickEnemSimulado } from "@/lib/bank/enem-simulado";
 import { getPrisma } from "@/lib/prisma";
 
 const prisma = getPrisma();
@@ -51,7 +51,8 @@ async function main() {
     const wrong = first.correctLabel === "A" ? "B" : "A";
     const result = await answerQuestion({ userId, questionId: first.id, sessionId: session.id, selected: wrong, timeMs: 4000 });
     assert(result.recorded && "correctLabel" in result && result.correctLabel === first.correctLabel && result.isCorrect === false, "prática mostra gabarito e marca erro");
-    assert("explanation" in result && Boolean(result.explanation), "prática mostra a resolução comentada");
+    // Resolução comentada só existe quando a da IA bateu com o gabarito oficial; senão vem null (e a tela não mostra).
+    assert("explanation" in result && (first.explanationStatus === "validada" ? Boolean(result.explanation) : result.explanation === first.explanation), "prática devolve a resolução quando ela existe");
 
     const again = await answerQuestion({ userId, questionId: first.id, sessionId: session.id, selected: first.correctLabel, timeMs: 1000 });
     assert(again.alreadyAnswered === true, "responder duas vezes não duplica");
@@ -82,9 +83,13 @@ async function main() {
     await finishSession(userId, session.id);
     assert((await prisma.studySession.count({ where: { userId } })) === 1, "encerrar duas vezes não duplica o tempo de estudo");
 
-    // Simulado: não revela gabarito.
-    const years = options.years;
-    const simuladoIds = await pickSimuladoQuestionIds(userId, { exam: "enem", year: years[0] });
+    // Simulado do ENEM (1º dia): 90 questões, 45 por área, 5 de inglês primeiro; não revela gabarito.
+    const simuladoIds = await pickEnemSimulado(userId, "dia1", "ingles");
+    assert(simuladoIds.length === 90 && new Set(simuladoIds).size === 90, "1º dia tem 90 questões sem repetir");
+    const firstFive = await prisma.bankQuestion.findMany({ where: { id: { in: simuladoIds.slice(0, 5) } }, select: { variant: true, area: true } });
+    assert(firstFive.every((row) => row.variant === "ingles" && row.area === "linguagens"), "as 5 primeiras são de inglês");
+    const day2 = await prisma.bankQuestion.findMany({ where: { id: { in: await pickEnemSimulado(userId, "dia2", "ingles") } }, select: { area: true } });
+    assert(day2.length === 90 && day2.every((row) => row.area === "ciencias-natureza" || row.area === "matematica"), "2º dia: Natureza e Matemática");
     if (simuladoIds.length) {
       const sim = await createSession({ userId, kind: "simulado", title: "sim", questionIds: simuladoIds, timeLimitSec: 600 });
       const q = (await getSessionForUser(userId, sim.id))!.questions[0];

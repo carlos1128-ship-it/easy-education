@@ -7,6 +7,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { startOfToday } from "@/lib/study-stats";
 import { startBankPractice } from "@/lib/bank/fallback";
+import { sessionHref } from "@/lib/bank/paths";
 import { PlanLimitError, withFeature } from "@/lib/usage";
 
 export type StudyBlockInput = {
@@ -18,7 +19,7 @@ export type StudyBlockInput = {
 
 export type StudyStart = { href: string; activity: "redacao" | "simulado" | "flashcards" | "quiz" | "banco"; reused: boolean };
 
-/** Recurso de IA fora do plano (Gratuito)? Então o bloco abre a versão do banco de questões. */
+/** Recurso de IA fora do plano (Gratuito)? Então o bloco abre os simulados (provas anteriores do ENEM, para quem estuda para ele). */
 function isLocked(error: unknown) {
   return error instanceof PlanLimitError && error.info.code === "feature_locked";
 }
@@ -66,7 +67,7 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
       revalidateStudyPages();
       return { href: `/dashboard/simulados/${quiz.id}`, activity: "simulado", reused: false };
     } catch (error) {
-      if (isLocked(error)) return { href: "/dashboard/banco/simulados", activity: "banco", reused: false };
+      if (isLocked(error)) return { href: "/dashboard/simulados", activity: "banco", reused: false };
       throw error;
     }
   }
@@ -104,6 +105,7 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
   } catch (error) {
     if (!isLocked(error)) throw error;
     const practice = await startBankPractice(userId, { subject: block.subject, topic: block.topic, count: 10 });
-    return { href: practice ? `/dashboard/banco/sessao/${practice.sessionId}` : "/dashboard/banco", activity: "banco", reused: false };
+    if (!practice) throw error;
+    return { href: sessionHref(practice.sessionId), activity: "banco", reused: false };
   }
 }

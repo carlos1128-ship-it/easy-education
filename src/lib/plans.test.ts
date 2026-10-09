@@ -51,8 +51,8 @@ describe("planos e limites (valores combinados com o produto)", () => {
     expect(allowanceFor("full", "trail").kind).toBe("open");
   });
 
-  it("geração por IA (quiz, flashcards, simulado, questão) é bloqueada no Gratuito", () => {
-    for (const feature of ["ai_quiz", "ai_flashcards", "ai_simulado", "ai_question"] as const) {
+  it("geração por IA (quiz, flashcards, simulado) é bloqueada no Gratuito", () => {
+    for (const feature of ["ai_quiz", "ai_flashcards", "ai_simulado"] as const) {
       expect(allowanceFor("free", feature).kind).toBe("locked");
       expect(allowanceFor("basic", feature).kind).toBe("limit");
       expect(allowanceFor("full", feature).kind).toBe("limit");

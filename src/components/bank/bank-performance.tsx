@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { Library } from "lucide-react";
+import { ENEM_AREAS } from "@/lib/bank/constants";
+import { resultHref } from "@/lib/bank/paths";
 import { percent } from "@/lib/bank/estimate";
 import { getPrisma } from "@/lib/prisma";
 
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
 
-/** Desempenho no banco de questões: acerto por matéria e evolução dos simulados (do diagnóstico em diante). */
+/** Desempenho nos simulados de provas anteriores: acerto por matéria e evolução dos simulados (do diagnóstico em diante). */
 export async function BankPerformance({ userId, dateWhere }: { userId: string; dateWhere?: { gte?: Date; lte?: Date } }) {
   const prisma = getPrisma();
   const [answers, sessions] = await Promise.all([
     prisma.bankAnswer.findMany({
       where: { userId, answeredAt: dateWhere },
-      select: { isCorrect: true, timeMs: true, question: { select: { subject: { select: { name: true } } } } },
+      select: { isCorrect: true, timeMs: true, question: { select: { area: true, subject: { select: { name: true } } } } },
     }),
     prisma.bankSession.findMany({
       where: { userId, kind: { in: ["simulado", "diagnostic"] }, finishedAt: { not: null, ...(dateWhere ?? {}) } },
@@ -21,27 +22,15 @@ export async function BankPerformance({ userId, dateWhere }: { userId: string; d
     }),
   ]);
 
-  if (answers.length === 0 && sessions.length === 0) {
-    return (
-      <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 shadow-card sm:flex-row sm:items-center">
-        <Library className="size-7 text-brand-strong" aria-hidden="true" />
-        <div className="flex-1">
-          <h2 className="m-0 text-xl font-bold text-ink">Banco de questões</h2>
-          <p className="m-0 mt-1 text-sm text-ink-muted">Responda questões de provas anteriores e seu acerto por matéria aparece aqui, junto com a evolução nos simulados.</p>
-        </div>
-        <Link href="/dashboard/banco" className="inline-flex min-h-11 items-center rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline hover:bg-brand-strong">
-          Abrir o banco
-        </Link>
-      </section>
-    );
-  }
+  // Sem simulado de prova anterior ainda: não ocupa espaço no painel (quem não estuda para o ENEM não vê).
+  if (answers.length === 0 && sessions.length === 0) return null;
 
   const total = answers.length;
   const correct = answers.filter((answer) => answer.isCorrect).length;
   const avgSeconds = total ? Math.round(answers.reduce((sum, answer) => sum + answer.timeMs, 0) / total / 1000) : 0;
   const bySubject = new Map<string, { total: number; correct: number }>();
   for (const answer of answers) {
-    const name = answer.question.subject?.name ?? "Sem matéria";
+    const name = answer.question.subject?.name ?? (answer.question.area ? ENEM_AREAS[answer.question.area] : null) ?? "Geral";
     const item = bySubject.get(name) ?? { total: 0, correct: 0 };
     item.total += 1;
     if (answer.isCorrect) item.correct += 1;
@@ -52,7 +41,7 @@ export async function BankPerformance({ userId, dateWhere }: { userId: string; d
   return (
     <section className="grid gap-6 rounded-2xl border border-border bg-surface p-6 shadow-card lg:grid-cols-2">
       <div>
-        <h2 className="m-0 text-xl font-bold text-ink">Banco de questões</h2>
+        <h2 className="m-0 text-xl font-bold text-ink">Provas anteriores do ENEM</h2>
         <p className="m-0 mt-1 text-sm text-ink-muted">
           {total} respondidas · {percent(correct, total)}% de acerto · {avgSeconds}s por questão em média
         </p>
@@ -78,7 +67,7 @@ export async function BankPerformance({ userId, dateWhere }: { userId: string; d
         <p className="m-0 mt-1 text-sm text-ink-muted">Percentual de acerto em cada simulado, do diagnóstico (ponto de partida) em diante.</p>
         {sessions.length === 0 ? (
           <p className="m-0 mt-4 text-sm text-ink-muted">
-            Faça o <Link href="/dashboard/banco/simulados" className="font-semibold text-brand-strong underline underline-offset-2">simulado diagnóstico</Link> para marcar seu ponto de partida.
+            Faça o <Link href="/dashboard/simulados" className="font-semibold text-brand-strong underline underline-offset-2">simulado diagnóstico</Link> para marcar seu ponto de partida.
           </p>
         ) : (
           <ol className="m-0 mt-4 flex list-none flex-col gap-2.5 p-0">
@@ -88,7 +77,7 @@ export async function BankPerformance({ userId, dateWhere }: { userId: string; d
               const value = percent(hits, totalQuestions);
               return (
                 <li key={session.id}>
-                  <Link href={`/dashboard/banco/sessao/${session.id}/resultado`} className="flex items-center gap-3 text-sm no-underline">
+                  <Link href={resultHref(session.id)} className="flex items-center gap-3 text-sm no-underline">
                     <span className="w-14 flex-none text-ink-muted">{dateFormat.format(session.startedAt)}</span>
                     <span className="h-2 flex-1 overflow-hidden rounded-full bg-track" aria-hidden="true">
                       <span className="block h-full rounded-full bg-brand" style={{ width: `${value}%` }} />

@@ -46,10 +46,10 @@ export function ReviewRunner({ items }: { items: ReviewItem[] }) {
         <RotateCcw className="mx-auto size-8 text-brand-strong" aria-hidden="true" />
         <h2 className="mt-3 text-xl font-bold text-ink">{items.length ? "Revisão do dia concluída" : "Nenhuma questão para revisar agora"}</h2>
         <p className="m-0 mt-2 text-sm text-ink-muted">
-          {items.length ? "As questões voltam nos dias certos, pouco antes de você esquecer." : "As questões que você errar ou marcar no banco entram aqui e voltam em intervalos crescentes."}
+          {items.length ? "As questões voltam nos dias certos, pouco antes de você esquecer." : "As questões que você errar ou marcar nos simulados entram aqui e voltam em intervalos crescentes."}
         </p>
-        <Link href="/dashboard/banco" className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline hover:bg-brand-strong">
-          Praticar mais questões
+        <Link href="/dashboard/simulados" className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-brand px-5 text-[15px] font-medium text-on-brand no-underline hover:bg-brand-strong">
+          Fazer um simulado
         </Link>
       </div>
     );

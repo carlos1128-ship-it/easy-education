@@ -10,6 +10,8 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
 import { startBankPractice } from "@/lib/bank/fallback";
+import { sessionHref } from "@/lib/bank/paths";
+import { isEnemStudent } from "@/lib/learner-profile";
 import { allowanceFor, type PlanTier } from "@/lib/plans";
 import { withFeature } from "@/lib/usage";
 
@@ -137,13 +139,13 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
     const subject = text(args.materia) ?? "Conhecimentos gerais";
     const topic = text(args.assunto);
     const questionCount = clampInt(args.quantidade, 5, 20, 10);
-    // Plano Gratuito: o quiz sai do banco de questões (busca por matéria e assunto), sem IA generativa.
+    // Plano Gratuito: quem estuda para o ENEM pratica com questões de provas anteriores; os demais veem o upgrade.
     if (allowanceFor(tier, "ai_quiz").kind === "locked") {
       const practice = await startBankPractice(userId, { subject, topic, count: questionCount });
-      if (!practice) return { reply: "O banco de questões ainda não tem questões disponíveis. Abri o banco para você olhar o que já tem.", action: { type: "quiz", href: "/dashboard/banco", label: "Abrir o banco de questões" } };
+      if (!practice) return { reply: "Quizzes gerados por IA fazem parte dos planos pagos. Com um plano pago eu monto o quiz no estilo da sua prova, sobre qualquer assunto.", action: { type: "quiz", href: "/dashboard/assinatura", label: "Ver os planos" } };
       return {
         reply: `Montei ${practice.total} questões de provas anteriores${practice.subject ? ` de ${practice.subject}` : ""}${practice.topic ? ` sobre ${practice.topic}` : ""}, com gabarito e resolução comentada.${practice.matched ? "" : " Não achei essa matéria no banco, então sorteei questões variadas."} Vou abrir para você.`,
-          action: { type: "quiz", href: `/dashboard/banco/sessao/${practice.sessionId}`, label: "Abrir questões" },
+          action: { type: "quiz", href: sessionHref(practice.sessionId), label: "Abrir questões" },
         };
       }
     const difficulty = difficultyEnum.includes(String(args.dificuldade)) ? String(args.dificuldade) : "medio";
@@ -159,10 +161,16 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new ChatActionError("Muitos simulados em pouco tempo. Tente de novo em um minuto.", 429);
     const subject = text(args.materia) ?? "Multidisciplinar";
     if (allowanceFor(tier, "ai_simulado").kind === "locked") {
-      return {
-        reply: "No plano Gratuito os simulados são os de provas anteriores, com as questões originais e cronômetro. Vou abrir a lista para você escolher a prova.",
-        action: { type: "simulado", href: "/dashboard/banco/simulados", label: "Escolher um simulado" },
-      };
+      const profile = await prisma.profile.findUnique({ where: { userId }, select: { personalization: true } });
+      return isEnemStudent(profile?.personalization)
+        ? {
+            reply: "No plano Gratuito os simulados são os de provas anteriores do ENEM, com 90 questões, gabarito oficial e cronômetro. Vou abrir para você escolher o dia da prova.",
+            action: { type: "simulado", href: "/dashboard/simulados", label: "Escolher um simulado" },
+          }
+        : {
+            reply: "Simulados gerados por IA fazem parte dos planos pagos. Com um plano pago eu monto simulados no estilo da sua prova.",
+            action: { type: "simulado", href: "/dashboard/assinatura", label: "Ver os planos" },
+          };
     }
     const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject, topic: text(args.assunto), questionCount: clampInt(args.quantidade, 5, 20, 20) }), { tier });
     revalidateAll();

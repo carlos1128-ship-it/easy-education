@@ -30,8 +30,12 @@ export default async function SimuladoDetailPage({ params }: { params: Promise<{
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div>
-        <p className="text-sm font-medium text-brand-strong">{simulado.subject}</p>
+        <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-brand-strong">
+          {simulado.subject}
+          <span className="rounded-full bg-surface-muted px-2.5 py-0.5 text-xs font-semibold text-ink-muted">Gerado por IA</span>
+        </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{simulado.title}</h1>
+        <p className="m-0 mt-1 text-sm text-ink-muted">Questões criadas pela IA no estilo da sua prova. Não são questões de provas anteriores.</p>
       </div>
       <QuizRunner quizId={simulado.id} questions={toQuizRunnerQuestions(simulado.questions)} mode="simulado" videoId={parseVideoSourceKey(simulado.file?.sourceUrl)?.id ?? null} />
     </div>
