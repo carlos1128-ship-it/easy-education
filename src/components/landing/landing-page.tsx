@@ -34,7 +34,7 @@ import {
   landingSteps,
 } from "@/content/landing";
 import { cn } from "@/lib/utils";
-import { BankSection, EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
+import { EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
 import { uploadLimitMB } from "@/lib/plans";
@@ -70,10 +70,12 @@ export function LandingPage() {
   return (
     <div className="overflow-hidden bg-bg text-[15px] leading-6 text-ink antialiased">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <LandingHeader />
       {/* Hero */}
       <section className="px-3 pt-4 lg:px-6">
         <div className="relative mx-auto max-w-[1600px] overflow-hidden rounded-3xl bg-hero-panel dark:overflow-visible">
-          <LandingHeader />
+          {/* Espaço da barra do topo, que fica fixa e acompanha a rolagem (ver LandingHeader). */}
+          <div className="h-[60px] lg:h-[68px]" aria-hidden="true" />
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
             <div className="relative z-[2] flex flex-col items-start gap-5 px-5 pb-2 pt-7 lg:pb-16 lg:pl-14 lg:pr-0 lg:pt-12">
               <h1 className="m-0 max-w-[540px] text-4xl font-black leading-[42px] tracking-[-1.2px] text-ink [text-wrap:balance] lg:text-[56px] lg:leading-[62px]">
@@ -165,9 +167,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Banco de questões */}
-      <BankSection />
-
       {/* O problema */}
       <section className={cn(container, sectionTop)}>
         <div className="grid grid-cols-1 items-center gap-7 lg:grid-cols-2 lg:gap-16">
@@ -254,7 +253,7 @@ export function LandingPage() {
       </section>
 
       {/* Recursos */}
-      <section id="recursos" className={cn(container, sectionTop, "flex scroll-mt-6 flex-col gap-7 lg:gap-16")}>
+      <section id="recursos" className={cn(container, sectionTop, "flex scroll-mt-24 flex-col gap-7 lg:gap-16")}>
         <div className="flex max-w-[640px] flex-col gap-3">
           <span className={eyebrow}>{landingResources.eyebrow}</span>
           <h2 className={h2}>{landingResources.title}</h2>
@@ -273,7 +272,7 @@ export function LandingPage() {
       </section>
 
       {/* Como funciona */}
-      <section id="como-funciona" className={cn(container, sectionTop, "flex scroll-mt-6 flex-col gap-10")}>
+      <section id="como-funciona" className={cn(container, sectionTop, "flex scroll-mt-24 flex-col gap-10")}>
         <div className="flex max-w-[640px] flex-col gap-3">
           <span className={eyebrow}>{landingSteps.eyebrow}</span>
           <h2 className={h2}>{landingSteps.title}</h2>
@@ -314,7 +313,7 @@ export function LandingPage() {
       <TestimonialsSection />
 
       {/* Perguntas */}
-      <section id="perguntas" className={cn(container, sectionTop, "grid scroll-mt-6 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]")}>
+      <section id="perguntas" className={cn(container, sectionTop, "grid scroll-mt-24 grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]")}>
         <div className="flex flex-col gap-3">
           <span className={eyebrow}>{landingFaq.eyebrow}</span>
           <h2 className={h2}>{landingFaq.title}</h2>
@@ -844,7 +843,7 @@ function PricingCard({ tier }: { tier: "free" | "basic" | "full" }) {
 function PlansSection() {
   const p = landingPlans;
   return (
-    <section id="planos" className={cn(container, sectionTop, "flex scroll-mt-6 flex-col gap-10")}>
+    <section id="planos" className={cn(container, sectionTop, "flex scroll-mt-24 flex-col gap-10")}>
       <div className="flex max-w-[640px] flex-col gap-3">
         <span className={eyebrow}>{p.eyebrow}</span>
         <h2 className={h2}>{p.title}</h2>

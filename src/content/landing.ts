@@ -24,7 +24,6 @@ export const landingLinks = {
 
 export const landingNav = [
   { label: "Recursos", href: "#recursos" },
-  { label: "Banco de questões", href: "#banco" },
   { label: "Como funciona", href: "#como-funciona" },
   { label: "Planos", href: "#planos" },
   { label: "Perguntas", href: "#perguntas" },
@@ -39,14 +38,14 @@ export const landingHeader = {
 } as const;
 
 export const landingHero = {
-  title: "Estude do seu jeito. O futuro é decisão sua.",
+  title: "Transforme qualquer material de estudo em treino",
   // Trecho do título destacado em azul
-  titleKeyword: "do seu jeito",
+  titleKeyword: "treino",
   subtitle:
-    "Questões de provas anteriores com resolução comentada, flashcards que voltam na hora certa, correção de redação e um plano de estudos que se adapta ao seu objetivo. Para quem está no ensino médio, se prepara para ENEM, vestibular ou concurso, ou só quer melhorar as notas.",
-  boxText: `Plano gratuito de verdade · planos pagos a partir de ${priceBasic}/mês`,
+    "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
+  boxText: `Comece grátis · planos a partir de ${priceBasic}/mês`,
   cta: "Começar grátis",
-  highlights: ["Para estudantes de todos os níveis", "Questões com resolução comentada", "Revisão do que você erra"],
+  highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
     src: "/images/estudante-jeans-recorte.webp",
     width: 792,
@@ -106,9 +105,9 @@ export const landingSolution = {
 export const illustrativeLabel = "Exemplo ilustrativo";
 
 export const landingMeta = {
-  title: "Easy Education: estude mais fácil, do seu jeito",
+  title: "Easy Education: estude com IA usando o seu próprio material",
   description:
-    `Banco de questões de provas anteriores, quiz com explicação, flashcards com revisão espaçada, plano de estudos e correção de redação. Plano gratuito e planos pagos a partir de ${priceBasic} por mês.`,
+    `Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos, simulados e correção de redação. Para escola, faculdade, vestibular e concurso. Comece grátis; planos a partir de ${priceBasic} por mês.`,
 } as const;
 
 export const landingResources = {
@@ -177,7 +176,7 @@ export const landingResources = {
   cards: {
     simulado: {
       title: "Simulados",
-      text: "Treine no tempo de prova. Toda semana um simulado novo fica pronto no seu painel.",
+      text: "Treine no tempo de prova. Quem estuda para o ENEM faz provas anteriores de 90 questões; quem estuda para concurso recebe um simulado do seu concurso por dia.",
       mock: {
         name: "Simulado da semana",
         timer: "1:12:40 restantes",
@@ -215,9 +214,9 @@ export const landingSteps = {
   eyebrow: "Como funciona",
   title: "Do cadastro ao primeiro quiz em três passos",
   steps: [
-    { n: 1, title: "Conte o que você estuda", text: "Escola, vestibular, ENEM, concurso ou só melhorar as notas, a data da próxima prova e quantas horas por dia você tem. O plano da semana sai na hora." },
-    { n: 2, title: "Pratique com questões de verdade", text: "Responda questões de provas anteriores com resolução comentada. Nos planos pagos, envie também o seu material para a IA montar quiz e flashcards." },
-    { n: 3, title: "Revise e veja sua evolução", text: "O que você erra volta na hora certa. Cada resposta entra no painel e mostra o que você já domina e o que precisa revisar." },
+    { n: 1, title: "Conte o que você estuda", text: "Escola, faculdade, vestibular ou concurso, a data da próxima prova e quantas horas por dia você tem. O plano da semana sai na hora." },
+    { n: 2, title: "Mande seu material", text: "PDF da escola, foto do caderno ou só o nome da matéria. A IA monta quiz, flashcards e simulado." },
+    { n: 3, title: "Pratique e veja sua evolução", text: "Cada resposta entra no painel e mostra o que você já domina e o que precisa revisar." },
   ],
 } as const;
 
@@ -229,11 +228,11 @@ export const landingSteps = {
 export const landingPlans = {
   enabled: true,
   eyebrow: "Planos",
-  title: "Comece grátis. Pague só se quiser mais IA",
-  text: "O plano Gratuito tem banco de questões, simulados e desempenho, sem cartão. Os planos pagos liberam mais conversas com a IA, redações e materiais seus.",
+  title: "Comece grátis e escolha quanto de IA você quer usar",
+  text: "O Gratuito não pede cartão. Os planos pagos liberam quiz, flashcards e simulados gerados por IA, e o Completo tem os limites maiores para quem estuda todo dia.",
   free: {
     name: PLANS.free.name,
-    description: "Para praticar com questões de provas anteriores.",
+    description: "Para conhecer o app e estudar com calma.",
     price: "Grátis",
     period: "",
     cta: "Começar grátis",
@@ -255,10 +254,10 @@ export const landingPlans = {
   },
   includedTitle: "Em todos os planos, inclusive o Gratuito",
   included: [
-    "Banco de questões de provas anteriores, com resolução comentada",
-    "Simulados de provas anteriores",
-    "Painel de desempenho por matéria",
-    "Revisão espaçada das questões que você errou",
+    "Chat com IA para tirar dúvidas",
+    "Correção de redação por texto",
+    "Plano de estudos e painel de desempenho",
+    "Provas anteriores do ENEM, para quem estuda para o ENEM",
   ],
   guarantee: "Nos planos pagos: garantia de 7 dias, devolvemos seu dinheiro se não gostar. Cancele quando quiser.",
   images: [
@@ -328,19 +327,15 @@ export const landingFaq = {
   items: [
     {
       q: "Preciso pagar para usar?",
-      a: "Não. O plano Gratuito não tem prazo e inclui o banco de questões de provas anteriores, os simulados, o painel de desempenho e a revisão das questões que você errou. Os planos pagos liberam mais conversas com a IA, quizzes e flashcards gerados por IA, vídeos do YouTube e a trilha.",
+      a: "Não. O plano Gratuito não tem prazo: inclui o chat com IA, a correção de redação, o plano de estudos e o painel de desempenho, com limites menores. Quem estuda para o ENEM também faz simulados com provas anteriores. Os planos pagos liberam quizzes, flashcards e simulados gerados por IA, vídeos do YouTube e a trilha.",
     },
     {
       q: "Como funcionam os limites de uso?",
       a: "Cada plano tem números claros, que aparecem na tabela de planos. Os limites diários voltam à meia-noite e os semanais, na segunda-feira, no horário de Brasília. Todo limite tem um teto: não existe uso ilimitado. Antes de acabar, o app avisa quantos usos restam.",
     },
     {
-      q: "De onde vêm as questões do banco?",
-      a: "São questões de provas anteriores, publicadas pelos órgãos que aplicam as provas. Hoje o banco começa pelo ENEM. Cada questão mostra a prova, o ano e a fonte. As resoluções comentadas são escritas por IA e conferidas contra o gabarito oficial; se discordarem dele, a questão não é publicada. Mesmo assim podem ter erros, por isso toda questão tem o botão \"Reportar\".",
-    },
-    {
-      q: "As questões geradas por IA são questões de prova?",
-      a: "Não. Elas aparecem sempre com o selo \"Gerada por IA\" e a frase \"no estilo do\" exame, e nunca são apresentadas como questões reais nem como previsão da prova. A IA cria a questão e depois a resolve sem ver o gabarito, para conferir.",
+      q: "Como funcionam os simulados?",
+      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe, nos planos pagos, um simulado por dia no estilo da banca, gerado por IA e marcado como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
     },
     {
       q: "A nota estimada do simulado é a nota do ENEM?",
@@ -360,7 +355,7 @@ export const landingFaq = {
     },
     {
       q: "Qual a diferença entre o Gratuito, o Básico e o Completo?",
-      a: "O Gratuito tem o banco de questões, os simulados de provas anteriores e o desempenho, com poucas mensagens no chat e uma redação por semana. O Básico libera quizzes e flashcards gerados por IA, vídeos do YouTube e a trilha. O Completo tem os limites mais altos. A tabela de planos mostra cada número.",
+      a: "O Gratuito tem poucas mensagens no chat, uma redação por semana e o desempenho. O Básico libera quizzes, flashcards e simulados gerados por IA, vídeos do YouTube e a trilha. O Completo tem os limites mais altos. A tabela de planos mostra cada número.",
     },
     {
       q: "Preciso ter a apostila em PDF?",
@@ -394,7 +389,7 @@ export const landingFaq = {
 } as const;
 
 export const landingFinalCta = {
-  title: "Estude mais fácil com a Easy Education",
+  title: "Comece seu plano de estudos hoje",
   text: "Crie sua conta grátis, conte o que você está estudando e receba o plano da semana na hora. Nos planos pagos, a garantia de 7 dias devolve seu dinheiro.",
   cta: "Começar grátis",
   image: { src: "/images/formatura-azul.jpg" },

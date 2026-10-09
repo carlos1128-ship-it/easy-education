@@ -53,6 +53,14 @@ Custo medido nas 27 questões classificadas: US$ 0,128 no total, cerca de **R$ 0
 
 As 24 publicadas hoje são de Linguagens (16: Língua Portuguesa 10, Literatura 4, Espanhol 2) e Ciências Humanas (8: Geografia 6, História 1, Sociologia 1). Matemática e Ciências da Natureza só aparecem depois de classificar o restante.
 
+## Acervo dos simulados (09/10/2026)
+
+As provas do ENEM de **2019 a 2023** foram importadas inteiras (`import-enem.ts --all --publish`, lote `enem-2019-2023`), incluindo as 5 questões de Inglês e as 5 de Espanhol de cada edição. Hoje há **902 questões publicadas** (cerca de 200 ou mais por área). Ficaram de fora 11 questões que a fonte trazia incompletas ou com imagem quebrada, e as 2 em que a resolução da IA divergiu do gabarito.
+
+Essas questões são publicadas com o **gabarito oficial** e **sem resolução comentada**. A resolução só aparece depois que `classify.ts` roda e a resposta da IA bate com o gabarito (as 24 do piloto já têm). Para o aluno, as questões aparecem dentro de **Simulados → Estude com provas anteriores do ENEM** (1º dia, 2º dia ou prova completa, 90/180 questões misturando as edições), só para quem escolheu o ENEM na personalização. Não existe mais a tela "Banco de questões" com filtros.
+
+**Concursos:** não existe API gratuita e licenciada de questões de concurso (os grandes acervos, como QConcursos e TEC Concursos, são pagos e protegidos). Por isso o simulado do concurso é **gerado por IA** no estilo da banca, sempre com o selo "Gerado por IA", um por dia nos planos pagos.
+
 ## Como validamos a resolução comentada
 
 - A IA recebe a questão **sem o gabarito** (e, quando há, as imagens), resolve, escreve a resolução e classifica (matéria, assunto, subassunto, habilidade, dificuldade estimada).
@@ -63,7 +71,7 @@ As 24 publicadas hoje são de Linguagens (16: Língua Portuguesa 10, Literatura 
 ## Como importar e classificar mais questões
 
 ```bash
-# 1) importar (não publica nada ainda)
+# 1) importar (sem --publish não publica nada; com --publish publica com o gabarito oficial, sem resolução)
 npx tsx --env-file=.env.local scripts/bank/import-enem.ts --years 2022 --all --batch ano-2022
 # 2) classificar e validar contra o gabarito (gasta IA; custo no fim do relatório)
 npx tsx --env-file=.env.local scripts/bank/classify.ts --batch ano-2022
