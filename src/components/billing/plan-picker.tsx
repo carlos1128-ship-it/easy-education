@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { landingPlans } from "@/content/landing";
@@ -9,10 +10,14 @@ import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
 import { PLANS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-type Plan = "basic" | "full";
+type Plan = "free" | "basic" | "full";
 
-/** Escolha do plano pago e ida para o pagamento seguro do Stripe. Os números vêm de src/lib/plans.ts. */
-export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
+/**
+ * Escolha entre os três planos logo depois do cadastro. Gratuito segue para o app; Básico e Completo vão para
+ * o pagamento seguro do Stripe. Os números vêm de src/lib/plans.ts.
+ */
+export function PlanPicker({ initialPlan, freeHref }: { initialPlan: Plan; freeHref: string }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<Plan>(initialPlan);
   const [loading, setLoading] = useState(false);
   const p = landingPlans;
@@ -20,6 +25,10 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
   async function handleCheckout() {
     if (loading) return;
     setLoading(true);
+    if (selected === "free") {
+      router.push(freeHref);
+      return;
+    }
     try {
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
@@ -37,8 +46,8 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div role="radiogroup" aria-label="Planos" className="grid gap-4 md:grid-cols-2">
-        {(["full", "basic"] as const).map((tier) => {
+      <div role="radiogroup" aria-label="Planos" className="grid gap-4 md:grid-cols-3">
+        {(["free", "basic", "full"] as const).map((tier) => {
           const plan = p[tier];
           const active = selected === tier;
           const perDay = pricePerDayLabel(tier);
@@ -73,7 +82,7 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
                 <span className="text-3xl font-black tracking-[-0.5px] text-ink">{plan.price}</span>
                 <span className="text-ink-muted">{plan.period}</span>
               </div>
-              {perDay ? <span className="text-sm font-medium text-brand-strong">{perDay}</span> : null}
+              <span className="text-sm font-medium text-brand-strong">{perDay ?? "Sem cartão de crédito"}</span>
               <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                 {planHighlights(tier).map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-ink">
@@ -108,11 +117,11 @@ export function PlanPicker({ initialPlan }: { initialPlan: Plan }) {
         disabled={loading}
         className="h-12 w-full rounded-xl bg-brand text-[15px] font-semibold text-on-brand transition-colors hover:bg-brand-strong disabled:opacity-60 dark:bg-[#2563eb] dark:text-white dark:hover:bg-[#1d4ed8]"
       >
-        {loading ? "Abrindo pagamento..." : `Assinar o ${PLANS[selected].name} por ${p[selected].price}/mês`}
+        {selected === "free" ? (loading ? "Abrindo..." : "Começar no plano Gratuito") : loading ? "Abrindo pagamento..." : `Assinar o ${PLANS[selected].name} por ${p[selected].price}/mês`}
       </button>
       <p className="m-0 flex items-center justify-center gap-2 text-center text-sm text-ink-muted">
         <ShieldCheck size={16} className="flex-none" aria-hidden="true" />
-        Pagamento seguro pelo Stripe. {p.guarantee}
+        {selected === "free" ? "Você pode assinar um plano pago quando quiser, em Assinatura." : <>Pagamento seguro pelo Stripe. {p.guarantee}</>}
       </p>
     </div>
   );

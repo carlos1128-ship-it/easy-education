@@ -9,6 +9,7 @@ import { getPrisma } from "@/lib/prisma";
 
 const user = { id: `smoke-${Date.now()}`, email: undefined };
 const prisma = getPrisma();
+const tierUsers: string[] = [];
 
 function assert(condition: unknown, message: string) {
   if (!condition) throw new Error(`FALHOU: ${message}`);
@@ -59,8 +60,35 @@ async function main() {
     const snapshot = await getUsageSnapshot(user, { tier: "free" });
     assert(snapshot.features.chat_message.used === 3 && snapshot.features.chat_message.remaining === 0, "snapshot mostra 3 de 3 usadas");
     assert(snapshot.features.trail.state === "locked", "snapshot mostra trilha fechada");
+
+    // 3) Cada plano tem o seu limite: o mesmo recurso libera mais uso no Básico e mais ainda no Completo.
+    async function usesUntilBlocked(tier: "free" | "basic" | "full", feature: "chat_message" | "ai_quiz" | "ai_simulado") {
+      const someone = { id: `smoke-${tier}-${feature}-${Date.now()}`, email: undefined };
+      tierUsers.push(someone.id);
+      let used = 0;
+      for (;;) {
+        try {
+          await consumeFeature(someone, feature, { tier });
+          used += 1;
+          if (used > 60) return used;
+        } catch (error) {
+          if (error instanceof PlanLimitError) return used;
+          throw error;
+        }
+      }
+    }
+    const expected: Array<[Parameters<typeof usesUntilBlocked>[0], Parameters<typeof usesUntilBlocked>[1], number]> = [
+      ["free", "chat_message", 3], ["basic", "chat_message", 20], ["full", "chat_message", 50],
+      ["free", "ai_quiz", 0], ["basic", "ai_quiz", 3], ["full", "ai_quiz", 15],
+      ["free", "ai_simulado", 0], ["basic", "ai_simulado", 1], ["full", "ai_simulado", 1],
+    ];
+    for (const [tier, feature, max] of expected) {
+      const used = await usesUntilBlocked(tier, feature);
+      assert(used === max, `${feature} no plano ${tier}: ${used} usos antes do bloqueio (esperado ${max})`);
+    }
   } finally {
     await prisma.usageEvent.deleteMany({ where: { userId: user.id } });
+    await prisma.usageEvent.deleteMany({ where: { userId: { in: tierUsers } } });
     await prisma.$disconnect();
   }
   console.log("\nTudo certo.");

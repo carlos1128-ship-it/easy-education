@@ -34,7 +34,8 @@ export async function GET(request: NextRequest) {
   if (user) {
     await ensureProfileForUser(user);
     const profile = await getPrisma().profile.findUnique({ where: { userId: user.id } });
-    redirectTo.pathname = profile?.onboardingDone ? "/dashboard" : "/onboarding";
+    // Conta nova (acabou de confirmar o e-mail): primeiro escolhe o plano.
+    redirectTo.pathname = profile?.onboardingDone ? "/dashboard" : "/assinar";
   } else {
     redirectTo.pathname = "/login";
     redirectTo.searchParams.set("message", "E-mail confirmado. Entre para continuar.");

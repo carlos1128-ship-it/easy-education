@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { OwlMascot, type OwlMood } from "@/components/mascot/owl-mascot";
 import { cn } from "@/lib/utils";
@@ -105,15 +105,19 @@ export function ProductTour({ autoStart }: { autoStart: boolean }) {
     markDone();
   }, [markDone]);
 
-  // Primeira vez: abre sozinho na página inicial, depois que a tela carregou.
+  // Primeira vez: abre sozinho na página inicial, uma única vez. O layout do painel não recarrega ao navegar,
+  // então `autoStart` continua true depois de abrir: a ref evita repetir nesta visita e o registro no servidor (feito ao abrir), nas próximas.
+  const autoShown = useRef(false);
   useEffect(() => {
-    if (!autoStart || pathname !== "/dashboard") return;
+    if (!autoStart || autoShown.current || pathname !== "/dashboard") return;
     const timer = window.setTimeout(() => {
+      autoShown.current = true;
+      markDone();
       setIndex(0);
       setOpen(true);
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [autoStart, pathname]);
+  }, [autoStart, pathname, markDone]);
 
   useEffect(() => {
     const start = () => {

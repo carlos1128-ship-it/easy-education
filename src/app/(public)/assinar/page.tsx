@@ -51,7 +51,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           <p className="m-0 mt-4 text-[13px] font-semibold text-brand-strong">Easy Education</p>
           <h1 className="m-0 mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-ink">Escolha seu plano</h1>
           <p className="m-0 mt-2 max-w-[520px] text-[15px] text-ink-muted [text-wrap:balance]">
-            O plano Gratuito continua com você: chat com IA, redação, plano de estudos, simulados com provas anteriores do ENEM e desempenho. Os planos pagos liberam mais uso de IA.
+            Comece grátis ou escolha um plano pago para usar mais a IA: quizzes, flashcards e simulados gerados por IA, com limites maiores. Você pode mudar de plano quando quiser.
           </p>
         </div>
         {notice ? (
@@ -60,17 +60,13 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           </p>
         ) : null}
         <div className="mt-8">
-          <PlanPicker initialPlan={plan ?? "full"} />
+          <PlanPicker initialPlan={plan ?? "full"} freeHref={profileDone ? "/dashboard" : "/onboarding"} />
         </div>
         <div className="mt-10">
           <h2 className="m-0 mb-3 text-lg font-bold text-ink">Compare os planos, número por número</h2>
           <PlanComparisonTable current="free" />
         </div>
         <p className="m-0 mt-6 text-center text-sm text-ink-muted">
-          <Link className="font-semibold text-brand-strong underline underline-offset-2" href={profileDone ? "/dashboard" : "/onboarding"}>
-            Continuar no plano Gratuito
-          </Link>
-          {" · "}
           Entrou com a conta errada? <SignOutLink />
           {" · "}
           <Link className="font-semibold text-brand-strong underline underline-offset-2" href="/">

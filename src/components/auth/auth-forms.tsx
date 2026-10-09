@@ -114,8 +114,8 @@ function GoogleIcon() {
 export function SignUpForm() {
   const router = useRouter();
   const params = useSearchParams();
-  // Sem plano escolhido na landing, a conta nasce no plano Gratuito e vai direto para o onboarding.
-  const checkoutPath = planQuery(params) ? `/assinar${planQuery(params)}` : "/onboarding";
+  // Depois do cadastro a pessoa escolhe o plano (Gratuito, Básico ou Completo); o escolhido na landing já vem marcado.
+  const checkoutPath = `/assinar${planQuery(params)}`;
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
