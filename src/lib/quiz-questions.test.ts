@@ -74,3 +74,60 @@ describe("conferência e reaproveitamento", () => {
     expect(copiesReference(good(1), [reference])).toBe(false);
   });
 });
+
+import { lettersLabel, normalizeQuizOptions, optionCountForStyle, quizQuestionsSchemaFor } from "@/lib/quiz-questions";
+
+describe("alternativas A a E", () => {
+  const five = {
+    question: "Qual destes é um número primo maior que 10?",
+    options: ["12", "13", "15", "21", "27"],
+    correctAnswer: "B",
+    explanation: "13 só é divisível por 1 e por ele mesmo; 15 é divisível por 3.",
+  };
+
+  it("ENEM, ETEC e bancas de 5 alternativas pedem A a E; o resto fica em A a D", () => {
+    expect(optionCountForStyle("ENEM, com textos-base")).toBe(5);
+    expect(optionCountForStyle("Vestibulinho da ETEC (Centro Paula Souza)")).toBe(5);
+    expect(optionCountForStyle("concurso público, padrão FCC")).toBe(5);
+    expect(optionCountForStyle("prova escolar do 9º ano")).toBe(4);
+    expect(optionCountForStyle("Cebraspe")).toBe(4);
+  });
+
+  it("aceita 5 alternativas quando o formato pede 5, e recusa quando pede 4", () => {
+    expect(sanitizeGeneratedQuizQuestions([five], 1, 5)).toHaveLength(1);
+    expect(sanitizeGeneratedQuizQuestions([five], 1, 5)[0].options).toEqual(["A) 12", "B) 13", "C) 15", "D) 21", "E) 27"]);
+    expect(sanitizeGeneratedQuizQuestions([five], 1, 4)).toHaveLength(0);
+  });
+
+  it("gabarito E só vale com 5 alternativas", () => {
+    const e = { ...five, correctAnswer: "E", options: ["12", "15", "21", "27", "13"] };
+    expect(sanitizeGeneratedQuizQuestions([e], 1, 5)[0].correctAnswer).toBe("E");
+    expect(sanitizeGeneratedQuizQuestions([{ ...e, options: e.options.slice(0, 4) }], 1, 4)).toHaveLength(0);
+  });
+
+  it("questão salva mantém quantas alternativas tinha (4 antigas, 5 novas)", () => {
+    expect(normalizeQuizOptions(["A) 1", "B) 2", "C) 3", "D) 4"])).toHaveLength(4);
+    expect(normalizeQuizOptions(["A) 1", "B) 2", "C) 3", "D) 4", "E) 5"])).toHaveLength(5);
+  });
+
+  it("esquema e texto do prompt acompanham o número de alternativas", () => {
+    const schema = quizQuestionsSchemaFor(5) as { items: { properties: { correctAnswer: { enum: string[] }; options: { maxItems: string } } } };
+    expect(schema.items.properties.correctAnswer.enum).toEqual(["A", "B", "C", "D", "E"]);
+    expect(schema.items.properties.options.maxItems).toBe("5");
+    expect(lettersLabel(5)).toBe("A, B, C, D e E");
+    expect(lettersLabel(4)).toBe("A, B, C e D");
+  });
+});
+
+import { ETEC_STYLE, examStyleFromPersonalization, goalLabel, isEtecStudent } from "@/lib/learner-profile";
+
+describe("Vestibulinho da ETEC", () => {
+  it("objetivo, estilo e 5 alternativas", () => {
+    const p = { purpose: "etec" as const, schoolYear: "9º ano" };
+    expect(goalLabel(p)).toBe("Vestibulinho ETEC");
+    expect(examStyleFromPersonalization(p)).toBe(ETEC_STYLE);
+    expect(optionCountForStyle(ETEC_STYLE)).toBe(5);
+    expect(isEtecStudent(p)).toBe(true);
+    expect(isEtecStudent({ purpose: "escola" })).toBe(false);
+  });
+});

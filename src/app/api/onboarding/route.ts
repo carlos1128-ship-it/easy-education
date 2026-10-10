@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
-import { getAccessState } from "@/lib/billing";
 import { buildLearnerContext, goalLabel } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
-import { assertWithinSafetyCaps, consumeFeature } from "@/lib/usage";
+import { assertWithinSafetyCaps, consumeFeature, requireTier } from "@/lib/usage";
 import { onboardingSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -46,7 +45,7 @@ export async function POST(request: Request) {
     });
 
     // O primeiro plano do aluno não gasta o limite de planos; refazer a personalização gasta (é um plano novo).
-    const { tier } = await getAccessState(user);
+    const tier = await requireTier(user);
     const regenerate = Boolean(existingPlan && payload.regeneratePlan);
     const ticket = regenerate ? await consumeFeature(user, "study_plan", { tier }) : null;
     if (!existingPlan) await assertWithinSafetyCaps(user, { tier });

@@ -1,6 +1,6 @@
 # Easy Education — documento do produto
 
-Atualizado em 06/10/2026, a partir da leitura do código, da landing, do banco de dados e das conversas de construção do produto. Tudo o que está descrito como "faz" foi conferido no código. O que a landing promete e o app ainda não entrega está na seção 11.
+Atualizado em 10/10/2026 (próxima fase: ver `docs/plano-proxima-fase.md`), a partir da leitura do código, da landing, do banco de dados e das conversas de construção do produto. Tudo o que está descrito como "faz" foi conferido no código. O que a landing promete e o app ainda não entrega está na seção 11.
 
 ---
 
@@ -101,23 +101,23 @@ Quem quer só videoaula passiva e quem não vai praticar. O produto cobra ação
 - Tema claro e escuro automático, seguindo o computador.
 
 ### 6.2 Assinatura e pagamento
-- Dois planos: **Básico R$ 26,90/mês** e **Completo R$ 46,90/mês**. Os dois têm todas as ferramentas; o Completo tem limites maiores de IA.
+- Dois planos (fonte única: `src/lib/plans.ts`): **Básico R$ 19,90/mês** e **Completo R$ 34,90/mês**. **Não há plano gratuito** (desde 10/10/2026): a primeira assinatura começa com **7 dias grátis**, com o cartão cadastrado no início (Pix Automático preparado na estrutura, `src/lib/payment-methods.ts`, ainda sem gateway). Sem assinatura ou teste em vigor, o app manda para a escolha de plano. O Completo tem limites maiores de IA. Não há plano anual ainda (proposta em `docs/plano-proxima-fase.md`).
 - Fluxo: botão do plano na landing → cadastro → escolha do plano → pagamento no Stripe → onboarding → app.
 - Sem assinatura ativa, o app e a IA ficam bloqueados.
 - Página **Assinatura** no app: plano, próxima cobrança, portal do Stripe (trocar cartão, mudar de plano, cancelar, faturas) e **garantia de 7 dias** com reembolso automático e cancelamento imediato.
-- Limites diários de IA: Básico 25 gerações e 60 mensagens de chat; Completo 60 gerações e 150 mensagens.
+- Limites de IA por recurso, por dia ou semana, em `src/lib/plans.ts` (tabela em `docs/consumo-ia.md`). A interface não mostra números de limite.
 
 ### 6.3 Onboarding
-Quatro perguntas rápidas: objetivo (provas escolares, ENEM, vestibular, faculdade, concurso, SAT), data da prova, nível (iniciante, intermediário, avançado), minutos por dia (de 1h a 8h) e método de estudo (Pomodoro, revisão espaçada, Active Recall, blocos de estudo), mais matérias com dificuldade de 1 a 5. Ao final, a IA monta o plano da semana.
+Quatro perguntas rápidas: objetivo (provas escolares, ENEM ou vestibular, **Vestibulinho da ETEC**, faculdade, concurso, idioma, certificação, conhecimento livre), data da prova, nível (iniciante, intermediário, avançado), minutos por dia (de 1h a 8h) e método de estudo (Pomodoro, revisão espaçada, Active Recall, blocos de estudo), mais matérias com dificuldade de 1 a 5. Ao final, a IA monta o plano da semana.
 
 ### 6.4 Arquivos
 Envio de **PDF, TXT ou foto** (PNG, JPG, WebP) de até 20 MB (10 MB para imagem). Para PDF e TXT o app extrai o texto; para foto, a IA transcreve o texto e descreve fórmulas, gráficos e tabelas. O arquivo fica privado, na pasta do próprio aluno, e serve de base para quizzes e flashcards.
 
 ### 6.5 Quizzes
-Questões de múltipla escolha (A a D) geradas a partir de matéria, assunto ou arquivo, de 5 a 20 por quiz, em três dificuldades. Cada questão traz um contexto concreto, alternativas reais e explicação que justifica a resposta certa e aponta por que um distrator está errado. O estilo segue o objetivo do aluno. Gerar leva de 2 a 7 segundos. Ao terminar, o acerto entra no desempenho e conta como estudo do dia.
+Questões de múltipla escolha geradas a partir de matéria, assunto ou arquivo, com 4 alternativas (A a D) ou 5 (A a E) quando a prova do aluno usa 5 (ENEM, ETEC, Fuvest e bancas como FCC, Vunesp, FGV e Cesgranrio), de 5 a 20 por quiz, em três dificuldades. Cada questão traz um contexto concreto, alternativas reais e explicação que justifica a resposta certa e aponta por que um distrator está errado. O estilo segue o objetivo do aluno. Gerar leva de 2 a 7 segundos. Ao terminar, o acerto entra no desempenho e conta como estudo do dia. No resultado, o aluno pode pedir **"Criar flashcards para revisar"**: a IA faz um cartão por questão errada (e alguns de conceito), cada um ligado à questão de origem; se já existe um deck recente do assunto, oferece adicionar a ele. Cada explicação tem o botão **Anotar**.
 
 ### 6.6 Simulados
-Provas de 5 a 20 questões, também com explicação. Existe um **simulado semanal automático**, criado a partir das matérias estudadas, depois que o aluno completa a primeira semana de estudo.
+Provas geradas por IA (contadas por questão no limite do plano), também com explicação. Quem escolheu a ETEC tem o **simulado no formato da prova**: 50 questões de A a E, com cronômetro de 4 horas, um por dia. Existe um **simulado semanal automático**, criado a partir das matérias estudadas, depois que o aluno completa a primeira semana de estudo.
 
 ### 6.7 Flashcards
 Decks de 5 a 30 cartões, com pergunta objetiva na frente e resposta curta atrás, gerados do assunto ou do arquivo. A revisão espaçada reagenda cada cartão conforme o aluno responde (errei, difícil ou bom). O app avisa quantos cartões vencem hoje.
@@ -126,10 +126,14 @@ Decks de 5 a 30 cartões, com pergunta objetiva na frente e resposta curta atrá
 O aluno digita o texto ou **fotografa a folha escrita à mão**, confere a transcrição e pede a correção. Resultado: nota de 0 a 1000, nota e comentário por cinco competências (norma culta, compreensão do tema, argumentação, coesão e proposta de intervenção), pelo menos dois pontos fortes e duas melhorias acionáveis, e feedback geral. O formulário usa o modelo ENEM (o código ainda aceita SAT, que o plano de melhorias manda remover, porque o SAT não tem redação desde 2021). Histórico guardado.
 
 ### 6.9 Plano de estudos e cronômetro
-Plano semanal de 7 dias, com até 2 blocos por dia (estudo, revisão, simulado ou redação), ajustado a objetivo, data da prova, horas por dia, matérias e método. Em cada bloco, **Iniciar** liga um cronômetro no canto da tela e abre a atividade pronta (quiz, flashcards, simulado ou redação). Se o aluno já começou o mesmo bloco no dia, o app reaproveita o que foi gerado. O tempo é registrado ao concluir.
+Plano semanal de 7 dias, com até 2 blocos por dia (estudo, revisão, simulado ou redação), ajustado a objetivo, data da prova, horas por dia, matérias e método. **A semana começa no dia de hoje** (horário de Brasília). Cada bloco de hoje tem três estados, guardados no servidor: **Iniciar** (gera a atividade e liga o cronômetro), **Continuar** (reabre a mesma atividade, sem gerar outra) e **Concluído** (sem botão; a API recusa iniciar de novo). O bloco conclui quando a atividade termina ou quando os minutos registrados cobrem o planejado. Enquanto o aluno estuda, o **roteiro do bloco** fica fixo (coluna lateral no computador, barra recolhível no celular) e cada etapa ganha o check sozinha: tempo cumprido, atividade terminada, cartões revisados ou anotação escrita no bloco.
+
+**Fechar o dia (opcional):** o aluno escreve o que estudou (200 a 5.000 caracteres) e a IA corrige com base no que ele fez no dia: o que está certo, o que está errado, o que faltou e o que revisar amanhã. Os erros viram flashcards sem nova chamada à IA, e a correção pode ser ouvida com a voz do aparelho. Não mexe na ofensiva.
+
+**Anotações:** o aluno anota dentro das questões, no roteiro do bloco ou na tela **Minhas anotações** (filtro por matéria). Só ele vê; entram na busca; não gastam IA.
 
 ### 6.10 Trilha e troféus
-A trilha liga o plano a uma progressão de **63 níveis**, em 9 seções de 7 dias. Cada dia concluído vale um nível; cada seção dá um troféu (Bronze, Prata, Ouro, Esmeralda, Safira, Rubi, Ametista, Diamante e Lendário). Ao terminar tudo, a trilha recomeça e os troféus ficam guardados na sala de troféus. Um dia conta como concluído quando o aluno estuda os minutos planejados ou faz a atividade que o plano pede para aquele dia.
+A trilha liga o plano a uma progressão de **63 níveis**, em 9 seções de 7 dias. Cada dia concluído vale um nível; cada seção dá um troféu (Bronze, Prata, Ouro, Esmeralda, Safira, Rubi, Ametista, Diamante e Lendário). Ao terminar tudo, a trilha recomeça e os troféus ficam guardados na sala de troféus. Um dia conta como concluído quando o aluno estuda os minutos planejados do dia ou conclui todos os blocos do dia (mesma regra do botão do plano, em `src/lib/study-completion.ts`).
 
 ### 6.11 Chat com IA que age
 O chat responde dúvidas de conteúdo em texto simples e **executa ações**: cria quiz, simulado, flashcards ou plano de estudo a partir de uma frase ("monta um simulado de matemática") e leva o aluno até o resultado. Lê o contexto de um arquivo enviado e, quando faltam detalhes, usa valores padrão em vez de interrogar.
@@ -142,7 +146,7 @@ Painel com evolução geral, desempenho e evolução por matéria, histórico de
 - **Meta diária** em minutos, definida no onboarding.
 - **Notificações no app** (sininho), calculadas com dados reais: ofensiva, meta, flashcards vencendo, simulado novo e quizzes não terminados. Há espaço pronto para promoções.
 - **Coruja mascote** que reage a acertos, erros, conclusão e inatividade, com sons de acerto.
-- Busca global por estudos, arquivos e quizzes.
+- Busca global por estudos, arquivos, quizzes e anotações.
 
 ---
 
@@ -164,6 +168,7 @@ Painel com evolução geral, desempenho e evolução por matéria, histórico de
 - **Motor:** Google Gemini. Quizzes, simulados e flashcards usam o modelo mais rápido disponível com dois modelos de reserva. A lista é dividida em partes pequenas pedidas ao mesmo tempo, com prazo total de 19 segundos.
 - **Tempo medido em teste:** quiz de 10 questões em 5 s, de 20 em 6,5 s, e 20 a 30 flashcards em 2 s (antes chegava a mais de 1 minuto).
 - **Formato fixo:** a resposta da IA segue um esquema, então não vem cortada nem fora do padrão. Questões com texto genérico ("alternativa correta", "distrator plausível") são descartadas.
+- **Confiabilidade:** cada questão nova é resolvida às cegas por outra chamada; só fica a que bate com o gabarito. A medição de quantas questões estão de fato certas (piso 90%, meta 95%) tem método e ferramentas prontos, mas **ainda não foi feita** (falta revisor humano e o faturamento do Gemini). Ver `docs/confiabilidade-ia.md`.
 - **Correção de redação** usa raciocínio mais longo, porque isso melhora a nota.
 - **Proteções de custo:** limite por minuto, limite diário por plano e tamanho máximo dos textos enviados.
 - **Limites reais:** a IA pode errar (a landing avisa), a correção de redação segue o modelo do ENEM e não substitui um professor, e o plano gerado tem no máximo dois blocos por dia.
@@ -178,11 +183,11 @@ Segurança já tratada: cada aluno só acessa os próprios dados (RLS em todas a
 
 ---
 
-## 10. Estado atual (06/10/2026)
+## 10. Estado atual (10/10/2026)
 
 - No ar em `easy-education-tau.vercel.app`, com cobrança ligada em modo de **teste** do Stripe (cartão de teste, sem dinheiro real).
 - Banco com 13 contas anteriores à cobrança, que agora caem na tela de planos.
-- **Pendências do dono:** ativar o login com Google; trocar o Stripe para o modo real quando for cobrar de verdade (recriar planos, portal e webhook na conta real); ativar o faturamento da chave do Gemini no Google AI Studio para suportar vários alunos ao mesmo tempo.
+- **Pendências do dono:** aplicar a migration `000011_proxima_fase` antes de publicar; definir `NEXT_PUBLIC_SUPPORT_EMAIL` e `NEXT_PUBLIC_LEGAL_ENTITY`; revisão jurídica dos Termos e da Privacidade; ativar o login com Google; trocar o Stripe para o modo real (recriar planos, portal e webhook na conta real); ativar o faturamento da chave do Gemini (também é condição para a Política de Privacidade valer: a API grátis usa os dados para treino).
 
 ---
 
@@ -190,16 +195,17 @@ Segurança já tratada: cada aluno só acessa os próprios dados (RLS em todas a
 
 Itens que vale corrigir antes de crescer, porque o aluno vai perceber:
 
-1. **Simulado "no tempo de prova".** A landing mostra um cronômetro regressivo ("1:12:40 restantes") e o chat promete "tempo de prova". Hoje o simulado não tem contagem regressiva. Ou se constrói, ou se tira o exemplo.
-2. **Simulado de 30 questões.** O exemplo da landing mostra "questão 12 de 30"; o máximo real é 20.
-3. **"Algoritmo SM-2" e quatro notas.** A landing fala em SM-2 e mostra quatro botões (Errei, Difícil, Bom, Fácil) com prazos. O código implementa uma versão simplificada, com três notas (errei, difícil, bom) e um cálculo próprio de intervalo.
+1. ~~Simulado "no tempo de prova"~~ **Resolvido (10/10/2026):** o exemplo da landing agora é o simulado de provas anteriores do ENEM, que tem cronômetro de verdade; o simulado da ETEC também tem.
+2. ~~Simulado de 30 questões~~ **Resolvido:** o exemplo mostra "questão 12 de 90", como o simulado real.
+3. ~~"Algoritmo SM-2" e quatro notas~~ **Resolvido:** a landing mostra os 3 botões do app (Não sabia, Mais ou menos, Sabia bem) e não cita mais o SM-2.
 4. **Limites dos planos sem número.** A landing diz "limite padrão" e "limite maior" sem dizer quanto. Os números reais hoje são 25 e 60 (Básico) contra 60 e 150 (Completo) por dia. Os campos de limite por mês estão em branco, de propósito.
-5. **Termos de Uso e Política de Privacidade não existem.** Para cobrar, com dados de menores de idade e pagamento, isso é necessário (LGPD e Código de Defesa do Consumidor). O rodapé não tem os links.
-6. **Sem e-mail de contato nem suporte.** O Stripe e a página de recibo pedem um canal; a landing não tem.
+5. **Termos de Uso e Política de Privacidade:** existem desde 10/10/2026 (`/termos`, `/privacidade`), com links no rodapé e aceite obrigatório no cadastro. **Falta a revisão de um advogado.**
+6. **E-mail de contato:** o rodapé e as páginas legais mostram o e-mail de `NEXT_PUBLIC_SUPPORT_EMAIL`. **Falta criar o e-mail e definir a variável.**
 7. **Pagamento só por cartão.** Não há Pix nem boleto em assinatura (ver a resposta do Stripe abaixo). Para o público estudantil e para pais pagando, isso reduz a conversão.
 8. **Notificações só dentro do app.** Não há e-mail nem push. A ofensiva depende de o aluno abrir o app.
 9. **Sem depoimentos nem números reais.** A seção de avaliações está desligada. A landing usa exemplos marcados como ilustrativos.
 10. **Google desligado**, apesar de o botão aparecer.
+12. **Confiabilidade das questões sem número.** O app confere cada questão às cegas, mas não há medição publicada do % de questões corretas (ver `docs/confiabilidade-ia.md`).
 11. **Correção de redação só no modelo ENEM.** Quem faz vestibular com critérios próprios ou concurso com redação não tem modelo. Além disso, a nota em pontos é uma estimativa de IA sem calibração com corretores humanos.
 
 ---
@@ -209,4 +215,5 @@ Itens que vale corrigir antes de crescer, porque o aluno vai perceber:
 - Qual é o público de entrada: o aluno do ensino médio (com pais pagando) ou o universitário e concurseiro (que paga sozinho)? Isso define canais, preço e Pix.
 - Existe meta de alunos pagantes para o primeiro mês? A capacidade da IA (custo por aluno) depende disso.
 - O Completo deve ser vendido por mais limites de IA, ou por recursos exclusivos (por exemplo, mais redações, simulados ilimitados)?
-- Haverá plano anual com desconto? Hoje só existe mensal.
+- Haverá plano anual com desconto? Hoje só existe mensal. Proposta: Básico R$ 149/ano e Completo R$ 289/ano (`docs/plano-proxima-fase.md`).
+- Quem faz a revisão humana das questões geradas (item 1.2)?

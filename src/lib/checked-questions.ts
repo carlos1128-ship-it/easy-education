@@ -1,7 +1,8 @@
+import { generationModelFor } from "@/lib/ai-quality-gate";
 import { generateJSONList } from "@/lib/gemini";
 import { addToPool, bankReferencesFor, copiesReference, poolKey, takeFromPool } from "@/lib/question-pool";
 import { verifyQuizQuestions } from "@/lib/question-quality";
-import { generateQuizQuestions, QUIZ_CHUNK_SIZE, questionDedupeKey, quizQuestionsSchema } from "@/lib/quiz-questions";
+import { generateQuizQuestions, optionCountForStyle, QUIZ_CHUNK_SIZE, questionDedupeKey, quizQuestionsSchemaFor, type OptionCount } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
 function shuffle<T>(items: T[]) {
@@ -29,13 +30,18 @@ export async function produceQuestions(input: {
   difficulty: string;
   personalMaterial: boolean;
   buildPrompt: (count: number, part: number, parts: number, references: string) => string;
+  /** 4 ou 5 alternativas; sem isso, segue o estilo da prova (optionCountForStyle). */
+  optionCount?: OptionCount;
 }): Promise<GeneratedQuizQuestion[]> {
+  const optionCount = input.optionCount ?? optionCountForStyle(input.style);
   const key = input.personalMaterial ? null : poolKey(input);
-  const reused = key ? await takeFromPool(input.userId, key, input.count).catch(() => []) : [];
+  const reused = key ? await takeFromPool(input.userId, key, input.count, optionCount).catch(() => []) : [];
   const missing = input.count - reused.length;
   if (missing <= 0) return shuffle(reused);
 
   const references = input.personalMaterial ? null : await bankReferencesFor(input.userId, input.subject, input.topic).catch(() => null);
+  // Portão de qualidade: matéria reprovada na última avaliação gera com o modelo mais forte.
+  const model = await generationModelFor(input.subject);
   const approved: GeneratedQuizQuestion[] = [];
   const fresh = await generateQuizQuestions(
     missing,
@@ -44,12 +50,14 @@ export async function produceQuestions(input: {
         total: count,
         // Simulado grande: partes de 10 (metade dos pedidos à IA, cabe no limite de pedidos por minuto).
         chunkSize: count > 30 ? 10 : QUIZ_CHUNK_SIZE,
-        schema: quizQuestionsSchema,
+        schema: quizQuestionsSchemaFor(optionCount),
         buildPrompt: (size, part, parts) => input.buildPrompt(size, part, parts, references?.prompt ?? ""),
         dedupeKey: questionDedupeKey,
+        model,
       }),
     {
-      verify: verifyQuizQuestions,
+      verify: (questions) => verifyQuizQuestions(questions, optionCount),
+      optionCount,
       reject: references ? (question) => copiesReference(question, references.statements) : undefined,
       onVerified: (questions) => approved.push(...questions),
     },

@@ -36,8 +36,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
     redirect(profile?.onboardingDone ? "/dashboard" : "/onboarding");
   }
 
-  const profileDone = Boolean((await getPrisma().profile.findUnique({ where: { userId: user.id }, select: { onboardingDone: true } }))?.onboardingDone);
-  const subscription = await getSubscriptionForUser(user.id);
+  const [subscription, trial] = await Promise.all([getSubscriptionForUser(user.id), isTrialEligible(user.id)]);
   const notice = params.cancelado
     ? "Pagamento não concluído. Você pode tentar de novo quando quiser."
     : STATUS_NOTICE[subscription?.status ?? ""];
@@ -51,7 +50,9 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           <p className="m-0 mt-4 text-[13px] font-semibold text-brand-strong">Easy Education</p>
           <h1 className="m-0 mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-ink">Escolha seu plano</h1>
           <p className="m-0 mt-2 max-w-[520px] text-[15px] text-ink-muted [text-wrap:balance]">
-            Teste um plano pago por 7 dias grátis: chat com IA, redação, quizzes, flashcards e simulados gerados por IA. Ou comece no Gratuito, com os simulados de provas anteriores do ENEM.
+            {trial
+              ? "Use tudo por 7 dias grátis: chat com IA, redação, quizzes, flashcards, simulados e plano de estudos. Você cadastra o pagamento hoje e só paga se continuar depois do teste."
+              : "Escolha um plano para voltar a estudar com a IA."}
           </p>
         </div>
         {notice ? (
@@ -60,11 +61,11 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           </p>
         ) : null}
         <div className="mt-8">
-          <PlanPicker initialPlan={plan ?? "full"} freeHref={profileDone ? "/dashboard" : "/onboarding"} trial={await isTrialEligible(user.id)} />
+          <PlanPicker initialPlan={plan ?? "full"} trial={trial} />
         </div>
         <div className="mt-10">
           <h2 className="m-0 mb-3 text-lg font-bold text-ink">Compare os planos</h2>
-          <PlanComparisonTable current="free" />
+          <PlanComparisonTable />
         </div>
         <p className="m-0 mt-6 text-center text-sm text-ink-muted">
           Entrou com a conta errada? <SignOutLink />

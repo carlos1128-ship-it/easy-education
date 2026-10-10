@@ -8,6 +8,7 @@ import {
   fileTooLargeInfo,
   limitInfo,
   lockedInfo,
+  subscriptionRequiredInfo,
   type PlanLimitInfo,
 } from "@/lib/plan-limits";
 import { FEATURES, FEATURE_KEYS, PLANS, allowanceFor, upgradeTargetFor, type FeatureKey, type LimitWindow, type PlanTier } from "@/lib/plans";
@@ -24,8 +25,18 @@ export class PlanLimitError extends Error {
   constructor(readonly info: PlanLimitInfo) {
     super(info.message);
     this.name = "PlanLimitError";
-    this.status = info.code === "feature_locked" ? 403 : info.code === "file_too_large" ? 413 : 429;
+    this.status = info.code === "subscription_required" ? 402 : info.code === "feature_locked" ? 403 : info.code === "file_too_large" ? 413 : 429;
   }
+}
+
+/**
+ * Plano em vigor do aluno. Sem assinatura nem teste grátis, recusa (402): não existe plano gratuito.
+ * Toda rota que gasta IA ou armazenamento passa por aqui (direto ou via consumeFeature).
+ */
+export async function requireTier(user: UserRef, feature: FeatureKey | null = null): Promise<PlanTier> {
+  const access = await getAccessState(user);
+  if (!access.hasAccess) throw new PlanLimitError(subscriptionRequiredInfo(feature));
+  return access.tier;
 }
 
 /** Recusa arquivo maior que o limite do plano (antes de gastar o uso diário de envios). */
@@ -35,7 +46,7 @@ export function assertUploadSize(tier: PlanTier, bytes: number) {
 
 /** Confere só os tetos globais de segurança do dia, sem gastar nenhum uso (para repetir tentativas, por exemplo). */
 export async function assertWithinSafetyCaps(user: UserRef, options: { tier?: PlanTier } = {}) {
-  const tier = options.tier ?? (await getAccessState(user)).tier;
+  const tier = options.tier ?? (await requireTier(user));
   const plan = PLANS[tier];
   const dayStart = startOfDaySP();
   const prisma = getPrisma();
@@ -80,7 +91,7 @@ const noopTicket = (feature: FeatureKey, tier: PlanTier): UsageTicket => ({
  * O contador é protegido por um lock no banco (por aluno), então dois cliques ao mesmo tempo não passam do limite.
  */
 export async function consumeFeature(user: UserRef, feature: FeatureKey, options: { tier?: PlanTier; amount?: number } = {}): Promise<UsageTicket> {
-  const tier = options.tier ?? (await getAccessState(user)).tier;
+  const tier = options.tier ?? (await requireTier(user, feature));
   const plan = PLANS[tier];
   const allowance = plan.limits[feature];
   const meta = FEATURES[feature];
@@ -165,7 +176,7 @@ export async function withFeature<T>(
 
 /** Confere se o recurso está liberado (e se ainda sobra uso) sem gastar nada. Lança PlanLimitError se não. */
 export async function assertFeatureAvailable(user: UserRef, feature: FeatureKey, options: { tier?: PlanTier } = {}) {
-  const tier = options.tier ?? (await getAccessState(user)).tier;
+  const tier = options.tier ?? (await requireTier(user));
   const allowance = allowanceFor(tier, feature);
   if (allowance.kind === "locked") throw new PlanLimitError(lockedInfo(tier, feature));
   if (allowance.kind === "open") return;
@@ -193,7 +204,7 @@ export type UsageSnapshot = { tier: PlanTier; features: Record<FeatureKey, Featu
 
 /** Uso de todos os recursos do aluno: alimenta os avisos "restam X" e os cadeados. */
 export async function getUsageSnapshot(user: UserRef, options: { tier?: PlanTier } = {}): Promise<UsageSnapshot> {
-  const tier = options.tier ?? (await getAccessState(user)).tier;
+  const tier = options.tier ?? (await requireTier(user));
   const now = new Date();
   const weekStart = startOfWeekSP(now);
   const events = await getPrisma().usageEvent.findMany({

@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     if (!checkRateLimit(`quiz:${user.id}`).ok) return NextResponse.json({ error: "Limite atingido." }, { status: 429 });
 
     const payload = quizGenerateSchema.parse(await request.json());
-    // Limites do plano: simulado e quiz gerados por IA têm contadores próprios (bloqueados no Gratuito).
+    // Limites do plano: simulado e quiz gerados por IA têm contadores próprios (sem assinatura, a rota recusa).
     if (payload.difficulty === "simulado") {
       // Simulado é contado em questões: um de 45 gasta 45 do dia.
       const quiz = await withFeature(

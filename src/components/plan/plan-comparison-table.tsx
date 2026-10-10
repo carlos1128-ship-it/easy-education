@@ -21,7 +21,7 @@ function Cell({ value }: { value: string | null }) {
 }
 
 /**
- * Tabela comparativa dos três planos. Os números vêm de src/lib/plans.ts.
+ * Tabela comparativa dos planos. Os números vêm de src/lib/plans.ts.
  * No celular vira uma lista por plano, para não precisar rolar para o lado.
  */
 export function PlanComparisonTable({ current, className }: { current?: PlanTier; className?: string }) {
@@ -31,7 +31,7 @@ export function PlanComparisonTable({ current, className }: { current?: PlanTier
     <div className={className}>
       <div className="hidden overflow-hidden rounded-2xl border border-border bg-surface md:block">
         <table className="w-full border-collapse text-left text-sm">
-          <caption className="sr-only">Comparação dos planos Gratuito, Básico e Completo</caption>
+          <caption className="sr-only">Comparação dos planos Básico e Completo</caption>
           <thead>
             <tr className="bg-surface-muted">
               <th scope="col" className="w-[34%] px-4 py-4 font-semibold text-ink">
@@ -41,8 +41,7 @@ export function PlanComparisonTable({ current, className }: { current?: PlanTier
                 <th key={tier} scope="col" className={cn("px-4 py-4 align-bottom", current === tier && "bg-brand-tint")}>
                   <span className="block text-base font-bold text-ink">{PLANS[tier].name}</span>
                   <span className="block text-[13px] font-medium text-ink-muted">
-                    {planPriceLabel(tier)}
-                    {PLANS[tier].priceCents > 0 ? "/mês" : ""}
+                    {planPriceLabel(tier)}/mês
                     {current === tier ? " · seu plano" : ""}
                   </span>
                 </th>
@@ -70,8 +69,7 @@ export function PlanComparisonTable({ current, className }: { current?: PlanTier
         {PLAN_ORDER.map((tier) => (
           <section key={tier} className={cn("rounded-2xl border bg-surface p-4", current === tier ? "border-brand" : "border-border")}>
             <h3 className="m-0 text-base font-bold text-ink">
-              {PLANS[tier].name} · {planPriceLabel(tier)}
-              {PLANS[tier].priceCents > 0 ? "/mês" : ""}
+              {PLANS[tier].name} · {planPriceLabel(tier)}/mês
               {current === tier ? " (seu plano)" : ""}
             </h3>
             <ul className="m-0 mt-3 flex list-none flex-col gap-2.5 p-0 text-sm">

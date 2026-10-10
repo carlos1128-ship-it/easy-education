@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { QuizOption, type QuizOptionState } from "@/components/ui/quiz-option";
 import { ExplanationText } from "@/components/quiz/explanation-text";
+import { QuizFlashcardsOffer } from "@/components/quiz/quiz-flashcards-offer";
+import { NoteButton } from "@/components/notes/note-button";
 import { OwlMascot, usePreloadOwls, type OwlMood } from "@/components/mascot/owl-mascot";
 import { Check, Volume2, VolumeX, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,7 +21,27 @@ type QuizRunnerProps = {
   mode?: "quiz" | "simulado";
   /** Quiz gerado de um vídeo do YouTube: os minutos citados na explicação viram links. */
   videoId?: string | null;
+  /** Simulado no formato de uma prova (ex.: ETEC, 4 h): mostra o tempo de prova que resta. */
+  timeLimit?: { minutes: number; startedAt: string } | null;
 };
+
+/** Contagem regressiva do tempo de prova. Só avisa: quando acaba, o aluno pode terminar, como num treino. */
+function ExamCountdown({ minutes, startedAt }: { minutes: number; startedAt: string }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const left = Math.max(0, Math.floor((new Date(startedAt).getTime() + minutes * 60_000 - now) / 1000));
+  const h = Math.floor(left / 3600);
+  const m = String(Math.floor((left % 3600) / 60)).padStart(2, "0");
+  const s = String(left % 60).padStart(2, "0");
+  return (
+    <p role="timer" aria-live="off" className={cn("m-0 rounded-lg px-3 py-1.5 text-sm font-semibold tabular-nums", left ? "bg-brand-tint text-brand-strong" : "bg-warning-tint text-warning")}>
+      {left ? `${h}:${m}:${s} de prova` : "Tempo de prova esgotado. Termine com calma."}
+    </p>
+  );
+}
 
 const IDLE_MS = 30_000;
 
@@ -47,7 +69,7 @@ function SoundToggle() {
   );
 }
 
-export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }: QuizRunnerProps) {
+export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, timeLimit = null }: QuizRunnerProps) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(
     Object.fromEntries(questions.filter((item) => item.userAnswer).map((item) => [item.id, item.userAnswer as string])),
@@ -171,6 +193,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
           <Link href="/dashboard/quizzes" className="inline-flex min-h-11 items-center rounded-lg border border-border-strong px-5 text-[15px] font-medium text-ink hover:bg-surface-muted">
             Ver todos
           </Link>
+          <QuizFlashcardsOffer quizId={quizId} />
         </div>
       </div>
     );
@@ -211,6 +234,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
     <div className="grid w-full gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-10">
       <aside className="flex flex-wrap items-center justify-between gap-4 lg:sticky lg:top-0 lg:flex-col lg:items-start lg:self-start">
         <OwlMascot mood={mood} message={message} size={120} />
+        {timeLimit ? <ExamCountdown minutes={timeLimit.minutes} startedAt={timeLimit.startedAt} /> : null}
         <div className="ml-auto flex items-center gap-3 lg:ml-0 lg:w-full">
           <div className="flex flex-col items-end gap-2 lg:flex-1 lg:items-start">
             <span className="text-sm text-ink-muted">
@@ -315,6 +339,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null }:
                     {confirmed === question.correctAnswer ? "Você acertou." : `Errou. Resposta correta: ${question.correctAnswer}`}
                   </p>
                   <p className="mt-2 text-ink-muted"><ExplanationText text={question.explanation} videoId={videoId} /></p>
+                  <NoteButton compact className="mt-3" link={{ quizId, questionId: question.id, questionKind: "quiz" }} />
                 </div>
               ) : null}
             </section>

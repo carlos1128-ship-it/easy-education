@@ -5,11 +5,10 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { runWithAiCallContext } from "@/lib/ai-cost";
 import { getPrisma } from "@/lib/prisma";
-import { getAccessState } from "@/lib/billing";
 import { PLANS } from "@/lib/plans";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { fetchCaptionInfo } from "@/lib/youtube-transcript";
-import { consumeFeature } from "@/lib/usage";
+import { consumeFeature, requireTier } from "@/lib/usage";
 import {
   fetchVideoMeta,
   formatTimestamp,
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
     const requestedEnd = parseTimestamp(payload.end);
     // Com legenda, a IA resume só o texto (barato) e aceita trechos longos. Sem legenda a IA precisa assistir
     // o vídeo, o que custa muito mais: aí vale o trecho máximo do plano (ver plans.ts).
-    const { tier } = await getAccessState(user);
+    const tier = await requireTier(user);
     const captions = await fetchCaptionInfo(parsed.id).catch(() => null);
     const planMaxSeconds = PLANS[tier].videoMaxMinutes * 60;
     const maxSeconds = captions ? Math.max(planMaxSeconds, VIDEO_MAX_MINUTES * 60) : planMaxSeconds;
@@ -67,7 +66,7 @@ export async function POST(request: Request) {
     if (existing) return NextResponse.json({ fileId: existing.id, reused: true });
 
     const meta = await fetchVideoMeta(parsed.id);
-    // Vídeos por dia dependem do plano (bloqueado no Gratuito). O trecho repetido acima não gasta o limite.
+    // Vídeos por dia dependem do plano (sem assinatura, a rota recusa). O trecho repetido acima não gasta o limite.
     const ticket = await consumeFeature(user, "video_material", { tier });
 
     const range = startSeconds > 0 || requestedEnd !== null ? ` (${formatTimestamp(startSeconds)}–${requestedEnd !== null ? formatTimestamp(endSeconds) : "fim"})` : "";

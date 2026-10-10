@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import type { User } from "@supabase/supabase-js";
-import type { PlanTier } from "@/lib/plans";
+import { TRIAL_DAYS, type PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getPriceForPlan, getStripe, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
 
@@ -10,8 +10,8 @@ const ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
 /** Dias da garantia (direito de arrependimento) contados a partir do primeiro pagamento. */
 export const GUARANTEE_DAYS = 7;
 
-/** Teste grátis dos planos pagos, uma vez por aluno. O cartão é pedido no início e a 1ª cobrança vem no fim. */
-export const TRIAL_DAYS = 7;
+/** Teste grátis (src/lib/plans.ts), uma vez por aluno. Reexportado para quem já importava daqui. */
+export { TRIAL_DAYS };
 
 /** O aluno ainda pode usar o teste grátis? Só quem nunca teve assinatura (nem teste) no Stripe. */
 export async function isTrialEligible(userId: string) {
@@ -54,29 +54,34 @@ export async function getSubscriptionForUser(userId: string) {
   return getPrisma().subscription.findUnique({ where: { userId } });
 }
 
-export type AccessState = {
-  /** Todo aluno logado entra no app: sem assinatura ativa ele fica no plano Gratuito. */
+/** Assinatura (ou teste grátis) em vigor: o aluno usa o app com os limites do plano. */
+export type PaidAccess = {
   hasAccess: true;
   /** Plano em vigor, que define os limites de uso. */
   tier: PlanTier;
-  /** Plano pago do Stripe (null no Gratuito). */
-  plan: PlanId | null;
-  /** Estado da assinatura no Stripe (`none` se nunca assinou). */
+  plan: PlanId;
+  /** Estado da assinatura no Stripe (`trialing` no teste grátis, `exempt` para a equipe). */
   status: string;
-  /** Tem plano pago em vigor (ou conta liberada pela equipe). */
-  isPaid: boolean;
+  isPaid: true;
+  /** Está nos dias grátis. */
+  trialing: boolean;
 };
 
-/** Diz com qual plano o aluno usa o app. Sem assinatura ativa, é o Gratuito. */
+/** Sem assinatura nem teste em vigor: não há plano gratuito, então o app manda para /assinar. */
+export type NoAccess = { hasAccess: false; tier: null; plan: null; status: string; isPaid: false; trialing: false };
+
+export type AccessState = PaidAccess | NoAccess;
+
+/** Diz se o aluno tem assinatura (ou teste) em vigor e com qual plano. */
 export async function getAccessState(user: Pick<User, "id" | "email">): Promise<AccessState> {
   if (!isBillingEnforced() || isExemptEmail(user.email)) {
-    return { hasAccess: true, tier: "full", plan: "full", status: "exempt", isPaid: true };
+    return { hasAccess: true, tier: "full", plan: "full", status: "exempt", isPaid: true, trialing: false };
   }
   const subscription = await getSubscriptionForUser(user.id);
   const status = subscription?.status ?? "none";
   const plan = subscription?.plan === "basic" || subscription?.plan === "full" ? subscription.plan : null;
-  if (plan && subscriptionGivesAccess(status)) return { hasAccess: true, tier: plan, plan, status, isPaid: true };
-  return { hasAccess: true, tier: "free", plan: null, status, isPaid: false };
+  if (plan && subscriptionGivesAccess(status)) return { hasAccess: true, tier: plan, plan, status, isPaid: true, trialing: status === "trialing" };
+  return { hasAccess: false, tier: null, plan: null, status, isPaid: false, trialing: false };
 }
 
 /** Cliente Stripe do aluno; cria na primeira vez (com chave de idempotência contra cliques duplos). */

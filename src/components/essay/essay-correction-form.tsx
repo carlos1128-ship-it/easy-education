@@ -13,7 +13,7 @@ import { readApiJson } from "@/lib/client-response";
 export function EssayCorrectionForm() {
   const router = useRouter();
   const plan = usePlanOptional();
-  // Redação por foto não faz parte do plano Gratuito: o botão ganha cadeado e abre o aviso de upgrade.
+  // Redação por foto fora do plano: o botão ganha cadeado e abre o aviso de upgrade.
   const photoLocked = plan?.usage.essay_photo_read?.state === "locked";
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -101,7 +101,7 @@ export function EssayCorrectionForm() {
         </Button>
         <span className="text-sm text-ink-muted">
           {photoLocked
-            ? "A correção por foto faz parte dos planos pagos. Digitando o texto, você corrige no plano Gratuito."
+            ? "A correção por foto não está no seu plano. Digite o texto para corrigir."
             : "Escreveu no papel? Envie uma foto (PNG, JPG ou WebP) e a IA transcreve o texto aqui."}
         </span>
       </div>

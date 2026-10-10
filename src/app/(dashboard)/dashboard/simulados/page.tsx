@@ -3,10 +3,11 @@ import { ClipboardCheck, Clock, Landmark, Sparkles, Target } from "lucide-react"
 import { LockedNotice } from "@/components/plan/usage-hint";
 import { SimuladoCreateForm } from "@/components/quiz/simulado-create-form";
 import { ConcursoCard } from "@/components/simulados/concurso-card";
+import { EtecCard } from "@/components/simulados/etec-card";
 import { EnemPicker } from "@/components/simulados/enem-picker";
 import { percent } from "@/lib/bank/estimate";
 import { resultHref, sessionHref } from "@/lib/bank/paths";
-import { concursoTarget, isEnemStudent } from "@/lib/learner-profile";
+import { ETEC_SIMULADO_TITLE, concursoTarget, isEnemStudent, isEtecStudent } from "@/lib/learner-profile";
 import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
@@ -37,6 +38,8 @@ export default async function SimuladosPage() {
   const concurso = concursoTarget(profile?.personalization);
   const todayStart = startOfDaySP();
   const todayConcurso = concurso ? simulados.find((quiz) => quiz.title.startsWith("Simulado do dia") && quiz.createdAt >= todayStart) : undefined;
+  const etec = isEtecStudent(profile?.personalization);
+  const todayEtec = etec ? simulados.find((quiz) => quiz.title === ETEC_SIMULADO_TITLE && quiz.createdAt >= todayStart) : undefined;
 
   const history: HistoryItem[] = [
     ...sessions.map((session) => {
@@ -96,6 +99,29 @@ export default async function SimuladosPage() {
         </section>
       ) : null}
 
+      {etec ? (
+        <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6">
+          <div className="flex flex-col gap-1">
+            <h2 className="m-0 flex flex-wrap items-center gap-2 text-xl font-bold text-ink">
+              <Clock className="size-5 text-brand-strong" aria-hidden="true" /> Simulado do Vestibulinho da ETEC
+              <span className="rounded-full bg-surface-muted px-2.5 py-0.5 text-xs font-semibold text-ink-muted">Gerado por IA</span>
+            </h2>
+            <p className="m-0 max-w-[760px] text-sm text-ink-muted">
+              No formato da prova: 50 questões de Português, Matemática, Ciências, História e Geografia do Fundamental II, em 4 horas. As questões são criadas pela IA; não são questões de provas anteriores.
+            </p>
+          </div>
+          {aiLocked ? (
+            <LockedNotice
+              feature="ai_simulado"
+              title="O simulado da ETEC faz parte dos planos pagos"
+              description="Escolha um plano pago para fazer um simulado novo da ETEC por dia, no formato da prova."
+            />
+          ) : (
+            <EtecCard todayQuizId={todayEtec?.id ?? null} />
+          )}
+        </section>
+      ) : null}
+
       {concurso ? (
         <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6">
           <div className="flex flex-col gap-1">
@@ -132,7 +158,7 @@ export default async function SimuladosPage() {
           <LockedNotice
             feature="ai_simulado"
             title="Simulados gerados por IA fazem parte dos planos pagos"
-            description={enem ? "No plano Gratuito os simulados com provas anteriores do ENEM continuam liberados. Para gerar simulados novos com IA, escolha um plano pago." : "Para gerar simulados com IA no estilo da sua prova, escolha um plano pago."}
+            description="Para gerar simulados com IA no estilo da sua prova, escolha um plano."
           />
         ) : (
           <div className="space-y-3">

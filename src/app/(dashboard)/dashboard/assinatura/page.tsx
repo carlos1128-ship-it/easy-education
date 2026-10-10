@@ -48,7 +48,7 @@ export default async function AssinaturaPage() {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-ink">Plano {plan.name}</h2>
-                <p className="text-sm text-ink-muted">{plan.priceCents > 0 ? `${planPriceLabel(access.tier)} por mês` : "Sem custo, sem cartão"}</p>
+                <p className="text-sm text-ink-muted">{`${planPriceLabel(access.tier)} por mês`}</p>
               </div>
             </div>
             <span className={`rounded-full px-3 py-1 text-sm font-medium ${status.tone}`}>{status.label}</span>

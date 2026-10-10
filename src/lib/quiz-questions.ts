@@ -1,7 +1,25 @@
 import { Type, type Schema } from "@google/genai";
 import type { GeneratedQuizQuestion } from "@/types";
 
-const LETTERS = ["A", "B", "C", "D"] as const;
+const LETTERS = ["A", "B", "C", "D", "E"] as const;
+
+/** Quantas alternativas a questão tem: 4 (A a D, padrão) ou 5 (A a E, como ENEM e Vestibulinho da ETEC). */
+export type OptionCount = 4 | 5;
+
+export function lettersFor(optionCount: OptionCount = 4) {
+  return LETTERS.slice(0, optionCount);
+}
+
+/** "A, B, C e D" ou "A, B, C, D e E", para os prompts. */
+export function lettersLabel(optionCount: OptionCount = 4) {
+  const letters = lettersFor(optionCount);
+  return `${letters.slice(0, -1).join(", ")} e ${letters.at(-1)}`;
+}
+
+/** Instrução de formato da resposta da IA, com o número certo de alternativas. */
+export function answerFormatInstruction(optionCount: OptionCount = 4) {
+  return `options (array com o TEXTO completo de cada uma das ${optionCount} alternativas, na ordem ${lettersLabel(optionCount)}, sem a letra na frente; nunca escreva so a letra), correctAnswer (apenas ${lettersFor(optionCount).join(", ")})`;
+}
 
 type PersistedQuestion = {
   id: string;
@@ -53,24 +71,29 @@ export function normalizeCorrectAnswer(value: unknown) {
   return direct ?? "A";
 }
 
-export function normalizeQuizOptions(options: unknown) {
+/**
+ * Alternativas no formato "A) texto". Sem `optionCount`, mantém quantas vieram (4 ou 5): questões antigas
+ * têm 4 e as do estilo ENEM/ETEC têm 5.
+ */
+export function normalizeQuizOptions(options: unknown, optionCount?: OptionCount) {
   const rawOptions = Array.isArray(options)
     ? options
     : options && typeof options === "object"
-      ? LETTERS.map((letter) => (options as Record<string, unknown>)[letter] ?? (options as Record<string, unknown>)[letter.toLowerCase()])
+      ? LETTERS.map((letter) => (options as Record<string, unknown>)[letter] ?? (options as Record<string, unknown>)[letter.toLowerCase()]).filter((value) => value !== undefined)
       : [];
+  const target: OptionCount = optionCount ?? (rawOptions.filter((option) => cleanText(option)).length >= 5 ? 5 : 4);
 
   const normalized = rawOptions
     .map((option, index) => {
       const text = cleanText(option);
       if (!text) return "";
       const letter = LETTERS[index] ?? "A";
-      return /^[A-D][).]\s?/i.test(text) ? text : `${letter}) ${text}`;
+      return /^[A-E][).]\s?/i.test(text) ? text : `${letter}) ${text}`;
     })
     .filter(Boolean)
-    .slice(0, 4);
+    .slice(0, target);
 
-  while (normalized.length < 4) {
+  while (normalized.length < target) {
     const letter = LETTERS[normalized.length] ?? "A";
     normalized.push(`${letter}) Alternativa ${letter}`);
   }
@@ -80,38 +103,39 @@ export function normalizeQuizOptions(options: unknown) {
 
 /** Texto da alternativa sem a letra do começo ("A) ", "b. "). */
 function optionBody(value: unknown) {
-  return cleanText(value).replace(/^[A-D]\s*[).:-]\s*/i, "").trim();
+  return cleanText(value).replace(/^[A-E]\s*[).:-]\s*/i, "").trim();
 }
 
 /**
- * A questão gerada tem enunciado e 4 alternativas de verdade? Recusa alternativa que é só a letra ("A", "B)"),
- * vazia, repetida ou placeholder, e enunciado curto demais. Questão recusada é pedida de novo (generateQuizQuestions).
+ * A questão gerada tem enunciado e as alternativas (4 ou 5) de verdade? Recusa alternativa que é só a letra
+ * ("A", "B)"), vazia, repetida ou placeholder, enunciado curto demais e gabarito fora das letras pedidas.
+ * Questão recusada é pedida de novo (generateQuizQuestions).
  */
-export function isUsableGeneratedQuestion(item: unknown) {
+export function isUsableGeneratedQuestion(item: unknown, optionCount: OptionCount = 4) {
   const question = (item ?? {}) as Partial<GeneratedQuizQuestion>;
   const text = cleanText(question.question);
   const rawOptions: unknown[] = Array.isArray(question.options) ? question.options : [];
   if (text.length < 15 || isPlaceholderText(text)) return false;
-  if (rawOptions.length !== 4) return false;
+  if (rawOptions.length !== optionCount) return false;
   const bodies = rawOptions.map(optionBody);
   if (bodies.some((body) => !body || /^[A-E]$/i.test(body) || isPlaceholderText(body) || /^alternativa [a-e]$/.test(normalizeForMatch(body)))) return false;
-  if (new Set(bodies.map(normalizeForMatch)).size !== 4) return false;
+  if (new Set(bodies.map(normalizeForMatch)).size !== optionCount) return false;
   const explanation = cleanText(question.explanation);
   if (!explanation || isPlaceholderText(explanation)) return false;
   const answer = cleanText(question.correctAnswer).toUpperCase().charAt(0);
-  return (LETTERS as readonly string[]).includes(answer);
+  return (lettersFor(optionCount) as readonly string[]).includes(answer);
 }
 
-export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: number) {
+export function sanitizeGeneratedQuizQuestions(rawQuestions: unknown, count: number, optionCount: OptionCount = 4) {
   const questions = Array.isArray(rawQuestions) ? rawQuestions : [];
   return questions
-    .filter(isUsableGeneratedQuestion)
+    .filter((item) => isUsableGeneratedQuestion(item, optionCount))
     .slice(0, count)
     .map((item) => {
       const question = item as GeneratedQuizQuestion;
       return {
         question: cleanText(question.question),
-        options: normalizeQuizOptions((question.options as unknown[]).map(optionBody)),
+        options: normalizeQuizOptions((question.options as unknown[]).map(optionBody), optionCount),
         correctAnswer: normalizeCorrectAnswer(question.correctAnswer),
         explanation: cleanText(question.explanation),
       };
@@ -125,10 +149,12 @@ export type QuizQuality = {
   reject?: (question: GeneratedQuizQuestion) => boolean;
   /** Recebe as questões aprovadas pela conferência, para guardar e reaproveitar com outros alunos. */
   onVerified?: (questions: GeneratedQuizQuestion[]) => void;
+  /** 4 (padrão) ou 5 alternativas. */
+  optionCount?: OptionCount;
 };
 
 /**
- * Gera as questões e confere cada uma: primeiro as regras do sistema (enunciado, 4 alternativas de verdade,
+ * Gera as questões e confere cada uma: primeiro as regras do sistema (enunciado, 4 ou 5 alternativas de verdade,
  * sem repetição), depois a conferência às cegas da IA. O que não passa é pedido de novo, até 2 vezes,
  * antes de aceitar (mínimo de 70%) ou desistir com erro.
  */
@@ -149,7 +175,7 @@ export async function generateQuizQuestions(
       break;
     }
     const candidates: GeneratedQuizQuestion[] = [];
-    for (const question of sanitizeGeneratedQuizQuestions(raw, missing)) {
+    for (const question of sanitizeGeneratedQuizQuestions(raw, missing, quality.optionCount ?? 4)) {
       const key = questionDedupeKey(question);
       if (seen.has(key) || quality.reject?.(question)) continue;
       seen.add(key);
@@ -175,26 +201,30 @@ export function fillQuestionCount(questions: GeneratedQuizQuestion[], count: num
 }
 
 /** Formato fixo da resposta da IA: o JSON sempre vem completo e não precisa de nova tentativa. */
-export const quizQuestionsSchema: Schema = {
-  type: Type.ARRAY,
-  items: {
-    type: Type.OBJECT,
-    properties: {
-      question: { type: Type.STRING, description: "Enunciado completo da questão." },
-      options: {
-        type: Type.ARRAY,
-        description: "O TEXTO completo das 4 alternativas, na ordem A, B, C, D. Nunca só a letra.",
-        items: { type: Type.STRING, description: "Texto da alternativa, sem a letra na frente." },
-        minItems: "4",
-        maxItems: "4",
+export function quizQuestionsSchemaFor(optionCount: OptionCount = 4): Schema {
+  return {
+    type: Type.ARRAY,
+    items: {
+      type: Type.OBJECT,
+      properties: {
+        question: { type: Type.STRING, description: "Enunciado completo da questão." },
+        options: {
+          type: Type.ARRAY,
+          description: `O TEXTO completo das ${optionCount} alternativas, na ordem ${lettersFor(optionCount).join(", ")}. Nunca só a letra.`,
+          items: { type: Type.STRING, description: "Texto da alternativa, sem a letra na frente." },
+          minItems: String(optionCount),
+          maxItems: String(optionCount),
+        },
+        correctAnswer: { type: Type.STRING, enum: [...lettersFor(optionCount)] },
+        explanation: { type: Type.STRING },
       },
-      correctAnswer: { type: Type.STRING, enum: ["A", "B", "C", "D"] },
-      explanation: { type: Type.STRING },
+      required: ["question", "options", "correctAnswer", "explanation"],
+      propertyOrdering: ["question", "options", "correctAnswer", "explanation"],
     },
-    required: ["question", "options", "correctAnswer", "explanation"],
-    propertyOrdering: ["question", "options", "correctAnswer", "explanation"],
-  },
-};
+  };
+}
+
+export const quizQuestionsSchema: Schema = quizQuestionsSchemaFor(4);
 
 /** Questões por parte: 5 saem em ~6 s; o quiz inteiro leva o tempo da parte mais lenta. */
 export const QUIZ_CHUNK_SIZE = 5;
@@ -246,4 +276,12 @@ export function describeSubjectForPrompt(subject: string, topic?: string) {
   }
 
   return baseTopic ? `${subject}. Tema: ${baseTopic}` : subject;
+}
+
+/**
+ * Número de alternativas no estilo da prova: ENEM, Vestibulinho da ETEC, Fuvest e as bancas que usam A a E
+ * (FCC, Vunesp, FGV, Cesgranrio) têm 5; o resto fica com 4. O texto do estilo vem de exam-style/learner-profile.
+ */
+export function optionCountForStyle(style: string | null | undefined): OptionCount {
+  return /\b(enem|etec|etecs|vestibulinho|fuvest|fcc|vunesp|fgv|cesgranrio)\b/i.test(style ?? "") ? 5 : 4;
 }

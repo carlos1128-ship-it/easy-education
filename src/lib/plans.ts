@@ -3,14 +3,20 @@
  * preços leem daqui. Para ajustar um limite, mude só o valor abaixo.
  *
  * Regras de produto:
+ * - Não existe plano gratuito (desde 10/10/2026): o aluno começa com TRIAL_DAYS dias grátis de um plano pago,
+ *   autorizando o pagamento no início (cartão hoje; Pix Automático quando houver gateway, ver payment-methods.ts).
+ *   Sem assinatura ou teste em vigor, o app manda para /assinar e as rotas de IA recusam.
  * - Todo limite é aplicado no servidor (`consumeFeature` em src/lib/usage.ts), nunca só na interface.
  * - Nunca escrever "ilimitado" na interface se existir qualquer teto.
  * - Janela diária: meia-noite de Brasília (America/Sao_Paulo). Semanal: segunda-feira, 00:00 de Brasília.
  */
 
-export type PlanTier = "free" | "basic" | "full";
+export type PlanTier = "basic" | "full";
 
-export const PLAN_ORDER: readonly PlanTier[] = ["free", "basic", "full"];
+export const PLAN_ORDER: readonly PlanTier[] = ["basic", "full"];
+
+/** Teste grátis, uma vez por aluno. O pagamento é autorizado no início e a 1ª cobrança vem no fim do teste. */
+export const TRIAL_DAYS = 7;
 
 export type LimitWindow = "day" | "week";
 
@@ -21,7 +27,6 @@ export type Allowance =
   | { kind: "limit"; max: number; window: LimitWindow };
 
 const open: Allowance = { kind: "open" };
-const locked: Allowance = { kind: "locked" };
 const perDay = (max: number): Allowance => ({ kind: "limit", max, window: "day" });
 const perWeek = (max: number): Allowance => ({ kind: "limit", max, window: "week" });
 
@@ -35,7 +40,8 @@ export type FeatureKey =
   | "trail"
   | "ai_quiz"
   | "ai_flashcards"
-  | "ai_simulado";
+  | "ai_simulado"
+  | "day_summary";
 
 export type FeatureMeta = {
   /** Nome curto, para botões e cadeados. */
@@ -133,6 +139,15 @@ export const FEATURES: Record<FeatureKey, FeatureMeta> = {
     weight: 0,
     usesAi: true,
   },
+  day_summary: {
+    label: "Resumo do dia corrigido",
+    singular: "resumo do dia corrigido",
+    plural: "resumos do dia corrigidos",
+    unlocks: "fechar o dia com um resumo corrigido pela IA",
+    // ~US$ 0,0009 por correção no flash-lite (ver docs/consumo-ia.md).
+    weight: 1,
+    usesAi: true,
+  },
 };
 
 export const FEATURE_KEYS = Object.keys(FEATURES) as FeatureKey[];
@@ -172,30 +187,6 @@ export type PlanConfig = {
 };
 
 export const PLANS: Record<PlanTier, PlanConfig> = {
-  free: {
-    id: "free",
-    name: "Gratuito",
-    priceCents: 0,
-    // Gratuito: só o que não gasta IA (provas anteriores do ENEM, desempenho e revisão). A IA fica para o teste de
-    // 7 dias e os planos pagos. O primeiro plano de estudos, feito no onboarding, continua sendo gerado.
-    tagline: "Simulados com provas anteriores do ENEM, desempenho e revisão, sem pagar nada.",
-    limits: {
-      chat_message: locked,
-      essay_correction: locked,
-      essay_photo_read: locked,
-      file_upload: locked,
-      video_material: locked,
-      study_plan: locked,
-      trail: locked,
-      ai_quiz: locked,
-      ai_flashcards: locked,
-      ai_simulado: locked,
-    },
-    uploadMaxBytes: 5 * MB,
-    videoMaxMinutes: 0,
-    // Teto de custo: R$ 1 por mês (US$ 0,17 a R$ 5,50). Ver docs/consumo-ia.md.
-    safety: { dailyUnits: 30, dailyCostUsd: 0.02, monthlyCostUsd: 0.17 },
-  },
   basic: {
     id: "basic",
     name: "Básico",
@@ -213,8 +204,9 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       trail: open,
       ai_quiz: perDay(10),
       ai_flashcards: perDay(25),
-      // Simulado por IA é contado em QUESTÕES por dia (um simulado de 45 ou vários menores).
-      ai_simulado: perDay(45),
+      // Simulado por IA é contado em QUESTÕES por dia: cabe um simulado da ETEC (50) ou vários menores.
+      ai_simulado: perDay(50),
+      day_summary: perDay(1),
     },
     uploadMaxBytes: 15 * MB,
     videoMaxMinutes: 20,
@@ -238,6 +230,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
       ai_flashcards: perDay(50),
       // Simulado por IA é contado em QUESTÕES por dia (um simulado de 90 ou vários menores).
       ai_simulado: perDay(90),
+      day_summary: perDay(1),
     },
     uploadMaxBytes: 50 * MB,
     videoMaxMinutes: 30,
@@ -247,14 +240,14 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
 };
 
 export function isPlanTier(value: unknown): value is PlanTier {
-  return value === "free" || value === "basic" || value === "full";
+  return value === "basic" || value === "full";
 }
 
 export function allowanceFor(tier: PlanTier, feature: FeatureKey): Allowance {
   return PLANS[tier].limits[feature];
 }
 
-/** Próximo plano acima (Gratuito → Básico, Básico → Completo). O Completo não tem upgrade. */
+/** Próximo plano acima (Básico → Completo). O Completo não tem upgrade. */
 export function nextTier(tier: PlanTier): PlanTier | null {
   const index = PLAN_ORDER.indexOf(tier);
   return PLAN_ORDER[index + 1] ?? null;
@@ -288,7 +281,7 @@ export function formatPriceBRL(cents: number): string {
 }
 
 export function planPriceLabel(tier: PlanTier): string {
-  return PLANS[tier].priceCents === 0 ? "Grátis" : formatPriceBRL(PLANS[tier].priceCents);
+  return formatPriceBRL(PLANS[tier].priceCents);
 }
 
 export function windowLabel(window: LimitWindow): string {

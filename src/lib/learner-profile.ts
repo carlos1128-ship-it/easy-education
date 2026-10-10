@@ -8,6 +8,7 @@ import { z } from "zod";
 export const PURPOSES = [
   { id: "escola", label: "Ir melhor na escola", hint: "Provas, trabalhos e recuperação do colégio" },
   { id: "enem_vestibular", label: "ENEM ou vestibular", hint: "Entrar na faculdade" },
+  { id: "etec", label: "Vestibulinho da ETEC", hint: "Curso técnico nas Etecs (Centro Paula Souza, SP)" },
   { id: "concurso", label: "Concurso público", hint: "Cargo, banca e edital" },
   { id: "faculdade", label: "Faculdade", hint: "Disciplinas e provas do curso" },
   { id: "idioma", label: "Intercâmbio ou idioma", hint: "Prova de proficiência, viagem ou morar fora" },
@@ -18,6 +19,19 @@ export const PURPOSES = [
 export type PurposeId = (typeof PURPOSES)[number]["id"];
 
 export const SCHOOL_YEARS = ["6º ano", "7º ano", "8º ano", "9º ano", "1º ano do ensino médio", "2º ano do ensino médio", "3º ano do ensino médio", "Cursinho", "Já terminei a escola"];
+/** Etapa de quem presta o Vestibulinho da ETEC (a prova cobra o Ensino Fundamental II). */
+export const ETEC_SCHOOL_YEARS = ["8º ano", "9º ano", "1º ano do ensino médio", "2º ano do ensino médio", "3º ano do ensino médio", "Já terminei a escola"];
+
+/**
+ * Formato do Vestibulinho das Etecs (1º módulo dos cursos técnicos), segundo o Manual do Candidato do
+ * Centro Paula Souza: 50 questões objetivas, 5 alternativas, 4 horas, conteúdo do Ensino Fundamental II (BNCC).
+ * Conferido em reportagens de 2026 sobre o manual; reconfira em vestibulinho.etec.sp.gov.br a cada edição.
+ */
+export const ETEC_EXAM = { questions: 50, minutes: 240, subjects: ["Português", "Matemática", "Ciências", "História", "Geografia"] } as const;
+
+/** Título do simulado no formato da prova; a tela do simulado liga o cronômetro de 4 h por ele. */
+export const ETEC_SIMULADO_TITLE = "Simulado ETEC";
+
 export const ENTRANCE_EXAMS = ["ENEM", "Fuvest", "Unicamp", "Unesp", "UERJ", "UFPR", "Medicina (vários)", "Outro vestibular"];
 export const EXAM_BOARDS = ["Cebraspe", "FGV", "FCC", "Vunesp", "Cesgranrio", "IBFC", "Quadrix", "Outra", "Ainda não sei"];
 export const SEMESTERS = ["1º ou 2º semestre", "3º ou 4º semestre", "5º ou 6º semestre", "7º semestre ou mais", "Pós-graduação"];
@@ -156,6 +170,8 @@ export function goalLabel(p: Personalization) {
       return p.schoolYear ? `Escola · ${p.schoolYear}` : "Provas escolares";
     case "enem_vestibular":
       return p.exam && p.exam !== "Outro vestibular" ? p.exam : "Vestibular";
+    case "etec":
+      return "Vestibulinho ETEC";
     case "concurso":
       return p.role ? `Concurso · ${p.role}` : "Concurso público";
     case "faculdade":
@@ -210,6 +226,8 @@ export function examStyleFromPersonalization(p: Personalization, subject?: strin
     case "enem_vestibular":
       if (!p.exam || p.exam === "ENEM") return "ENEM, com textos-base, situações do cotidiano, interpretação e interdisciplinaridade";
       return `vestibular ${p.exam === "Outro vestibular" ? "brasileiro" : p.exam}, seguindo o padrão e o nível de exigência dessa prova`;
+    case "etec":
+      return ETEC_STYLE;
     case "concurso":
       return `concurso público${p.role ? ` para ${p.role}` : ""}, ${BOARD_STYLE[p.board ?? ""] ?? "no padrão das principais bancas, com cobrança literal e pegadinhas comuns"}`;
     case "faculdade":
@@ -287,6 +305,15 @@ export function explanationGuidance(profile: ProfileLike | null | undefined) {
   if (p.challenges?.includes("base")) rules.push("relembre o conceito básico antes de explicar a resposta");
   if (p.challenges?.includes("calculo")) rules.push("mostre as contas passo a passo");
   return rules.length ? `Ajuste as explicações a este aluno: ${rules.join("; ")}.` : "";
+}
+
+/** Estilo do Vestibulinho da ETEC para os prompts. "ETEC" no texto faz a geração usar 5 alternativas. */
+export const ETEC_STYLE =
+  "Vestibulinho da ETEC (Centro Paula Souza, SP), no nível do 9º ano do Ensino Fundamental (BNCC): questões interdisciplinares e contextualizadas, com interpretação de texto, de gráficos, tabelas e situações do cotidiano, linguagem acessível a alunos de 14 e 15 anos, 5 alternativas";
+
+/** O aluno se prepara para o Vestibulinho da ETEC? */
+export function isEtecStudent(value: unknown) {
+  return parsePersonalization(value)?.purpose === "etec";
 }
 
 /** O aluno escolheu o ENEM na personalização? Só ele vê os simulados de provas anteriores do ENEM. */

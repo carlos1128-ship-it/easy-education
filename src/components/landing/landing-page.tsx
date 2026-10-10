@@ -34,6 +34,7 @@ import {
   landingSteps,
 } from "@/content/landing";
 import { cn } from "@/lib/utils";
+import { SUPPORT_EMAIL, legalLinks, supportMailto } from "@/lib/site";
 import { EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
@@ -354,6 +355,18 @@ export function LandingPage() {
         </div>
         <div className="flex flex-wrap justify-between gap-x-6 gap-y-2 border-t border-border pt-5 text-[13px] text-ink-muted">
           <span>{landingFooter.copyright}</span>
+          <span className="flex flex-wrap gap-x-5 gap-y-2">
+            {legalLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="text-ink-muted no-underline hover:text-ink">
+                {link.label}
+              </Link>
+            ))}
+            {SUPPORT_EMAIL ? (
+              <a href={supportMailto("Contato pelo site")} className="text-ink-muted no-underline hover:text-ink">
+                Contato: {SUPPORT_EMAIL}
+              </a>
+            ) : null}
+          </span>
         </div>
       </footer>
     </div>
@@ -472,7 +485,7 @@ function FlashcardFeature() {
               <span className="h-px bg-border" />
               <span className="text-[17px] leading-[26px]">{m.answer}</span>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {m.grades.map((grade) => (
                 <div
                   key={grade.label}
@@ -775,7 +788,7 @@ function PlanFeature({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PricingCard({ tier }: { tier: "free" | "basic" | "full" }) {
+function PricingCard({ tier }: { tier: "basic" | "full" }) {
   const p = landingPlans;
   const plan = p[tier];
   const featured = tier === "full";
@@ -801,18 +814,18 @@ function PricingCard({ tier }: { tier: "free" | "basic" | "full" }) {
           <span className="text-4xl font-black leading-[42px] tracking-[-0.5px]">{plan.price}</span>
           <span className="text-ink-muted">{plan.period}</span>
         </div>
-        {perDay ? <span className="text-sm font-medium text-brand-strong">{perDay}</span> : <span className="text-sm font-medium text-brand-strong">Sem cartão de crédito</span>}
+        {perDay ? <span className="text-sm font-medium text-brand-strong">{perDay}</span> : null}
       </div>
       <div className="flex flex-col gap-3">
-        {tier !== "free" ? (
-          <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">Tudo do plano anterior, mais</span>
+        {tier === "full" ? (
+          <span className="text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">Tudo do Básico, mais</span>
         ) : null}
         {planHighlights(tier).map((item) => (
           <PlanFeature key={item}>{item}</PlanFeature>
         ))}
       </div>
       <Link
-        href={tier === "full" ? landingLinks.signUpFull : tier === "basic" ? landingLinks.signUpBasic : landingLinks.signUp}
+        href={tier === "full" ? landingLinks.signUpFull : landingLinks.signUpBasic}
         className={cn(
           "mt-auto grid h-12 place-items-center rounded-lg text-[15px] font-medium no-underline transition-colors",
           featured ? "bg-brand text-on-brand hover:bg-brand-strong" : "border-[1.5px] border-border-strong text-ink hover:bg-surface-muted",
@@ -833,8 +846,7 @@ function PlansSection() {
         <h2 className={h2}>{p.title}</h2>
         <p className={lead}>{p.text}</p>
       </div>
-      <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-3">
-        <PricingCard tier="free" />
+      <div className="mx-auto grid w-full max-w-[880px] grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
         <PricingCard tier="basic" />
         <PricingCard tier="full" />
       </div>
@@ -858,10 +870,10 @@ const productJsonLd = {
   "@type": "Product",
   name: "Easy Education",
   description: "Plataforma de estudos com IA para qualquer estudante: quiz, flashcards, simulados, plano de estudos e correção de redação a partir do próprio material.",
-  offers: [landingPlans.free, landingPlans.basic, landingPlans.full].map((plan) => ({
+  offers: [landingPlans.basic, landingPlans.full].map((plan) => ({
     "@type": "Offer",
     name: `Plano ${plan.name}`,
-    price: plan.price === "Grátis" ? "0" : plan.price.replace(/[^\d,]/g, "").replace(",", "."),
+    price: plan.price.replace(/[^\d,]/g, "").replace(",", "."),
     priceCurrency: "BRL",
     category: "subscription",
   })),

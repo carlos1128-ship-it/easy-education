@@ -4,7 +4,7 @@ import { isEnemStudent } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 
 /**
- * No plano Gratuito não há quiz gerado por IA: quando o aluno pede um quiz (no chat ou pelo plano de estudos),
+ * Quando o quiz por IA não está liberado no plano: quando o aluno pede um quiz (no chat ou pelo plano de estudos),
  * quem estuda para o ENEM pratica com questões de provas anteriores do ENEM (por matéria e assunto), sem IA.
  * Para os outros objetivos devolve null: questão do ENEM não serve para quem estuda para concurso, por exemplo.
  */

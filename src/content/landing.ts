@@ -145,11 +145,11 @@ export const landingResources = {
       meta: "História · Cartão 3 de 12",
       question: "Em que ano foi assinada a Lei Áurea?",
       answer: "1888, pela princesa Isabel. Aboliu a escravidão no Brasil.",
+      // Os mesmos três botões do app, com os prazos de um cartão já revisado (intervalo 3 dias; ver flashcards/[id]/review).
       grades: [
-        { label: "Errei", interval: "1 min", selected: false },
-        { label: "Difícil", interval: "1 dia", selected: false },
-        { label: "Bom", interval: "4 dias", selected: true },
-        { label: "Fácil", interval: "9 dias", selected: false },
+        { label: "Não sabia", interval: "1 dia", selected: false },
+        { label: "Mais ou menos", interval: "4 dias", selected: false },
+        { label: "Sabia bem", interval: "8 dias", selected: true },
       ],
     },
   },
@@ -176,15 +176,16 @@ export const landingResources = {
   cards: {
     simulado: {
       title: "Simulados",
-      text: "Treine no tempo de prova. Quem estuda para o ENEM faz provas anteriores de 90 questões; quem estuda para concurso recebe simulados do seu concurso, no estilo da banca.",
+      text: "Quem estuda para o ENEM faz provas anteriores de 90 questões, com cronômetro no tempo da prova. Quem estuda para concurso recebe simulados do seu concurso, no estilo da banca.",
+      // Espelha o simulado de provas anteriores do ENEM (1º dia: 90 questões, 5h30 de prova, cronômetro regressivo).
       mock: {
-        name: "Simulado da semana",
-        timer: "1:12:40 restantes",
-        progressLabel: "Questão 12 de 30",
-        progress: 40,
+        name: "ENEM · 1º dia",
+        timer: "4:48:10 restantes",
+        progressLabel: "Questão 12 de 90",
+        progress: 13,
         areas: [
-          { name: "Biologia", value: "8 de 15" },
-          { name: "Química", value: "4 de 15" },
+          { name: "Linguagens", value: "8 de 10" },
+          { name: "Ciências Humanas", value: "1 de 2" },
         ],
       },
     },
@@ -229,14 +230,7 @@ export const landingPlans = {
   enabled: true,
   eyebrow: "Planos",
   title: "Teste 7 dias grátis e escolha quanto de IA você quer usar",
-  text: "Os planos pagos começam com 7 dias grátis: você só paga se continuar. O Gratuito, sem cartão, tem os simulados com provas anteriores do ENEM.",
-  free: {
-    name: PLANS.free.name,
-    description: "Para treinar com provas anteriores do ENEM, sem IA.",
-    price: "Grátis",
-    period: "",
-    cta: "Começar grátis",
-  },
+  text: "Os dois planos começam com 7 dias grátis. Você cadastra o cartão, usa tudo por 7 dias e só paga se continuar. Cancele antes e não paga nada.",
   basic: {
     name: PLANS.basic.name,
     description: "Para estudar com IA algumas vezes por semana.",
@@ -252,14 +246,14 @@ export const landingPlans = {
     cta: "Testar 7 dias grátis",
     badge: "Mais indicado",
   },
-  includedTitle: "Em todos os planos, inclusive o Gratuito",
+  includedTitle: "Nos dois planos",
   included: [
-    "Simulados com provas anteriores do ENEM, para quem estuda para o ENEM",
-    "Painel de desempenho",
-    "Revisão das questões que você errou",
-    "Seu primeiro plano de estudos",
+    "Chat com IA, quizzes, flashcards e simulados com IA",
+    "Correção de redação, também por foto",
+    "Plano de estudos com roteiro, trilha e troféus",
+    "Simulados com provas anteriores do ENEM e desempenho",
   ],
-  guarantee: "Nos planos pagos: 7 dias grátis para testar e, depois do primeiro pagamento, mais 7 dias de garantia. Cancele quando quiser.",
+  guarantee: "7 dias grátis para testar e, depois do primeiro pagamento, mais 7 dias de garantia. Cancele quando quiser.",
   images: [
     { src: "/images/estudante-xadrez-recorte.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
     { src: "/images/estudante-jeans-recorte.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
@@ -327,7 +321,7 @@ export const landingFaq = {
   items: [
     {
       q: "Preciso pagar para usar?",
-      a: "Não. Os planos pagos começam com 7 dias grátis: o cartão é pedido no início, mas a primeira cobrança só acontece no fim do teste, e você pode cancelar antes sem pagar nada. O plano Gratuito não tem prazo nem cartão e tem os simulados com provas anteriores do ENEM, o desempenho e a revisão das questões que você errou. Chat, redação, quizzes, flashcards, simulados gerados por IA, vídeos e a trilha são dos planos pagos.",
+      a: "Os 7 primeiros dias são grátis. O cartão é pedido no início, mas a primeira cobrança só acontece no fim do teste, e você pode cancelar antes sem pagar nada. Depois do teste, o plano é pago.",
     },
     {
       q: "Como funcionam os limites de uso?",
@@ -351,11 +345,11 @@ export const landingFaq = {
     },
     {
       q: "Quanto custa o Easy Education?",
-      a: `O plano Gratuito não custa nada. O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}, os dois com 7 dias grátis para testar. Você cancela quando quiser e, depois do primeiro pagamento, tem mais 7 dias de garantia.`,
+      a: `O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}, os dois com 7 dias grátis para testar. Você cancela quando quiser e, depois do primeiro pagamento, tem mais 7 dias de garantia.`,
     },
     {
-      q: "Qual a diferença entre o Gratuito, o Básico e o Completo?",
-      a: "O Gratuito tem os simulados com provas anteriores do ENEM, o desempenho e a revisão, sem IA. O Básico libera o chat com IA, a correção de redação, quizzes, flashcards e simulados gerados por IA, vídeos do YouTube e a trilha. O Completo tem o maior uso de IA do app. A tabela de planos compara cada recurso.",
+      q: "Qual a diferença entre o Básico e o Completo?",
+      a: "Os dois têm todos os recursos: chat com IA, correção de redação, quizzes, flashcards e simulados gerados por IA, vídeos do YouTube, plano de estudos e trilha. O Completo tem o maior uso de IA do app e a IA mais avançada na redação e no plano. A tabela de planos compara cada recurso.",
     },
     {
       q: "Preciso ter a apostila em PDF?",
@@ -379,7 +373,7 @@ export const landingFaq = {
     },
     {
       q: "Como funciona a revisão espaçada?",
-      a: "Depois de cada flashcard, você diz se foi fácil ou difícil. O algoritmo SM-2 calcula quando ele volta, pouco antes de você esquecer.",
+      a: "Depois de cada flashcard, você diz se não sabia, se foi mais ou menos ou se sabia bem. O app calcula quando ele volta: o que você erra volta no dia seguinte e o que você sabe demora cada vez mais para voltar.",
     },
     {
       q: "Dá para estudar pelo celular?",
@@ -397,6 +391,5 @@ export const landingFinalCta = {
 
 export const landingFooter = {
   copyright: "© 2026 Easy Education. Todos os direitos reservados.",
-  // TODO: "Termos de uso" e "Privacidade" voltam quando as rotas existirem.
-  // TODO: "Contato: [e-mail de contato real]" volta quando houver o e-mail real.
+  // Links legais e e-mail de contato vêm de src/lib/site.ts (e-mail: NEXT_PUBLIC_SUPPORT_EMAIL).
 } as const;

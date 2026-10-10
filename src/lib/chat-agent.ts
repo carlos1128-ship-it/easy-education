@@ -139,7 +139,7 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
     const subject = text(args.materia) ?? "Conhecimentos gerais";
     const topic = text(args.assunto);
     const questionCount = clampInt(args.quantidade, 5, 20, 10);
-    // Plano Gratuito: quem estuda para o ENEM pratica com questões de provas anteriores; os demais veem o upgrade.
+    // Recurso fora do plano: quem estuda para o ENEM pratica com questões de provas anteriores; os demais veem o upgrade.
     if (allowanceFor(tier, "ai_quiz").kind === "locked") {
       const practice = await startBankPractice(userId, { subject, topic, count: questionCount });
       if (!practice) return { reply: "Quizzes gerados por IA fazem parte dos planos pagos. Com um plano pago eu monto o quiz no estilo da sua prova, sobre qualquer assunto.", action: { type: "quiz", href: "/dashboard/assinatura", label: "Ver os planos" } };
@@ -164,7 +164,7 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
       const profile = await prisma.profile.findUnique({ where: { userId }, select: { personalization: true } });
       return isEnemStudent(profile?.personalization)
         ? {
-            reply: "No plano Gratuito os simulados são os de provas anteriores do ENEM, com 90 questões, gabarito oficial e cronômetro. Vou abrir para você escolher o dia da prova.",
+            reply: "Vou abrir os simulados de provas anteriores do ENEM, com 90 questões, gabarito oficial e cronômetro, para você escolher o dia da prova.",
             action: { type: "simulado", href: "/dashboard/simulados", label: "Escolher um simulado" },
           }
         : {
@@ -221,7 +221,7 @@ export async function runChatTool(user: Pick<User, "id" | "email">, tier: PlanTi
     const topic = text(args.assunto);
     if (allowanceFor(tier, "ai_flashcards").kind === "locked") {
       return {
-        reply: "No plano Gratuito os flashcards vêm das questões que você errou ou marcou, e voltam na hora certa para revisar. Vou abrir a sua revisão.",
+        reply: "Vou abrir a sua revisão: as questões que você errou ou marcou voltam na hora certa para revisar.",
         action: { type: "flashcards", href: "/dashboard/revisao", label: "Abrir a revisão" },
       };
     }

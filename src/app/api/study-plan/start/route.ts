@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
-import { StudyStartError, startStudyBlockForUser } from "@/lib/study-start";
+import { StudyStartError } from "@/lib/study-start";
+import { startBlockRun } from "@/lib/study-runs";
 
 // Gerar quiz/simulado/flashcards com a IA pode levar alguns segundos.
 export const maxDuration = 120;
@@ -20,7 +21,8 @@ export async function POST(request: Request) {
     if (response) return response;
 
     const block = schema.parse(await request.json());
-    const result = await startStudyBlockForUser(user, block);
+    // Um bloco por dia: concluído responde 409; em andamento reabre a mesma atividade.
+    const result = await startBlockRun(user, block);
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof StudyStartError) return NextResponse.json({ error: error.message }, { status: error.status });

@@ -7,7 +7,7 @@ const dayLabels: Record<string, string> = {
   wednesday: "Qua",
   thursday: "Qui",
   friday: "Sex",
-  saturday: "Sab",
+  saturday: "Sáb",
 };
 
 export function parseStudyPlan(value: unknown): GeneratedStudyPlan | null {
@@ -29,6 +29,34 @@ export function getTodayPlanBlocks(plan: GeneratedStudyPlan | null, now: Date = 
   if (!plan) return [];
   const today = todayWeekday(now);
   return plan.days.find((day) => day.dayOfWeek.toLowerCase() === today)?.blocks ?? [];
+}
+
+const WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+/** Quantos dias faltam de hoje até `dayOfWeek` (0 = hoje, 6 = daqui a 6 dias), no horário de Brasília. */
+export function daysFromToday(dayOfWeek: string, now: Date = new Date()) {
+  const target = WEEK.indexOf(dayOfWeek.toLowerCase());
+  if (target < 0) return 7;
+  return (target - WEEK.indexOf(todayWeekday(now)) + 7) % 7;
+}
+
+/**
+ * Dias do plano com hoje primeiro e os seguintes na ordem (sexta, sábado, domingo... até quinta).
+ * Dia com nome desconhecido vai para o fim, sem sumir.
+ */
+export function orderWeekFromToday<T extends { dayOfWeek: string }>(days: readonly T[], now: Date = new Date()): T[] {
+  return days
+    .map((day, index) => ({ day, index, offset: daysFromToday(day.dayOfWeek, now) }))
+    .sort((a, b) => a.offset - b.offset || a.index - b.index)
+    .map((item) => item.day);
+}
+
+/** "Hoje", "Amanhã" ou o nome curto do dia. */
+export function relativeDayLabel(dayOfWeek: string, now: Date = new Date()) {
+  const offset = daysFromToday(dayOfWeek, now);
+  if (offset === 0) return "Hoje";
+  if (offset === 1) return "Amanhã";
+  return getDayLabel(dayOfWeek);
 }
 
 export function getDayLabel(dayOfWeek: string) {

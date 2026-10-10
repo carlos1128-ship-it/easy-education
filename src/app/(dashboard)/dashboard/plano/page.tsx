@@ -1,4 +1,5 @@
-import { CalendarCheck, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { CalendarCheck, Moon, Sparkles } from "lucide-react";
 import { LockedNotice } from "@/components/plan/usage-hint";
 import { allowanceFor } from "@/lib/plans";
 import { StudyPlanGenerator } from "@/components/study-plan/study-plan-generator";
@@ -6,7 +7,9 @@ import { StudySessionButton } from "@/components/study-plan/study-session-button
 import { formatMinutes } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
-import { getDayLabel, parseStudyPlan, todayWeekday } from "@/lib/study-plan";
+import { blockKey, blockStatus } from "@/lib/study-completion";
+import { getDayLabel, orderWeekFromToday, parseStudyPlan, relativeDayLabel, todayWeekday } from "@/lib/study-plan";
+import { getTodayRuns } from "@/lib/study-runs";
 import { cn } from "@/lib/utils";
 
 const UNLOCKS_ON: Record<string, string> = {
@@ -28,6 +31,9 @@ export default async function PlanoPage() {
     prisma.studyPlan.findFirst({ where: { userId: user.id, status: "active" }, orderBy: { createdAt: "desc" } }),
   ]);
   const plan = parseStudyPlan(latestPlan?.planData);
+  // A semana começa hoje (horário de Brasília) e segue até a véspera do mesmo dia da semana que vem.
+  const week = plan ? orderWeekFromToday(plan.days) : [];
+  const todayRuns = await getTodayRuns(user.id);
   const plannedMinutes = plan?.days.reduce((total, day) => total + day.blocks.reduce((sum, block) => sum + block.durationMinutes, 0), 0) ?? 0;
   const subjectCount = new Set(plan?.days.flatMap((day) => day.blocks.map((block) => block.subject)) ?? []).size;
   const simulatedCount = plan?.days.flatMap((day) => day.blocks).filter((block) => block.type === "simulado").length ?? 0;
@@ -84,16 +90,27 @@ export default async function PlanoPage() {
       />
       )}
 
+      <Link
+        href="/dashboard/fechar-dia"
+        className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-ink no-underline shadow-card hover:bg-surface-muted"
+      >
+        <Moon className="size-5 flex-none text-brand-strong" aria-hidden="true" />
+        <span className="flex-1">
+          <span className="block text-[15px] font-bold">Fechar o dia</span>
+          <span className="block text-[13px] text-ink-muted">Opcional: escreva o que estudou e a IA corrige. Não mexe na ofensiva.</span>
+        </span>
+      </Link>
+
       <section aria-label="Semana" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
-        {plan?.days.length ? plan.days.map((day) => {
+        {week.length ? week.map((day) => {
           // A semana inteira aparece, mas só os blocos de hoje podem ser iniciados.
           const isToday = day.dayOfWeek.toLowerCase() === today;
           return (
           <div key={day.dayOfWeek} className={cn("flex min-h-[280px] flex-col gap-3 rounded-2xl p-3", isToday ? "bg-brand-tint ring-2 ring-brand/30" : "bg-surface-muted")}>
             <div className="flex items-center justify-between gap-3 px-1 pt-1">
               <p className="m-0 text-lg font-bold text-ink">
-                {getDayLabel(day.dayOfWeek)}
-                {isToday ? <span className="ml-2 rounded-full bg-brand px-2 py-0.5 align-middle text-[11px] font-bold text-on-brand">Hoje</span> : null}
+                {relativeDayLabel(day.dayOfWeek)}
+                {isToday ? <span className="ml-2 text-[13px] font-medium text-ink-muted">{getDayLabel(day.dayOfWeek)}</span> : null}
               </p>
               <span className="text-xs font-medium text-ink-muted">
                 {day.blocks.length} {day.blocks.length === 1 ? "bloco" : "blocos"}
@@ -107,10 +124,17 @@ export default async function PlanoPage() {
                   <p className="m-0 text-xs font-medium text-brand-strong">{formatMinutes(item.durationMinutes)} · {item.method}</p>
                 </div>
                 {isToday ? (
-                  <StudySessionButton subject={item.subject} durationMinutes={item.durationMinutes} method={item.method} notes={item.topic} type={item.type} />
+                  <StudySessionButton
+                    subject={item.subject}
+                    durationMinutes={item.durationMinutes}
+                    method={item.method}
+                    notes={item.topic}
+                    type={item.type}
+                    status={blockStatus(todayRuns.get(blockKey(item)))}
+                  />
                 ) : (
                   <span className="inline-flex min-h-10 items-center justify-center rounded-lg border border-dashed border-border-strong px-3 text-[13px] font-medium text-ink-muted">
-                    Libera {UNLOCKS_ON[day.dayOfWeek.toLowerCase()] ?? "no dia"}
+                    Libera {relativeDayLabel(day.dayOfWeek) === "Amanhã" ? "amanhã" : (UNLOCKS_ON[day.dayOfWeek.toLowerCase()] ?? "no dia")}
                   </span>
                 )}
               </div>

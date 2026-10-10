@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardCheck, FileText, HelpCircle, Layers, PenTool } from "lucide-react";
+import { ClipboardCheck, FileText, HelpCircle, Layers, NotebookPen, PenTool } from "lucide-react";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
 
@@ -15,7 +15,7 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
   const variants = searchVariants(query);
   const prisma = getPrisma();
 
-  const [quizzes, simulados, files, decks, essays] = query
+  const [quizzes, simulados, files, decks, essays, notes] = query
     ? await Promise.all([
         prisma.quiz.findMany({
           where: {
@@ -57,14 +57,24 @@ export default async function BuscaPage({ searchParams }: { searchParams: Promis
           take: 8,
           orderBy: { createdAt: "desc" },
         }),
+        prisma.note.findMany({
+          where: {
+            userId: user.id,
+            OR: variants.flatMap((term) => [{ content: { contains: term, mode: "insensitive" } }, { subject: { contains: term, mode: "insensitive" } }, { topic: { contains: term, mode: "insensitive" } }]),
+          },
+          take: 8,
+          orderBy: { createdAt: "desc" },
+          select: { id: true, content: true, subject: true },
+        }),
       ])
-    : [[], [], [], [], []];
+    : [[], [], [], [], [], []];
 
   const groups = [
     { title: "Quizzes", icon: HelpCircle, items: quizzes.map((item) => ({ title: item.title, sub: `${item.subject} · ${item.questionCount} questões`, href: `/dashboard/quizzes/${item.id}` })) },
     { title: "Simulados", icon: ClipboardCheck, items: simulados.map((item) => ({ title: item.title, sub: `${item.subject} · ${item.questionCount} questões`, href: `/dashboard/simulados/${item.id}` })) },
     { title: "Arquivos", icon: FileText, items: files.map((item) => ({ title: item.name, sub: item.processed ? "Processado" : "Aguardando processamento", href: "/dashboard/arquivos" })) },
     { title: "Flashcards", icon: Layers, items: decks.map((item) => ({ title: item.title, sub: item.subject, href: `/dashboard/flashcards/${item.id}` })) },
+    { title: "Anotações", icon: NotebookPen, items: notes.map((item) => ({ title: item.content.slice(0, 80), sub: item.subject ?? "Anotação", href: item.subject ? `/dashboard/anotacoes?materia=${encodeURIComponent(item.subject)}` : "/dashboard/anotacoes" })) },
     { title: "Redações", icon: PenTool, items: essays.map((item) => ({ title: item.title, sub: item.theme ?? "Redação", href: "/dashboard/redacao" })) },
   ];
 

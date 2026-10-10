@@ -27,7 +27,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     await prisma.flashcard.update({
       where: { id },
-      data: { interval: review.interval, easeFactor: review.easeFactor, repetitions: card.repetitions + 1, nextReview: due },
+      data: { interval: review.interval, easeFactor: review.easeFactor, repetitions: card.repetitions + 1, nextReview: due, lastReviewedAt: new Date() },
     });
 
     revalidatePath("/dashboard");

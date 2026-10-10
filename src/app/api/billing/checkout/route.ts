@@ -5,9 +5,10 @@ import { requireUser } from "@/lib/auth";
 import { createCheckoutSession, createPortalSession, getAccessState } from "@/lib/billing";
 import { ensureProfileForUser } from "@/lib/profile";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { availablePaymentMethod } from "@/lib/payment-methods";
 import { isStripeConfigured } from "@/lib/stripe";
 
-const checkoutSchema = z.object({ plan: z.enum(["basic", "full"]) });
+const checkoutSchema = z.object({ plan: z.enum(["basic", "full"]), method: z.enum(["card", "pix_automatico"]).default("card") });
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +21,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Muitas tentativas. Aguarde um minuto." }, { status: 429 });
     }
 
-    const { plan } = checkoutSchema.parse(await request.json());
+    const { plan, method } = checkoutSchema.parse(await request.json());
+    // Hoje só o cartão (Stripe). O Pix Automático entra quando houver gateway (src/lib/payment-methods.ts).
+    if (!availablePaymentMethod(method)) {
+      return NextResponse.json({ error: "Pix Automático ainda não está disponível. Use o cartão por enquanto." }, { status: 400 });
+    }
     const origin = new URL(request.url).origin;
     await ensureProfileForUser(user);
 

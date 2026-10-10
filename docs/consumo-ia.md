@@ -1,6 +1,6 @@
 # Consumo de IA por aluno — Easy Education
 
-Atualizado em 09/10/2026. Baseado nos tokens medidos nos testes reais desta versão e nos preços públicos do Gemini (plano pago, por 1 milhão de tokens). Os limites de cada plano vivem em `src/lib/plans.ts` e o custo real de cada chamada é gravado em `ai_call_logs` (tela interna: `/dashboard/interno/custos`).
+Atualizado em 10/10/2026 (recursos novos da próxima fase na seção "Recursos novos (10/10/2026)"). Baseado nos tokens medidos nos testes reais desta versão e nos preços públicos do Gemini (plano pago, por 1 milhão de tokens). Os limites de cada plano vivem em `src/lib/plans.ts` e o custo real de cada chamada é gravado em `ai_call_logs` (tela interna: `/dashboard/interno/custos`).
 
 ## Premissas
 
@@ -42,6 +42,8 @@ As provas anteriores do ENEM não gastam IA a cada acesso: a classificação e a
 
 Os limites foram recalculados para o teto de custo combinado: **Gratuito até R$ 1, Básico até R$ 4,90 e Completo até R$ 14,90 de IA por aluno por mês**.
 
+**Atualização 10/10/2026:** o plano Gratuito foi removido. Todo aluno começa com 7 dias grátis do Básico ou do Completo (pagamento autorizado no início) e depois paga. As linhas e colunas do Gratuito abaixo ficam só como histórico; sem assinatura nem teste em vigor, toda rota de IA recusa (402).
+
 | Recurso | Gratuito | Básico (R$ 19,90) | Completo (R$ 34,90) |
 |---|---|---|---|
 | Chat com IA | bloqueado | 12/dia | 30/dia |
@@ -52,7 +54,8 @@ Os limites foram recalculados para o teto de custo combinado: **Gratuito até R$
 | Trilha | bloqueada | liberada | liberada |
 | Quiz por IA | bloqueado | 10/dia | 20/dia |
 | Flashcards por IA (decks) | bloqueado | 25/dia | 50/dia |
-| Simulado por IA, em **questões** (inclui o do concurso) | bloqueado | 45 questões/dia | 90 questões/dia |
+| Simulado por IA, em **questões** (inclui o do concurso e o da ETEC) | bloqueado | 50 questões/dia (era 45; cabe o simulado da ETEC) | 90 questões/dia |
+| Resumo do dia corrigido (`day_summary`) | 1/semana | 1/dia | 1/dia |
 | Simulados de provas anteriores do ENEM | livre | livre | livre |
 
 **Atualização 09/10/2026 (noite):** o Gratuito ficou só com o que não gasta IA (provas anteriores do ENEM, desempenho e revisão) e os planos pagos ganharam 7 dias grátis. Quizzes, flashcards e simulados foram ampliados a pedido do produto. Com esses limites, usar tudo todos os dias passaria do teto de custo; quem garante o teto (Básico R$ 4,90 e Completo R$ 14,90 por mês) é o teto mensal de uso justo no servidor. Questões reaproveitadas do banco compartilhado não gastam IA, então o uso real fica bem abaixo do pior caso. A tabela abaixo é da versão anterior dos limites.
@@ -85,6 +88,27 @@ Cada operação no maior tamanho permitido (quiz de 20 questões de um material,
 O teto mensal (`safety.monthlyCostUsd` em `plans.ts`) soma o custo real gravado em `ai_call_logs` e bloqueia o uso de IA ao chegar nele (volta no dia 1º). Ele é conferido antes de cada uso, então a última operação do mês pode passar um pouco (no máximo uma operação, cerca de US$ 0,02 a 0,04 com um vídeo). Ele garante o teto mesmo quando a IA cai no modelo de reserva, que é mais caro: nesse caso o aluno só chega no teto alguns dias antes.
 
 **Importante (09/10/2026):** a chave do Gemini ainda está no plano grátis do Google, e o `gemini-2.5-flash` e o `gemini-2.5-flash-lite` estão sem cota. Hoje tudo responde pelo `gemini-3.1-flash-lite` (reserva), que custa cerca de 2,5 vezes mais. Com o faturamento ativado, o modelo mais barato volta a ser o principal.
+
+## Recursos novos (10/10/2026)
+
+Mesmas premissas da tabela de pior caso (flash-lite, +15%). Entre parênteses, o custo se a chamada cair no modelo de reserva `gemini-3.1-flash-lite` (US$ 0,25 / 1,50), como acontece hoje sem o faturamento do Gemini.
+
+| Recurso | Tokens (entrada / saída) | Custo por uso | Pior caso por aluno por mês | Limite |
+|---|---|---|---|---|
+| Resumo do dia corrigido (1.7) | 2.700 / 1.200 (inclui 512 de raciocínio) | US$ 0,0009 (0,0025) | Básico e Completo US$ 0,027 | `day_summary` |
+| Flashcards a partir do quiz (1.5), 13 cartões + conferência | 4.700 / 1.400 | US$ 0,0012 (0,0036) | dentro do limite `ai_flashcards` que já existia | `ai_flashcards` (1 deck) |
+| Flashcards dos erros do resumo do dia | 0 | zero (os cartões já vêm na correção) | zero | — |
+| Simulado da ETEC, 50 questões A a E | ~15.000 / 11.000 + conferência | US$ 0,008 (0,03) | coberto pelo limite de questões | `ai_simulado` (50) |
+| Alternativa E (questões de 5 alternativas) | +~5% de saída por questão | desprezível | — | — |
+| Roteiro, estado do bloco, anotações | 0 | zero | zero | — |
+| "Ouvir" com a voz do navegador | 0 | zero | zero | — |
+| Portão de qualidade (matéria no plano B gera com `gemini-2.5-flash`) | igual à geração | ~5x a geração no flash-lite (quiz de 20: US$ 0,015 em vez de 0,003) | só nas matérias reprovadas; o teto mensal continua valendo | — |
+| Conferência com outro modelo (`GEMINI_VERIFY_MODEL=gemini-2.5-flash`, desligado) | 2.000 / 1.100 por 10 questões | +US$ 0,003 por quiz de 10 (quase dobra o quiz) | ligar só se a medição do 1.2 mostrar ganho | — |
+| Avaliação de confiabilidade (scripts/eval, uma vez) | — | < US$ 0,15 por rodada completa | não é por aluno | — |
+
+**Efeito no pior caso dos planos:** Básico +US$ 0,027 (resumo do dia) +US$ 0,02 (5 questões de simulado a mais por dia) ≈ US$ 0,89, um pouco acima do teto mensal de US$ 0,85, que segura o gasto (o aluno extremo chega no teto 1 ou 2 dias antes). Completo +US$ 0,027, dentro do teto. Gratuito +US$ 0,004, dentro do teto de US$ 0,17.
+
+**Não implementado, para referência (1.9, Gemini TTS):** Gemini 3.8 Flash-Lite TTS, US$ 0,50 por 1M de entrada e US$ 6 por 1M de tokens de áudio (25 por segundo), dobrando em 1/1/2027 (página oficial de preços, conferida em 10/10/2026). 3 min de áudio ≈ US$ 0,027 (US$ 0,054 em 2027). Um por dia custaria US$ 0,81 por mês: quase o teto do Básico. Se for feito, gerar uma vez, guardar no Storage e limitar a 3 por semana no Básico.
 
 ## Como acompanhar o custo real
 

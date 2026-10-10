@@ -13,10 +13,13 @@ MVP SaaS educacional com Next.js, Supabase, Prisma e Gemini. Slogan: **Estude me
 
 ## Planos, limites e banco de questoes
 
-- **Planos** (Gratuito, Basico R$ 19,90, Completo R$ 34,90): precos e limites num unico arquivo, `src/lib/plans.ts`. O servidor aplica todos os limites (`consumeFeature` em `src/lib/usage.ts`, com lock por aluno); a interface so mostra avisos e cadeados. Janelas diarias e semanais seguem o horario de Brasilia.
+- **Planos** (Basico R$ 19,90 e Completo R$ 34,90, sem plano gratuito: 7 dias gratis com pagamento autorizado no inicio): precos e limites num unico arquivo, `src/lib/plans.ts`. Sem assinatura ou teste em vigor, o app manda para `/assinar` e as rotas de IA recusam (402). Formas de pagamento: `src/lib/payment-methods.ts` (cartao pelo Stripe; Pix Automatico preparado, sem gateway). O servidor aplica todos os limites (`consumeFeature` em `src/lib/usage.ts`, com lock por aluno); a interface so mostra avisos e cadeados. Janelas diarias e semanais seguem o horario de Brasilia.
 - **Custo de IA**: cada chamada ao Gemini grava tokens e custo estimado em `ai_call_logs`. Tela interna: `/dashboard/interno/custos` (e-mails em `ADMIN_EMAILS`). Ver `docs/consumo-ia.md`.
 - **Banco de questoes**: tabelas `exams`, `bank_subjects`, `bank_topics`, `bank_questions` e relacionadas. Importacao e classificacao por scripts em `scripts/bank/` (ver `docs/fontes-questoes.md`). Reports e revisao de professor em `/dashboard/interno/questoes`.
 - **Evidencias** usadas na landing: `docs/evidencias.md` e `/evidencias`.
+- **Proxima fase (10/10/2026)**: plano, decisoes pendentes e o que ja foi feito em `docs/plano-proxima-fase.md`. Antes de publicar, aplique a migration `000011_proxima_fase` (`npx prisma migrate deploy`).
+- **Confiabilidade da IA**: scripts em `scripts/eval/` e resultados em `docs/confiabilidade-ia.md`.
+- **Paginas legais**: `/termos` e `/privacidade` (texto em `src/content/legal.ts`, precisa de revisao juridica).
 - Testes: `npm test` (Vitest, regras puras) e, contra o banco configurado, `npx tsx --env-file=.env.local scripts/usage-smoke.ts` e `scripts/bank-smoke.ts` (usam alunos de mentira e apagam o que criam).
 
 ## Setup
@@ -75,11 +78,11 @@ Fluxo esperado:
 
 Fluxo: landing (`/cadastro?plano=basico|completo`) -> cadastro (e-mail ou Google) -> `/assinar` -> Stripe Checkout -> `/assinar/sucesso` -> onboarding -> dashboard. Sem assinatura ativa, o dashboard, o onboarding e todas as rotas de IA ficam bloqueados.
 
-- Produtos/precos no Stripe com lookup keys `easy_basic_monthly` (R$ 26,90) e `easy_full_monthly` (R$ 46,90). Trocar o preco no Stripe nao exige deploy.
+- Produtos/precos no Stripe com lookup keys `easy_basic_monthly` (R$ 19,90) e `easy_full_monthly` (R$ 34,90); o valor no Stripe precisa bater com `src/lib/plans.ts` (o checkout recusa cobrar se os dois forem diferentes).
 - Webhook: `POST /api/stripe/webhook` (eventos de checkout, assinatura e fatura). Cada evento e processado uma vez (`stripe_events`).
 - Portal do cliente (cartao, troca de plano, cancelamento, faturas): `/dashboard/assinatura`.
 - Garantia de 7 dias: botao em `/dashboard/assinatura` reembolsa tudo e encerra na hora.
-- Limites diarios de IA por plano: Basico 25 geracoes / 60 mensagens; Completo 60 / 150 (variaveis `AI_DAILY_*`).
+- Limites de IA por plano: definidos em `src/lib/plans.ts` (ver `docs/consumo-ia.md`).
 - A assinatura fica na tabela `subscriptions` (RLS: o aluno so le a propria; so o servidor grava).
 
 Variaveis: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, opcionais `BILLING_EXEMPT_EMAILS` e `BILLING_REQUIRED=false`. Sem `STRIPE_SECRET_KEY` a cobranca fica desligada e o app funciona como antes.

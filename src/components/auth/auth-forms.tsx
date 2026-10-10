@@ -114,7 +114,7 @@ function GoogleIcon() {
 export function SignUpForm() {
   const router = useRouter();
   const params = useSearchParams();
-  // Depois do cadastro a pessoa escolhe o plano (Gratuito, Básico ou Completo); o escolhido na landing já vem marcado.
+  // Depois do cadastro a pessoa escolhe o plano (Básico ou Completo, com 7 dias grátis); o escolhido na landing já vem marcado.
   const checkoutPath = `/assinar${planQuery(params)}`;
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -152,7 +152,7 @@ export function SignUpForm() {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, acceptedTerms: formData.get("acceptedTerms") === "on" }),
       });
       const data = await readApiJson<SignUpResponse>(
         response,
@@ -181,7 +181,7 @@ export function SignUpForm() {
       }
 
       toast.success(data.message ?? "Conta criada com sucesso.");
-      // Conta criada: com plano pago escolhido na landing, segue para o pagamento; senão, para o onboarding (plano Gratuito).
+      // Conta criada: segue para a escolha do plano e o cadastro do pagamento (7 dias grátis).
       router.push(checkoutPath);
       router.refresh();
     } catch {
@@ -258,6 +258,14 @@ export function SignUpForm() {
         </div>
         <p className="m-0 text-xs text-ink-muted">Use 8 caracteres ou mais, com letras, números e símbolos.</p>
       </div>
+      <label className="flex items-start gap-2.5 text-[13px] leading-5 text-ink-muted">
+        <input type="checkbox" name="acceptedTerms" required disabled={loading} className="mt-0.5 size-4 flex-none accent-[var(--brand)]" />
+        <span>
+          Li e aceito os{" "}
+          <Link href="/termos" target="_blank" className="font-semibold text-brand-strong underline underline-offset-2">Termos de Uso</Link> e a{" "}
+          <Link href="/privacidade" target="_blank" className="font-semibold text-brand-strong underline underline-offset-2">Política de Privacidade</Link>. Se tenho menos de 18 anos, meu responsável sabe e concorda.
+        </span>
+      </label>
       <button
         type="submit"
         disabled={loading}
@@ -279,6 +287,7 @@ export function SignUpForm() {
         <GoogleIcon />
         Entrar com Google
       </button>
+      <p className="m-0 text-center text-xs text-ink-muted">Ao continuar com o Google, você aceita os Termos de Uso e a Política de Privacidade.</p>
       <p className="m-0 text-center text-sm text-ink-muted">
         Já tem conta?{" "}
         <Link className="font-semibold text-brand-strong underline underline-offset-2" href="/login">

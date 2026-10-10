@@ -18,7 +18,7 @@ const defaultFallbackModels = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
 const defaultFastModels = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-flash-lite"];
 
 /**
- * Modelos por plano, para caber no teto de custo de cada um (Gratuito R$ 1, Básico R$ 4,90, Completo R$ 14,90 por mês;
+ * Modelos por plano, para caber no teto de custo de cada um (Básico R$ 4,90, Completo R$ 14,90 por mês;
  * ver docs/consumo-ia.md). Todos os alunos usam primeiro o modelo mais barato (gemini-2.5-flash-lite, ~6x mais barato
  * na saída). O Completo usa o gemini-2.5-flash só onde a qualidade pesa mais e o volume é baixo: redação e plano.
  */
@@ -125,11 +125,12 @@ const AI_DEADLINE_MS = Number(process.env.GEMINI_DEADLINE_MS ?? 95_000);
  * Tenta cada modelo configurado. Se o modelo estiver sobrecarregado, passa direto para o próximo;
  * em outro erro (ex.: JSON incompleto), tenta mais uma vez no mesmo modelo. Para no prazo total.
  */
-async function withModels<T>(run: (model: string, attempt: number) => Promise<T>, attemptsPerModel = 2): Promise<T> {
+async function withModels<T>(run: (model: string, attempt: number) => Promise<T>, attemptsPerModel = 2, preferred?: string): Promise<T> {
   const started = Date.now();
   let lastError: unknown;
+  const models = preferred ? [...new Set([preferred, ...configuredModels()])] : configuredModels();
 
-  for (const model of configuredModels()) {
+  for (const model of models) {
     for (let attempt = 0; attempt < attemptsPerModel; attempt += 1) {
       if (Date.now() - started > AI_DEADLINE_MS) {
         throw lastError instanceof Error ? lastError : new Error("A IA demorou demais para responder.");
@@ -172,6 +173,8 @@ export async function generateJSON<T>(
     temperature?: number;
     /** Imagens da questão/material (base64), enviadas junto com o texto. */
     images?: Array<{ mimeType: string; data: string }>;
+    /** Modelo a tentar primeiro (ex.: conferência com outro modelo, avaliação de confiabilidade). */
+    model?: string;
   } = {},
 ): Promise<T> {
   const text = `${prompt}
@@ -195,7 +198,7 @@ Importante: responda somente JSON valido, compacto, sem markdown e sem campos ex
     });
     await recordAiCall(model, response.usageMetadata);
     return parseJSON<T>(response.text ?? "");
-  });
+  }, 2, options.model);
 }
 
 function fastModels() {
@@ -219,8 +222,8 @@ class DeadlineError extends Error {}
  * Gera uma parte da lista. Começa no modelo mais rápido; se ele falhar ou demorar mais que
  * HEDGE_AFTER_MS, dispara o próximo modelo em paralelo e usa a primeira resposta válida.
  */
-async function generateChunk<T>(prompt: string, schema: Schema, deadline: number): Promise<T[]> {
-  const models = fastModels();
+async function generateChunk<T>(prompt: string, schema: Schema, deadline: number, preferred?: string): Promise<T[]> {
+  const models = preferred ? [...new Set([preferred, ...fastModels()])] : fastModels();
   const controller = new AbortController();
 
   return new Promise<T[]>((resolve, reject) => {
@@ -293,6 +296,8 @@ export async function generateJSONList<T>(options: {
   buildPrompt: (count: number, part: number, parts: number) => string;
   /** Chave para remover itens repetidos entre partes. */
   dedupeKey?: (item: T) => string;
+  /** Modelo a tentar primeiro (portão de qualidade: escopo abaixo do piso usa um modelo mais forte). */
+  model?: string;
 }): Promise<T[]> {
   const deadline = Date.now() + LIST_DEADLINE_MS;
   const parts = Math.max(1, Math.ceil(options.total / options.chunkSize));
@@ -308,6 +313,7 @@ export async function generateJSONList<T>(options: {
 Importante: responda somente JSON valido, compacto, sem markdown e sem campos extras.`,
         options.schema,
         deadline,
+        options.model,
       ).then((items) => items.slice(0, size)),
     ),
   );

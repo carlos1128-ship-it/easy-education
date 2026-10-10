@@ -10,7 +10,11 @@ type Flashcard = {
   id: string;
   front: string;
   back: string;
+  /** "erro" (veio de uma questão que o aluno errou), "conceito" ou "resumo" (erro no resumo do dia). */
+  sourceKind?: string | null;
 };
+
+const SOURCE_LABEL: Record<string, string> = { erro: "Veio de uma questão que você errou", resumo: "Veio de um erro no seu resumo do dia" };
 
 export function FlashcardReview({ cards }: { cards: Flashcard[] }) {
   const [index, setIndex] = useState(0);
@@ -80,6 +84,7 @@ export function FlashcardReview({ cards }: { cards: Flashcard[] }) {
     <div className="mx-auto w-full max-w-5xl">
       <div className="mb-3 text-center text-sm font-medium text-ink-muted">
         Card {index + 1} de {cards.length}
+        {card.sourceKind && SOURCE_LABEL[card.sourceKind] ? <span className="ml-2 rounded-full bg-warning-tint px-2 py-0.5 text-xs font-semibold text-warning">{SOURCE_LABEL[card.sourceKind]}</span> : null}
       </div>
       <button type="button" onClick={toggleCard} disabled={saving} className="h-80 w-full [perspective:1000px] disabled:cursor-wait lg:h-[440px]">
         <div className={`relative h-full rounded-2xl border border-border bg-surface p-8 shadow-card transition-transform duration-500 [transform-style:preserve-3d] ${flipped ? "[transform:rotateY(180deg)]" : ""}`}>

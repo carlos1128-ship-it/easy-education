@@ -39,6 +39,9 @@ model Profile {
   bookmarks       QuestionBookmark[]
   questionReviews QuestionReview[]
   questionReports QuestionReport[]
+  studyBlockRuns  StudyBlockRun[]
+  notes           Note[]
+  daySummaries    DaySummary[]
 
   @@map("profiles")
 }
@@ -142,7 +145,8 @@ model QuizQuestion {
   isCorrect     Boolean? @map("is_correct")
   order         Int      @default(0)
 
-  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  quiz       Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  flashcards Flashcard[]
 
   @@map("quiz_questions")
 }
@@ -161,18 +165,26 @@ model FlashcardDeck {
 }
 
 model Flashcard {
-  id          String   @id @default(uuid())
-  deckId      String   @map("deck_id")
-  front       String   @db.Text
-  back        String   @db.Text
-  easeFactor  Float    @default(2.5) @map("ease_factor")
-  interval    Int      @default(1)
-  repetitions Int      @default(0)
-  nextReview  DateTime @default(now()) @map("next_review")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id                   String    @id @default(uuid())
+  deckId               String    @map("deck_id")
+  front                String    @db.Text
+  back                 String    @db.Text
+  easeFactor           Float     @default(2.5) @map("ease_factor")
+  interval             Int       @default(1)
+  repetitions          Int       @default(0)
+  nextReview           DateTime  @default(now()) @map("next_review")
+  /// Última vez que o aluno revisou o cartão (vazio = nunca). Fecha o bloco de revisão e o roteiro.
+  lastReviewedAt       DateTime? @map("last_reviewed_at")
+  /// De onde o cartão veio: questão de quiz/simulado que o aluno errou (ou acertou), quando houver.
+  sourceQuizQuestionId String?   @map("source_quiz_question_id")
+  /// Conceito de onde veio: "erro" (questão errada), "conceito" (assunto do quiz) ou "resumo" (erro no resumo do dia).
+  sourceKind           String?   @map("source_kind")
+  createdAt            DateTime  @default(now()) @map("created_at")
 
-  deck FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  deck           FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  sourceQuestion QuizQuestion? @relation(fields: [sourceQuizQuestionId], references: [id], onDelete: SetNull)
 
+  @@index([sourceQuizQuestionId])
   @@map("flashcards")
 }
 
@@ -250,6 +262,8 @@ model Subscription {
   currentPeriodEnd     DateTime? @map("current_period_end")
   cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
   firstPaidAt          DateTime? @map("first_paid_at")
+  /// Gateway da assinatura: "stripe" (cartão) ou, no futuro, o gateway do Pix Automático (src/lib/payment-methods.ts).
+  provider             String    @default("stripe")
   refundedAt           DateTime? @map("refunded_at")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
@@ -520,4 +534,115 @@ model SharedQuestionUse {
   @@id([userId, questionId])
   @@index([questionId])
   @@map("shared_question_uses")
+}
+
+// ---------------------------------------------------------------------------------------------
+// Próxima fase (10/10/2026): bloco do plano com estado no servidor, anotações, resumo do dia e
+// portão de qualidade das questões geradas por IA.
+// ---------------------------------------------------------------------------------------------
+
+/// Um bloco do plano iniciado num dia. Sem linha = pendente. Um bloco por dia: concluído não reabre (409).
+model StudyBlockRun {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  /// Dia do bloco no horário de Brasília (AAAA-MM-DD).
+  day            String
+  /// Identidade do bloco no dia (matéria|assunto|tipo, normalizados). Ver blockKey em study-completion.ts.
+  blockKey       String    @map("block_key")
+  subject        String
+  topic          String    @default("")
+  /// estudo | revisao | simulado | redacao
+  type           String
+  method         String    @default("")
+  plannedMinutes Int       @map("planned_minutes")
+  /// em_andamento | concluido
+  status         String    @default("em_andamento")
+  /// quiz | simulado | flashcards | redacao | banco (o que o "Iniciar" abriu)
+  activity       String?
+  /// Id do quiz, deck ou sessão de questões aberto pelo bloco (vazio na redação e nas telas gerais).
+  activityId     String?   @map("activity_id")
+  href           String?
+  startedAt      DateTime  @default(now()) @map("started_at")
+  /// Cronômetro ligado desde (vazio = pausado).
+  timerStartedAt DateTime? @map("timer_started_at")
+  /// Minutos já registrados neste bloco (somando as pausas).
+  studiedMinutes Int       @default(0) @map("studied_minutes")
+  completedAt    DateTime? @map("completed_at")
+  /// atividade | tempo
+  completedBy    String?   @map("completed_by")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, day, blockKey])
+  @@index([userId, status])
+  @@map("study_block_runs")
+}
+
+/// Anotação do aluno. Pode ficar solta ou ligada a matéria, assunto, bloco do plano, quiz, questão ou arquivo.
+model Note {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  content      String   @db.Text
+  subject      String?
+  topic        String?
+  /// Bloco do plano (dia + blockKey de StudyBlockRun).
+  blockDay     String?  @map("block_day")
+  blockKey     String?  @map("block_key")
+  quizId       String?  @map("quiz_id")
+  /// Questão de quiz (QuizQuestion) ou do banco (BankQuestion), conforme questionKind.
+  questionId   String?  @map("question_id")
+  /// quiz | banco
+  questionKind String?  @map("question_kind")
+  fileId       String?  @map("file_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, subject])
+  @@index([userId, blockDay, blockKey])
+  @@map("notes")
+}
+
+/// Resumo com que o aluno fecha o dia, e a correção da IA.
+model DaySummary {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  /// Dia no horário de Brasília (AAAA-MM-DD). Um resumo por dia.
+  day       String
+  content   String   @db.Text
+  /// O que o aluno fez no dia (blocos, assuntos, erros), como foi enviado à IA.
+  studied   Json
+  /// Correção: certo, errado/incompleto, revisar e conceitos errados.
+  feedback  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@map("day_summaries")
+}
+
+/// Resultado da última avaliação de confiabilidade das questões geradas por IA, por área ou matéria.
+/// Abaixo do piso (QUALITY_FLOOR em ai-quality-gate.ts), a geração daquele escopo usa o plano B.
+model AiQualityScore {
+  id         String   @id @default(uuid())
+  /// "area:matematica" ou "materia:biologia"
+  scope      String
+  /// verificador (resolvedor às cegas vs. gabarito oficial) | geradas (revisão humana)
+  kind       String
+  model      String
+  sample     Int
+  correct    Int
+  /// Limite inferior do intervalo de confiança de 95% (Wilson).
+  lowerBound Float    @map("lower_bound")
+  reviewer   String?
+  notes      String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([scope, kind, createdAt])
+  @@map("ai_quality_scores")
 }

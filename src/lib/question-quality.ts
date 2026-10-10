@@ -1,5 +1,6 @@
 import { Type, type Schema } from "@google/genai";
 import { generateJSON } from "@/lib/gemini";
+import { lettersFor, type OptionCount } from "@/lib/quiz-questions";
 import type { GeneratedFlashcard, GeneratedQuizQuestion } from "@/types";
 
 /**
@@ -17,7 +18,7 @@ const solveSchema: Schema = {
   type: Type.ARRAY,
   items: {
     type: Type.OBJECT,
-    properties: { n: { type: Type.INTEGER }, answer: { type: Type.STRING, enum: ["A", "B", "C", "D"] } },
+    properties: { n: { type: Type.INTEGER }, answer: { type: Type.STRING, enum: ["A", "B", "C", "D", "E"] } },
     required: ["n", "answer"],
   },
 };
@@ -31,35 +32,49 @@ const checkSchema: Schema = {
   },
 };
 
+/** Conferência com outro modelo (ex.: gemini-2.5-flash conferindo o flash-lite). Vazio: o mesmo da geração. */
+const VERIFY_MODEL = process.env.GEMINI_VERIFY_MODEL?.trim() || undefined;
+
 /** Questões por chamada de conferência: blocos pequenos resolvem melhor e rodam em paralelo (simulado de 90). */
 const VERIFY_BATCH = 15;
 
 /** Resolve às cegas e mantém só as questões em que a resposta da IA bate com o gabarito. */
-export async function verifyQuizQuestions(questions: GeneratedQuizQuestion[]): Promise<Verified<GeneratedQuizQuestion>> {
-  if (questions.length <= VERIFY_BATCH) return verifyQuizBatch(questions);
+export async function verifyQuizQuestions(questions: GeneratedQuizQuestion[], optionCount: OptionCount = 4, options: VerifyOptions = {}): Promise<Verified<GeneratedQuizQuestion>> {
+  if (questions.length <= VERIFY_BATCH) return verifyQuizBatch(questions, optionCount, options);
   const batches: GeneratedQuizQuestion[][] = [];
   for (let i = 0; i < questions.length; i += VERIFY_BATCH) batches.push(questions.slice(i, i + VERIFY_BATCH));
-  const results = await Promise.all(batches.map(verifyQuizBatch));
+  const results = await Promise.all(batches.map((batch) => verifyQuizBatch(batch, optionCount, options)));
   return { items: results.flatMap((result) => result.items), verified: results.every((result) => result.verified) };
 }
 
-async function verifyQuizBatch(questions: GeneratedQuizQuestion[]): Promise<Verified<GeneratedQuizQuestion>> {
-  if (!questions.length) return { items: [], verified: true };
+/** Modelo da conferência (padrão: o mesmo da geração). Trocar de família/tamanho reduz erros que coincidem. */
+export type VerifyOptions = { model?: string };
+
+/**
+ * Resolve as questões SEM ver o gabarito e devolve a letra escolhida para cada uma (posição → letra).
+ * Lança erro se a IA falhar. Usado pela conferência e pela avaliação de confiabilidade (scripts/eval).
+ */
+export async function solveBlind(questions: Array<Pick<GeneratedQuizQuestion, "question" | "options">>, optionCount: OptionCount = 4, options: VerifyOptions = {}) {
   const listing = questions
     .map((question, index) => `${index + 1}) ${question.question}\n${question.options.join("\n")}`)
     .join("\n\n");
-  try {
-    const answers = await generateJSON<Array<{ n: number; answer: string }>>(
-      `Resolva cada questão de múltipla escolha abaixo com cuidado e responda só a letra correta de cada uma.
+  const answers = await generateJSON<Array<{ n: number; answer: string }>>(
+    `Resolva cada questão de múltipla escolha abaixo com cuidado e responda só a letra correta de cada uma.
 Se uma questão tiver mais de uma alternativa correta, nenhuma correta, dados que faltam ou erro de conteúdo, responda a letra que considera menos errada (ela será descartada se não bater).
 
 ${listing}
 
-Responda um array JSON com { "n": número da questão, "answer": "A" | "B" | "C" | "D" } para cada questão.`,
-      { schema: solveSchema, thinkingBudget: 1024, temperature: 0 },
-    );
-    const byNumber = new Map(answers.map((item) => [item.n, String(item.answer).trim().toUpperCase().charAt(0)]));
-    return { items: questions.filter((question, index) => byNumber.get(index + 1) === question.correctAnswer), verified: true };
+Responda um array JSON com { "n": número da questão, "answer": ${lettersFor(optionCount).map((letter) => `"${letter}"`).join(" | ")} } para cada questão.`,
+    { schema: solveSchema, thinkingBudget: 1024, temperature: 0, ...((options.model ?? VERIFY_MODEL) ? { model: options.model ?? VERIFY_MODEL } : {}) },
+  );
+  return new Map(answers.map((item) => [item.n - 1, String(item.answer).trim().toUpperCase().charAt(0)]));
+}
+
+async function verifyQuizBatch(questions: GeneratedQuizQuestion[], optionCount: OptionCount, options: VerifyOptions): Promise<Verified<GeneratedQuizQuestion>> {
+  if (!questions.length) return { items: [], verified: true };
+  try {
+    const answers = await solveBlind(questions, optionCount, options);
+    return { items: questions.filter((question, index) => answers.get(index) === question.correctAnswer), verified: true };
   } catch (error) {
     // Conferência indisponível (IA fora do ar): entrega o que passou nas regras do sistema, sem guardar para reaproveitar.
     console.error("[question-quality.quiz]", error instanceof Error ? error.message : error);

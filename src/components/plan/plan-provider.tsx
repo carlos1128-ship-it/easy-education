@@ -40,6 +40,8 @@ function dialogCopy(info: PlanLimitInfo) {
   switch (info.code) {
     case "feature_locked":
       return { icon: Lock, title: info.upgradeTo ? `${featureLabel} é do plano ${PLANS[info.upgradeTo].name}` : `${featureLabel} não está no seu plano` };
+    case "subscription_required":
+      return { icon: Lock, title: "Escolha um plano para usar a IA" };
     case "file_too_large":
       return { icon: ShieldAlert, title: "Esse arquivo passou do tamanho do seu plano" };
     case "daily_cap":

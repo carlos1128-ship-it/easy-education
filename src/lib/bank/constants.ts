@@ -3,14 +3,25 @@
 export const ORIGIN = { official: "prova_oficial", ai: "gerada_ia" } as const;
 export type QuestionOrigin = (typeof ORIGIN)[keyof typeof ORIGIN];
 
-export const REVIEW_STATUS = ["nao_revisada", "amostra_revisada", "revisada"] as const;
+/**
+ * "avaliada_correta" e "avaliada_incorreta" são o veredito da revisão humana das questões geradas para a
+ * avaliação de confiabilidade (scripts/eval). Correta = gabarito certo, só uma alternativa defensável e
+ * explicação sem erro factual.
+ */
+export const REVIEW_STATUS = ["nao_revisada", "amostra_revisada", "revisada", "avaliada_correta", "avaliada_incorreta"] as const;
 export type ReviewStatus = (typeof REVIEW_STATUS)[number];
 
 export const REVIEW_STATUS_LABEL: Record<ReviewStatus, string> = {
   nao_revisada: "Não revisada por professor",
   amostra_revisada: "Amostra revisada",
   revisada: "Revisada por professor",
+  avaliada_correta: "Avaliada: correta",
+  avaliada_incorreta: "Avaliada: incorreta",
 };
+
+/** Lote e dono das questões geradas para a avaliação de confiabilidade (nunca aparecem para alunos). */
+export const EVAL_OWNER = "avaliacao";
+export const EVAL_BATCH_PREFIX = "eval-";
 
 export const DIFFICULTIES = ["facil", "medio", "dificil"] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];

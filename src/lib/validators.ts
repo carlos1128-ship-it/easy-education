@@ -7,6 +7,7 @@ export const signUpSchema = z.object({
   name: z.string().trim().min(3, "Informe seu nome completo.").max(80, "Nome muito longo."),
   email: emailSchema,
   password: z.string().min(8, "Use pelo menos 8 caracteres.").max(128, "Senha muito longa."),
+  acceptedTerms: z.literal(true, { error: "Aceite os Termos de Uso e a Política de Privacidade para criar a conta." }),
 });
 
 export const loginSchema = z.object({

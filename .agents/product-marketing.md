@@ -7,10 +7,10 @@
 
 ## Product Overview
 **One-liner:** Plataforma de estudos com IA para qualquer estudante: transforma o material do aluno em quiz, flashcards, simulado, plano de estudos e correção de redação.
-**What it does:** O aluno envia PDF ou foto da matéria (ou só escolhe o assunto) e recebe questões com explicação em cada alternativa, flashcards com revisão espaçada (SM-2), simulados e um plano de estudos diário. A redação é corrigida por texto ou foto da folha, com nota de 0 a 1000 e comentário por competência. Um chat com IA tira dúvidas e cria quiz, simulado, flashcards e plano direto da conversa.
+**What it does:** O aluno envia PDF ou foto da matéria (ou só escolhe o assunto) e recebe questões com explicação em cada alternativa, flashcards com revisão espaçada (variação simples do SM-2, com 3 notas), simulados e um plano de estudos diário. A redação é corrigida por texto ou foto da folha, com nota de 0 a 1000 e comentário por competência. Um chat com IA tira dúvidas e cria quiz, simulado, flashcards e plano direto da conversa.
 **Product category:** Ferramenta de estudos com IA, geral (como o aluno procura: "app para estudar", "gerar questões do PDF", "flashcards com IA", "corretor de redação").
 **Product type:** SaaS B2C, web responsivo (celular e computador).
-**Business model:** Assinatura mensal, 100% paga. Básico R$ 26,90/mês e Completo R$ 46,90/mês. Cobrança (Stripe) ainda não ligada; hoje o botão "Assinar" leva ao cadastro.
+**Business model:** Assinatura mensal, sem plano gratuito: Básico R$ 19,90/mês e Completo R$ 34,90/mês, os dois com 7 dias grátis (cartão cadastrado no início; Pix Automático depois). Fonte única dos preços: `src/lib/plans.ts`. Stripe em modo de teste (10/10/2026).
 
 ## Target Audience
 **Target customers:** Qualquer estudante: ensino médio (provas da escola, ENEM, vestibular), faculdade (disciplinas e provas) e concurseiros. Não nichar a comunicação em ENEM; citar ENEM só onde o recurso segue esse modelo (correção de redação).

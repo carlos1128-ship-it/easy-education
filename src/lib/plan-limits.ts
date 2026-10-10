@@ -15,13 +15,14 @@ import { describeReset, startOfNextMonthSP, windowReset } from "@/lib/time-windo
  * para abrir o modal de upgrade quando o aluno clica num cadeado.
  */
 
-export type PlanLimitCode = "limit_reached" | "feature_locked" | "daily_cap" | "monthly_cap" | "file_too_large";
+export type PlanLimitCode = "limit_reached" | "feature_locked" | "daily_cap" | "monthly_cap" | "file_too_large" | "subscription_required";
 
 /** Tudo o que a interface precisa para explicar um limite e oferecer o upgrade. */
 export type PlanLimitInfo = {
   code: PlanLimitCode;
   feature: FeatureKey | null;
-  tier: PlanTier;
+  /** Plano atual (null: sem assinatura nem teste em vigor). */
+  tier: PlanTier | null;
   /** Máximo do plano atual na janela (limit_reached). */
   limit?: number;
   window?: LimitWindow;
@@ -90,6 +91,18 @@ export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<A
         : `Você usou todo o seu limite de ${meta.plural} ${period} no plano ${PLANS[tier].name}. `) +
       `Ele volta ${describeReset(status.window, now)}.` +
       (target && offer ? ` No plano ${PLANS[target].name} você tem ${offer}.` : ""),
+  };
+}
+
+/** Sem assinatura nem teste em vigor: nada de IA. O modal leva para /assinar (7 dias grátis na 1ª vez). */
+export function subscriptionRequiredInfo(feature: FeatureKey | null = null): PlanLimitInfo {
+  return {
+    code: "subscription_required",
+    feature,
+    tier: null,
+    upgradeTo: "basic",
+    upgradeOffer: feature ? FEATURES[feature].unlocks : undefined,
+    message: "Para usar a IA, escolha um plano. A primeira assinatura começa com 7 dias grátis.",
   };
 }
 

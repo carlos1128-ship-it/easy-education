@@ -18,6 +18,7 @@ import {
   CHALLENGES,
   DEPTHS,
   ENTRANCE_EXAMS,
+  ETEC_SCHOOL_YEARS,
   EXAM_BOARDS,
   EXPLANATION_STYLES,
   goalLabel,
@@ -58,6 +59,8 @@ function defaultSubjectsFor(purpose: PurposeId): Record<string, number> {
   if (purpose === "escola" || purpose === "enem_vestibular") return DEFAULT_SELECTED_SUBJECTS;
   if (purpose === "idioma") return { "Leitura (Reading)": 3, Gramática: 3, Vocabulário: 3, "Compreensão auditiva (Listening)": 3 };
   if (purpose === "concurso") return { Portugues: 3, Matematica: 3 };
+  // Vestibulinho da ETEC: Fundamental II (Português, Matemática, Ciências, História e Geografia).
+  if (purpose === "etec") return { Portugues: 3, Matematica: 3, "Ciencias da Natureza": 3, Historia: 2, Geografia: 2 };
   return {};
 }
 
@@ -284,6 +287,14 @@ export function OnboardingForm({ initial, redo = false }: { initial?: Onboarding
             <div className="space-y-2">
               <Label>Em que série você está?</Label>
               <OptionSelect value={details.schoolYear ?? ""} onChange={(value) => set("schoolYear", value)} options={SCHOOL_YEARS} placeholder="Escolha a série" />
+            </div>
+          ) : null}
+
+          {purpose === "etec" ? (
+            <div className="space-y-2">
+              <Label>Em que série você está?</Label>
+              <OptionSelect value={details.schoolYear ?? ""} onChange={(value) => set("schoolYear", value)} options={ETEC_SCHOOL_YEARS} placeholder="Escolha a série" />
+              <p className="m-0 text-xs text-ink-muted">A prova tem 50 questões de Português, Matemática, Ciências, História e Geografia do 6º ao 9º ano, em 4 horas.</p>
             </div>
           ) : null}
 

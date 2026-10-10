@@ -5,7 +5,7 @@ import { getPrisma } from "@/lib/prisma";
 import { createQuizForUser } from "@/lib/quiz-generation";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createSimuladoForUser } from "@/lib/simulado";
-import { startOfToday } from "@/lib/study-stats";
+import { startOfDaySP } from "@/lib/time-window";
 import { startBankPractice } from "@/lib/bank/fallback";
 import { sessionHref } from "@/lib/bank/paths";
 import { PlanLimitError, withFeature } from "@/lib/usage";
@@ -17,9 +17,15 @@ export type StudyBlockInput = {
   type: "estudo" | "revisao" | "simulado" | "redacao";
 };
 
-export type StudyStart = { href: string; activity: "redacao" | "simulado" | "flashcards" | "quiz" | "banco"; reused: boolean };
+export type StudyStart = {
+  href: string;
+  activity: "redacao" | "simulado" | "flashcards" | "quiz" | "banco";
+  reused: boolean;
+  /** Quiz, deck ou sessão de questões aberto (vazio na redação e nas telas gerais). Fecha o bloco quando termina. */
+  activityId?: string;
+};
 
-/** Recurso de IA fora do plano (Gratuito)? Então o bloco abre os simulados (provas anteriores do ENEM, para quem estuda para ele). */
+/** Recurso de IA fora do plano? Então o bloco abre os simulados (provas anteriores do ENEM, para quem estuda para ele). */
 function isLocked(error: unknown) {
   return error instanceof PlanLimitError && error.info.code === "feature_locked";
 }
@@ -49,7 +55,8 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
 
   const userId = user.id;
   const prisma = getPrisma();
-  const today = startOfToday();
+  // Meia-noite de Brasília (o servidor roda em UTC).
+  const today = startOfDaySP();
   const topic = block.topic.trim().slice(0, 160) || block.subject;
 
   if (block.type === "simulado") {
@@ -59,13 +66,13 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
       orderBy: { createdAt: "desc" },
       select: { id: true },
     });
-    if (existing) return { href: `/dashboard/simulados/${existing.id}`, activity: "simulado", reused: true };
+    if (existing) return { href: `/dashboard/simulados/${existing.id}`, activity: "simulado", reused: true, activityId: existing.id };
     if (!checkRateLimit(`quiz:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
     // Gerar com IA gasta o limite do plano (só quando realmente gera; reaproveitar o de hoje é grátis).
     try {
       const quiz = await withFeature(user, "ai_simulado", () => createSimuladoForUser({ userId, subject: block.subject, topic, title, questionCount: 10 }), { amount: 10 });
       revalidateStudyPages();
-      return { href: `/dashboard/simulados/${quiz.id}`, activity: "simulado", reused: false };
+      return { href: `/dashboard/simulados/${quiz.id}`, activity: "simulado", reused: false, activityId: quiz.id };
     } catch (error) {
       if (isLocked(error)) return { href: "/dashboard/simulados", activity: "banco", reused: false };
       throw error;
@@ -79,12 +86,12 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
       orderBy: { createdAt: "desc" },
       select: { id: true },
     });
-    if (existing) return { href: `/dashboard/flashcards/${existing.id}`, activity: "flashcards", reused: true };
+    if (existing) return { href: `/dashboard/flashcards/${existing.id}`, activity: "flashcards", reused: true, activityId: existing.id };
     if (!checkRateLimit(`flashcards:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
     try {
       const deck = await withFeature(user, "ai_flashcards", () => createFlashcardDeckForUser({ userId, title, subject: block.subject, topic, count: 10 }));
       revalidateStudyPages();
-      return { href: `/dashboard/flashcards/${deck.id}`, activity: "flashcards", reused: false };
+      return { href: `/dashboard/flashcards/${deck.id}`, activity: "flashcards", reused: false, activityId: deck.id };
     } catch (error) {
       if (isLocked(error)) return { href: "/dashboard/revisao", activity: "banco", reused: false };
       throw error;
@@ -96,16 +103,16 @@ export async function startStudyBlockForUser(user: Pick<User, "id" | "email">, b
     orderBy: { createdAt: "desc" },
     select: { id: true },
   });
-  if (existing) return { href: `/dashboard/quizzes/${existing.id}`, activity: "quiz", reused: true };
+  if (existing) return { href: `/dashboard/quizzes/${existing.id}`, activity: "quiz", reused: true, activityId: existing.id };
   if (!checkRateLimit(`quiz:${userId}`).ok) throw new StudyStartError("Muitas gerações em pouco tempo. Tente de novo em um minuto.", 429);
   try {
     const quiz = await withFeature(user, "ai_quiz", () => createQuizForUser({ userId, subject: block.subject, topic, difficulty: "medio", questionCount: 10 }));
     revalidateStudyPages();
-    return { href: `/dashboard/quizzes/${quiz.id}`, activity: "quiz", reused: false };
+    return { href: `/dashboard/quizzes/${quiz.id}`, activity: "quiz", reused: false, activityId: quiz.id };
   } catch (error) {
     if (!isLocked(error)) throw error;
     const practice = await startBankPractice(userId, { subject: block.subject, topic: block.topic, count: 10 });
     if (!practice) throw error;
-    return { href: sessionHref(practice.sessionId), activity: "banco", reused: false };
+    return { href: sessionHref(practice.sessionId), activity: "banco", reused: false, activityId: practice.sessionId };
   }
 }

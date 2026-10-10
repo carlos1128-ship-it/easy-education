@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { QuizRunner } from "@/components/quiz/quiz-runner";
+import { ETEC_EXAM, ETEC_SIMULADO_TITLE } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 import { toQuizRunnerQuestions } from "@/lib/quiz-questions";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
@@ -37,7 +38,10 @@ export default async function SimuladoDetailPage({ params }: { params: Promise<{
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">{simulado.title}</h1>
         <p className="m-0 mt-1 text-sm text-ink-muted">Questões criadas pela IA no estilo da sua prova. Não são questões de provas anteriores.</p>
       </div>
-      <QuizRunner quizId={simulado.id} questions={toQuizRunnerQuestions(simulado.questions)} mode="simulado" videoId={parseVideoSourceKey(simulado.file?.sourceUrl)?.id ?? null} />
+      <QuizRunner quizId={simulado.id} questions={toQuizRunnerQuestions(simulado.questions)} mode="simulado"
+        videoId={parseVideoSourceKey(simulado.file?.sourceUrl)?.id ?? null}
+        timeLimit={simulado.title === ETEC_SIMULADO_TITLE ? { minutes: ETEC_EXAM.minutes, startedAt: simulado.createdAt.toISOString() } : null}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { getAccessState } from "@/lib/billing";
+import { getAccessState, type PaidAccess } from "@/lib/billing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 /** Uma chamada ao Supabase Auth por request, mesmo com layout e página pedindo o usuário. */
@@ -26,11 +26,12 @@ export async function getCurrentUserOrRedirect() {
 const getCachedAccess = cache(async (userId: string, email: string | undefined) => getAccessState({ id: userId, email }));
 
 /**
- * Aluno logado e o plano dele. Todo aluno entra no app: sem assinatura ativa ele usa o plano Gratuito,
- * com os limites de src/lib/plans.ts aplicados nas rotas do servidor.
+ * Aluno logado e com assinatura (ou teste grátis) em vigor. Não existe plano gratuito: sem assinatura, vai para
+ * /assinar escolher o plano. Os limites de src/lib/plans.ts valem nas rotas do servidor.
  */
-export async function getStudentOrRedirect() {
+export async function getStudentOrRedirect(): Promise<{ user: Awaited<ReturnType<typeof getCurrentUserOrRedirect>>; access: PaidAccess }> {
   const user = await getCurrentUserOrRedirect();
   const access = await getCachedAccess(user.id, user.email);
+  if (!access.hasAccess) redirect("/assinar");
   return { user, access };
 }

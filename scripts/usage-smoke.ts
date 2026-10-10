@@ -4,7 +4,7 @@
  *
  *   npx tsx --env-file=.env.local scripts/usage-smoke.ts
  */
-import { consumeFeature, getUsageSnapshot, PlanLimitError } from "@/lib/usage";
+import { consumeFeature, getUsageSnapshot, PlanLimitError, requireTier } from "@/lib/usage";
 import { getPrisma } from "@/lib/prisma";
 
 const user = { id: `smoke-${Date.now()}`, email: undefined };
@@ -42,33 +42,29 @@ async function main() {
     const again = await consumeFeature(user, "chat_message", { tier: "basic" });
     assert(again.remaining === 0, "depois do refund dá para usar de novo");
 
-    // 3) Gratuito: só o que não gasta IA.
-    for (const feature of ["chat_message", "ai_quiz", "essay_correction"] as const) {
-      let locked: unknown = null;
-      try {
-        await consumeFeature(user, feature, { tier: "free" });
-      } catch (error) {
-        locked = error;
-      }
-      assert(locked instanceof PlanLimitError && locked.info.code === "feature_locked" && locked.status === 403, `${feature} fechado no Gratuito`);
+    // 3) Sem assinatura: não existe plano gratuito, a IA recusa com 402.
+    let noPlan: unknown = null;
+    try {
+      await requireTier({ id: `smoke-sem-plano-${Date.now()}`, email: undefined }, "chat_message");
+    } catch (error) {
+      noPlan = error;
     }
+    assert(noPlan instanceof PlanLimitError && noPlan.info.code === "subscription_required" && noPlan.status === 402, "sem assinatura, a IA recusa");
 
-    // 4) Simulado por IA contado em questões: no Básico (45 por dia) dois pedidos de 30 ao mesmo tempo: só 1 passa.
+    // 4) Simulado por IA contado em questões: no Básico (50 por dia) dois pedidos de 30 ao mesmo tempo: só 1 passa.
     const results = await Promise.allSettled(Array.from({ length: 2 }, () => consumeFeature(user, "ai_simulado", { tier: "basic", amount: 30 })));
     const passed = results.filter((item) => item.status === "fulfilled").length;
     assert(passed === 1, `corrida: só 1 simulado de 30 de 2 passou (passaram ${passed})`);
-    const rest = await consumeFeature(user, "ai_simulado", { tier: "basic", amount: 15 });
-    assert(rest.remaining === 0, "sobram 15 questões depois de um simulado de 30");
+    const rest = await consumeFeature(user, "ai_simulado", { tier: "basic", amount: 20 });
+    assert(rest.remaining === 0, "sobram 20 questões depois de um simulado de 30");
 
     // 5) Painel de uso.
     const snapshot = await getUsageSnapshot(user, { tier: "basic" });
     assert(snapshot.features.chat_message.used === 12 && snapshot.features.chat_message.remaining === 0, "snapshot mostra 12 de 12 usadas");
-    assert(snapshot.features.ai_simulado.used === 45, "snapshot conta as 45 questões de simulado");
-    const free = await getUsageSnapshot(user, { tier: "free" });
-    assert(free.features.trail.state === "locked", "snapshot mostra trilha fechada no Gratuito");
+    assert(snapshot.features.ai_simulado.used === 50, "snapshot conta as 50 questões de simulado");
 
     // 3) Cada plano tem o seu limite: o mesmo recurso libera mais uso no Básico e mais ainda no Completo.
-    async function usesUntilBlocked(tier: "free" | "basic" | "full", feature: "chat_message" | "ai_quiz" | "ai_simulado") {
+    async function usesUntilBlocked(tier: "basic" | "full", feature: "chat_message" | "ai_quiz" | "ai_simulado") {
       const someone = { id: `smoke-${tier}-${feature}-${Date.now()}`, email: undefined };
       tierUsers.push(someone.id);
       let used = 0;
@@ -84,9 +80,9 @@ async function main() {
       }
     }
     const expected: Array<[Parameters<typeof usesUntilBlocked>[0], Parameters<typeof usesUntilBlocked>[1], number]> = [
-      ["free", "chat_message", 0], ["basic", "chat_message", 12], ["full", "chat_message", 30],
-      ["free", "ai_quiz", 0], ["basic", "ai_quiz", 10], ["full", "ai_quiz", 20],
-      ["free", "ai_simulado", 0], ["basic", "ai_simulado", 45], ["full", "ai_simulado", 90],
+      ["basic", "chat_message", 12], ["full", "chat_message", 30],
+      ["basic", "ai_quiz", 10], ["full", "ai_quiz", 20],
+      ["basic", "ai_simulado", 50], ["full", "ai_simulado", 90],
     ];
     for (const [tier, feature, max] of expected) {
       const used = await usesUntilBlocked(tier, feature);

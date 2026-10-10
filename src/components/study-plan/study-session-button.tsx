@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Play, Timer } from "lucide-react";
+import { CheckCircle2, Loader2, Play, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { notifyStudyRunChanged } from "@/components/study-plan/study-run-provider";
 import { readApiJson } from "@/lib/client-response";
-import { studyBlockId, useActiveStudy } from "@/lib/active-study";
+import type { BlockStatus } from "@/lib/study-completion";
 
 type Props = {
   subject: string;
@@ -14,6 +15,8 @@ type Props = {
   method: string;
   notes?: string;
   type?: "estudo" | "revisao" | "simulado" | "redacao";
+  /** Estado do bloco hoje, lido do servidor. */
+  status?: BlockStatus;
 };
 
 const activityLabel: Record<string, string> = {
@@ -25,55 +28,54 @@ const activityLabel: Record<string, string> = {
 };
 
 /**
- * "Iniciar" liga o cronômetro do canto e leva o aluno para a atividade do bloco:
- * redação abre a tela de redação; os demais geram simulado, flashcards ou quiz.
- * O tempo é registrado em "Concluir", no cronômetro.
+ * Botão do bloco de hoje. Pendente: "Iniciar" liga o cronômetro e gera a atividade (uma vez por dia).
+ * Em andamento: "Continuar" reabre a mesma atividade, sem gerar outra. Concluído: só o selo, sem botão.
  */
-export function StudySessionButton({ subject, durationMinutes, method, notes, type = "estudo" }: Props) {
+export function StudySessionButton({ subject, durationMinutes, method, notes, type = "estudo", status = "pendente" }: Props) {
   const router = useRouter();
-  const { active, setActive } = useActiveStudy();
   const [preparing, setPreparing] = useState(false);
-  const topic = notes ?? "";
-  const isThisBlock = active ? studyBlockId(active) === studyBlockId({ subject, topic, method }) : false;
+
+  if (status === "concluido") {
+    return (
+      <span className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg bg-success-tint px-3 text-sm font-medium text-success">
+        <CheckCircle2 className="size-4" aria-hidden="true" />
+        Concluído
+      </span>
+    );
+  }
 
   async function start() {
-    if (active && !isThisBlock && !window.confirm(`Você já está estudando ${active.subject}. Trocar para ${subject}? O tempo anterior não será registrado.`)) return;
-
-    const base = { subject, topic, method, type, plannedMinutes: durationMinutes, startedAt: Date.now() };
-    setActive(base);
     setPreparing(true);
     try {
       const response = await fetch("/api/study-plan/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, topic, method, type }),
+        body: JSON.stringify({ subject, topic: notes ?? "", method, type }),
       });
-      const data = await readApiJson<{ href?: string; activity?: string; error?: string }>(response, "Não foi possível preparar a atividade.");
+      const data = await readApiJson<{ href?: string; activity?: string; reused?: boolean }>(response, "Não foi possível preparar a atividade.");
       if (!response.ok || !data.href) {
-        toast.error(`${data.error ?? "Não foi possível preparar a atividade."} O cronômetro continua rodando.`);
+        toast.error(data.error ?? "Não foi possível preparar a atividade.");
+        // 409: o bloco já foi concluído (ou está sendo preparado em outra aba). Atualiza o plano.
+        if (response.status === 409) router.refresh();
         return;
       }
-      setActive({ ...base, href: data.href });
-      toast.success(activityLabel[data.activity ?? ""] ?? "Atividade pronta");
+      notifyStudyRunChanged();
+      toast.success(data.reused ? "Continuando de onde você parou" : (activityLabel[data.activity ?? ""] ?? "Atividade pronta"));
       router.push(data.href);
+      router.refresh();
+    } catch {
+      toast.error("Sem conexão com o servidor. Tente de novo.");
     } finally {
       setPreparing(false);
     }
   }
 
-  if (isThisBlock && !preparing) {
-    return (
-      <Button variant="outline" size="sm" onClick={() => active?.href && router.push(active.href)} disabled={!active?.href}>
-        <Timer className="size-4" aria-hidden="true" />
-        Em andamento
-      </Button>
-    );
-  }
-
+  const resume = status === "em_andamento";
+  const Icon = preparing ? Loader2 : resume ? RotateCcw : Play;
   return (
-    <Button variant="outline" size="sm" onClick={start} disabled={preparing} title={`Bloco planejado: ${durationMinutes} min`}>
-      {preparing ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}
-      {preparing ? "Preparando…" : "Iniciar"}
+    <Button variant={resume ? "default" : "outline"} size="sm" onClick={start} disabled={preparing} title={`Bloco planejado: ${durationMinutes} min`}>
+      <Icon className={preparing ? "size-4 animate-spin" : "size-4"} aria-hidden="true" />
+      {preparing ? "Preparando…" : resume ? "Continuar" : "Iniciar"}
     </Button>
   );
 }

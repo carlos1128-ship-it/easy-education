@@ -4,7 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import { getPrisma } from "@/lib/prisma";
 import { PlanLimitError, withFeature } from "@/lib/usage";
 import { produceQuestions } from "@/lib/checked-questions";
-import { describeSubjectForPrompt, partInstruction } from "@/lib/quiz-questions";
+import { answerFormatInstruction, describeSubjectForPrompt, optionCountForStyle, partInstruction } from "@/lib/quiz-questions";
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -30,6 +30,7 @@ export async function createSimuladoForUser({
   const promptScope = describeSubjectForPrompt(subject, topic ?? file?.textContent?.slice(0, video ? 14000 : 5000));
   const learner = await getLearnerPromptProfile(userId, subject);
   const style = learner.style;
+  const optionCount = optionCountForStyle(style);
   const buildPrompt = (count: number, part: number, parts: number, references: string) => `Crie exatamente ${count} questoes para um simulado realista sobre ${JSON.stringify(promptScope)}.
 Regras obrigatorias:
 - Siga o estilo de ${style}, com contexto concreto em cada enunciado.
@@ -37,7 +38,7 @@ Regras obrigatorias:
 - Se for multidisciplinar, distribua as questoes entre as materias indicadas e varie as habilidades cobradas.
 - Cada alternativa deve ser plausivel e especifica; a explicacao deve justificar a resposta correta em ate 3 frases.
 - Confira cada questao: exatamente UMA alternativa correta, e o gabarito e a explicacao precisam bater com ela.${video ? videoMaterialInstruction("quiz") : ""}${partInstruction(part, parts)}${references}${learnerPromptBlock(learner)}
-Retorne APENAS um array JSON valido com question, options (array com o TEXTO completo de cada uma das 4 alternativas, na ordem A, B, C e D, sem a letra na frente; nunca escreva so a letra), correctAnswer (A, B, C ou D) e explanation.`;
+Retorne APENAS um array JSON valido com question, ${answerFormatInstruction(optionCount)} e explanation.`;
   const safeQuestions = await produceQuestions({
     userId,
     count: questionCount,
@@ -47,6 +48,7 @@ Retorne APENAS um array JSON valido com question, options (array com o TEXTO com
     difficulty: "simulado",
     personalMaterial: Boolean(file),
     buildPrompt,
+    optionCount,
   });
 
   return prisma.quiz.create({
@@ -72,7 +74,7 @@ Retorne APENAS um array JSON valido com question, options (array com o TEXTO com
 
 /**
  * Simulado semanal automático. Gera com IA, então respeita o limite de simulados do plano:
- * no Gratuito (recurso fechado) ou com o limite gasto, simplesmente não gera.
+ * sem assinatura ou com o limite gasto, simplesmente não gera.
  */
 export async function ensureWeeklySimuladoForUser(user: Pick<User, "id" | "email">) {
   const userId = user.id;

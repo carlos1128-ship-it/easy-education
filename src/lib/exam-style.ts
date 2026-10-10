@@ -1,4 +1,4 @@
-import { buildLearnerContext, examStyleFromPersonalization, explanationGuidance, parsePersonalization } from "@/lib/learner-profile";
+import { ETEC_STYLE, buildLearnerContext, examStyleFromPersonalization, explanationGuidance, parsePersonalization } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 
 /**
@@ -10,6 +10,7 @@ const styles: Record<string, string> = {
   "provas escolares": "prova escolar do ensino médio, com linguagem clara e cobrança do conteúdo visto em sala",
   enem: "ENEM, com textos-base, situações do cotidiano e interpretação",
   vestibular: "vestibulares brasileiros, com cobrança direta de conteúdo e alguma contextualização",
+  "vestibulinho etec": ETEC_STYLE,
   faculdade: "prova de graduação (ensino superior), com profundidade técnica e termos da área",
   "concurso público": "concursos públicos brasileiros, no padrão das principais bancas, com cobrança literal e pegadinhas comuns",
   "sat/processo internacional": "SAT e processos seletivos internacionais, com raciocínio e leitura crítica",

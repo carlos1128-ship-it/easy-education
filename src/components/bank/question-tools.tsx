@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { NoteButton } from "@/components/notes/note-button";
 import { REPORT_KINDS, REPORT_KIND_LABEL, type ReportKind } from "@/lib/bank/constants";
 import { readApiJson } from "@/lib/client-response";
 import { cn } from "@/lib/utils";
@@ -120,6 +121,7 @@ export function QuestionTools({ questionId, bookmarked }: { questionId: string; 
     <div className="flex flex-wrap items-center gap-2">
       <BookmarkButton questionId={questionId} initial={bookmarked} />
       <ReportButton questionId={questionId} />
+      <NoteButton link={{ questionId, questionKind: "banco" }} />
     </div>
   );
 }

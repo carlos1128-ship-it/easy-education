@@ -9,6 +9,7 @@ import {
 } from "@/lib/env";
 import { devWarn } from "@/lib/dev-log";
 import { ensureProfileForUser } from "@/lib/profile";
+import { LEGAL_VERSION } from "@/lib/site";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { signUpSchema } from "@/lib/validators";
@@ -44,13 +45,18 @@ function isAlreadyRegistered(message: string) {
   return normalized.includes("already") || normalized.includes("registered") || normalized.includes("exists");
 }
 
+/** Registro do aceite dos Termos e da Política (versão e data), guardado nos metadados da conta. */
+function termsAcceptance() {
+  return { terms_version: LEGAL_VERSION, terms_accepted_at: new Date().toISOString() };
+}
+
 async function createAccountWithAdmin(payload: { name: string; email: string; password: string }) {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.auth.admin.createUser({
     email: payload.email,
     password: payload.password,
     email_confirm: true,
-    user_metadata: { name: payload.name },
+    user_metadata: { name: payload.name, ...termsAcceptance() },
   });
 
   if (error) {
@@ -164,7 +170,7 @@ export async function POST(request: Request) {
       email: payload.email,
       password: payload.password,
       options: {
-        data: { name: payload.name },
+        data: { name: payload.name, ...termsAcceptance() },
         emailRedirectTo: getAuthRedirectUrl("/auth/callback"),
       },
     });

@@ -1,7 +1,7 @@
 import { ORIGIN, slugify } from "@/lib/bank/constants";
 import { isEnemStudent } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
-import { normalizeQuizOptions } from "@/lib/quiz-questions";
+import { normalizeQuizOptions, type OptionCount } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
 /**
@@ -24,14 +24,16 @@ export function poolKey(input: { subject: string; topic?: string | null; style: 
 }
 
 /** Pega até `max` questões guardadas que este aluno ainda não recebeu, e registra que ele recebeu. */
-export async function takeFromPool(userId: string, key: PoolKey, max: number): Promise<GeneratedQuizQuestion[]> {
+export async function takeFromPool(userId: string, key: PoolKey, max: number, optionCount: OptionCount = 4): Promise<GeneratedQuizQuestion[]> {
   if (max <= 0) return [];
   const prisma = getPrisma();
-  const rows = await prisma.sharedQuestion.findMany({
+  // O mesmo estilo pode ter questões antigas com 4 alternativas e novas com 5: só serve o formato pedido.
+  const candidates = await prisma.sharedQuestion.findMany({
     where: { ...key, uses: { none: { userId } }, NOT: { sourceUserId: userId } },
     orderBy: [{ timesUsed: "asc" }, { createdAt: "desc" }],
-    take: max,
+    take: max * 2,
   });
+  const rows = candidates.filter((row) => Array.isArray(row.options) && row.options.length === optionCount).slice(0, max);
   if (!rows.length) return [];
   await prisma.$transaction([
     prisma.sharedQuestionUse.createMany({ data: rows.map((row) => ({ userId, questionId: row.id })), skipDuplicates: true }),

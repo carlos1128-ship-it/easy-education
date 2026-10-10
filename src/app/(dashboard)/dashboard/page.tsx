@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Flame, Lock, PenTool, PlayCircle, RotateCcw, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Flame, Lock, PenTool, RotateCcw, Sparkles, Target } from "lucide-react";
 import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
@@ -9,6 +9,9 @@ import { allowanceFor, PLANS } from "@/lib/plans";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { getTrailForUser } from "@/lib/study-trail";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
+import { StudySessionButton } from "@/components/study-plan/study-session-button";
+import { blockKey, blockStatus } from "@/lib/study-completion";
+import { getTodayRuns } from "@/lib/study-runs";
 import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +76,7 @@ export default async function DashboardPage() {
   const streak = calculateStreak([...sessions.map((item) => item.date), ...completedQuizzes.map((item) => item.completedAt ?? item.createdAt)]);
   const plan = parseStudyPlan(latestPlan?.planData);
   const todayBlocks = getTodayPlanBlocks(plan);
+  const todayRuns = todayBlocks.length ? await getTodayRuns(user.id) : new Map();
   const goalMinutes = profile?.dailyMinutes ?? 60;
   const dailyProgress = Math.min(100, Math.round((todayMinutes / Math.max(goalMinutes, 1)) * 100));
   const weeklyGoalMinutes = goalMinutes * 7;
@@ -385,13 +389,14 @@ export default async function DashboardPage() {
                         {item.topic} · {formatMinutes(item.durationMinutes)} · {item.method}
                       </p>
                     </div>
-                    <Link
-                      href="/dashboard/plano"
-                      className="inline-flex min-h-10 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-border-strong bg-surface px-3.5 text-sm font-medium text-ink no-underline transition-colors hover:bg-surface-muted"
-                    >
-                      <PlayCircle size={16} strokeWidth={1.75} aria-hidden="true" />
-                      Registrar
-                    </Link>
+                    <StudySessionButton
+                      subject={item.subject}
+                      durationMinutes={item.durationMinutes}
+                      method={item.method}
+                      notes={item.topic}
+                      type={item.type}
+                      status={blockStatus(todayRuns.get(blockKey(item)))}
+                    />
                   </div>
                 ))}
               </div>

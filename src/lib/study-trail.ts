@@ -1,4 +1,5 @@
 import { getPrisma } from "@/lib/prisma";
+import { blockKey, isDayComplete } from "@/lib/study-completion";
 import { parseStudyPlan } from "@/lib/study-plan";
 import type { GeneratedStudyPlan, StudyPlanBlock } from "@/types";
 
@@ -64,6 +65,8 @@ export type TrailHistory = {
   quizzes: Array<{ completedAt: Date; simulado: boolean }>;
   essays: Array<{ createdAt: Date }>;
   flashcardReviews: Date[];
+  /** Blocos concluídos pelo "Iniciar" (dia AAAA-MM-DD de Brasília + chave do bloco). */
+  completedBlocks?: Array<{ day: string; blockKey: string }>;
   now?: Date;
 };
 
@@ -71,7 +74,6 @@ export const DAYS_PER_SECTION = 7;
 export const SECTION_COUNT = 10;
 const CYCLE = DAYS_PER_SECTION * SECTION_COUNT;
 const MIN_MINUTES = 15;
-const REVIEW_CARDS = 10;
 
 const SECTIONS = [
   { title: "Primeiros passos", trophy: "Bronze" },
@@ -107,6 +109,8 @@ function dayNumber(date: Date) {
 /** Dia da semana (sunday…saturday) de um número de dia. */
 const weekdayOf = (day: number) => WEEKDAYS[(((day + 4) % 7) + 7) % 7];
 const dateOf = (day: number) => new Date(day * 86_400_000 + 15 * 3_600_000).toISOString();
+/** "AAAA-MM-DD" de um número de dia (o mesmo formato de dayKeySP). */
+const dayKeyOf = (day: number) => new Date(day * 86_400_000).toISOString().slice(0, 10);
 
 function planBlocks(plan: GeneratedStudyPlan | null, weekday: string) {
   return plan?.days.find((day) => day.dayOfWeek.toLowerCase() === weekday)?.blocks ?? [];
@@ -128,26 +132,28 @@ export function buildTrail(history: TrailHistory): Trail {
   history.quizzes.forEach((quiz) => (quiz.simulado ? at(quiz.completedAt).simulado++ : at(quiz.completedAt).quiz++));
   history.essays.forEach((essay) => at(essay.createdAt).essay++);
   history.flashcardReviews.forEach((date) => at(date).cards++);
+  // Bloco concluído conta o dia mesmo sem outra atividade registrada (ex.: sessão de provas anteriores).
+  for (const item of history.completedBlocks ?? []) {
+    const [y, m, d] = item.day.split("-").map(Number);
+    const key = Math.round(Date.UTC(y, m - 1, d) / 86_400_000);
+    if (!days.has(key)) days.set(key, { minutes: 0, quiz: 0, simulado: 0, essay: 0, cards: 0 });
+  }
 
   const targetMinutes = (weekday: string) => {
     const planned = planBlocks(history.plan, weekday).reduce((sum, block) => sum + (block.durationMinutes || 0), 0);
     return Math.max(MIN_MINUTES, Math.min(goal, planned || goal));
   };
 
-  /** Dia concluído: fez a atividade que o plano pede para aquele dia ou estudou os minutos planejados. */
+  const completed = new Set((history.completedBlocks ?? []).map((item) => `${item.day}#${item.blockKey}`));
+
+  /** Dia concluído: a regra única de study-completion.ts (todos os blocos do dia ou os minutos do dia). */
   function isDone(day: number) {
     const activity = days.get(day);
-    if (!activity) return false;
     const weekday = weekdayOf(day);
-    if (activity.minutes >= targetMinutes(weekday)) return true;
-    const types = new Set(planBlocks(history.plan, weekday).map((block) => block.type));
-    if (!types.size) types.add("estudo");
-    return (
-      (types.has("estudo") && activity.quiz > 0) ||
-      (types.has("revisao") && activity.cards >= REVIEW_CARDS) ||
-      (types.has("simulado") && activity.simulado > 0) ||
-      (types.has("redacao") && activity.essay > 0)
-    );
+    const key = dayKeyOf(day);
+    const blocks = planBlocks(history.plan, weekday).map((block) => ({ type: block.type, done: completed.has(`${key}#${blockKey(block)}`) }));
+    if (!activity && !blocks.some((block) => block.done)) return false;
+    return isDayComplete({ targetMinutes: targetMinutes(weekday), activity: activity ?? { minutes: 0, quiz: 0, simulado: 0, essay: 0, cards: 0 }, blocks });
   }
 
   const doneDays = [...days.keys()].filter(isDone).sort((a, b) => a - b);
@@ -241,31 +247,35 @@ export function buildTrail(history: TrailHistory): Trail {
 
 export async function getTrailForUser(userId: string) {
   const prisma = getPrisma();
-  const [profile, plan, sessions, quizzes, essays, cards] = await Promise.all([
+  const [profile, plan, sessions, quizzes, essays, cards, runs] = await Promise.all([
     prisma.profile.findUnique({ where: { userId }, select: { dailyMinutes: true } }),
     prisma.studyPlan.findFirst({ where: { userId }, orderBy: { createdAt: "desc" }, select: { planData: true } }),
     prisma.studySession.findMany({ where: { userId }, select: { date: true, durationMinutes: true }, orderBy: { date: "desc" }, take: 5000 }),
     prisma.quiz.findMany({
       where: { userId, completedAt: { not: null } },
-      select: { completedAt: true, difficulty: true },
+      select: { id: true, completedAt: true, difficulty: true },
       orderBy: { completedAt: "desc" },
       take: 3000,
     }),
     prisma.essay.findMany({ where: { userId, score: { not: null } }, select: { createdAt: true }, take: 1000 }),
     prisma.flashcard.findMany({
       where: { deck: { userId }, repetitions: { gt: 0 } },
-      select: { nextReview: true, interval: true },
+      select: { nextReview: true, interval: true, lastReviewedAt: true },
       take: 5000,
     }),
+    prisma.studyBlockRun.findMany({ where: { userId, status: "concluido" }, select: { day: true, blockKey: true, activityId: true }, take: 3000 }),
   ]);
+  // A atividade de um bloco concluído já conta pelo bloco; não pode cobrir outro bloco do mesmo dia.
+  const runActivities = new Set(runs.map((run) => run.activityId).filter(Boolean));
 
   return buildTrail({
     goalMinutes: profile?.dailyMinutes ?? 60,
     plan: parseStudyPlan(plan?.planData),
     sessions,
-    quizzes: quizzes.map((quiz) => ({ completedAt: quiz.completedAt!, simulado: quiz.difficulty === "simulado" })),
+    quizzes: quizzes.filter((quiz) => !runActivities.has(quiz.id)).map((quiz) => ({ completedAt: quiz.completedAt!, simulado: quiz.difficulty === "simulado" })),
     essays,
-    // A revisão não guarda data; a última fica em "próxima revisão − intervalo".
-    flashcardReviews: cards.map((card) => new Date(card.nextReview.getTime() - card.interval * 86_400_000)),
+    // Cartões revisados antes de last_reviewed_at existir: a última revisão fica em "próxima revisão − intervalo".
+    flashcardReviews: cards.map((card) => card.lastReviewedAt ?? new Date(card.nextReview.getTime() - card.interval * 86_400_000)),
+    completedBlocks: runs,
   });
 }

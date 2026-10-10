@@ -3,10 +3,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
-import { getAccessState } from "@/lib/billing";
 import { getPrisma } from "@/lib/prisma";
 import { createStorageServerClient } from "@/lib/supabase/storage";
-import { assertUploadSize, consumeFeature } from "@/lib/usage";
+import { assertUploadSize, consumeFeature, requireTier } from "@/lib/usage";
 
 const imageTypes = ["image/png", "image/jpeg", "image/webp"];
 const allowedTypes = ["application/pdf", "text/plain", ...imageTypes];
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
     if (imageTypes.includes(type) && size > 10 * 1024 * 1024) return NextResponse.json({ error: "Imagem acima de 10MB." }, { status: 400 });
 
     // Tamanho máximo e quantidade por dia dependem do plano (src/lib/plans.ts). O tamanho é checado antes de gastar o envio do dia.
-    const { tier } = await getAccessState(user);
+    const tier = await requireTier(user);
     assertUploadSize(tier, size);
     const ticket = await consumeFeature(user, "file_upload", { tier });
 

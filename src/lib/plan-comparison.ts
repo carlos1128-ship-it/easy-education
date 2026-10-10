@@ -15,7 +15,7 @@ export type ComparisonRow = {
 const INCLUDED = "Incluído";
 
 function everyone(id: string, label: string, text = INCLUDED): ComparisonRow {
-  return { id, label, values: { free: text, basic: text, full: text } };
+  return { id, label, values: { basic: text, full: text } };
 }
 
 /**
@@ -50,7 +50,6 @@ export function comparisonRows(): ComparisonRow[] {
       id: "essay_photo",
       label: "Redação por foto",
       values: {
-        free: allowanceFor("free", "essay_photo_read").kind === "locked" ? null : INCLUDED,
         basic: allowanceFor("basic", "essay_photo_read").kind === "locked" ? null : INCLUDED,
         full: allowanceFor("full", "essay_photo_read").kind === "locked" ? null : INCLUDED,
       },
@@ -62,12 +61,12 @@ export function comparisonRows(): ComparisonRow[] {
     levelRow("ai_quiz", "Quizzes gerados por IA", "ai_quiz"),
     levelRow("ai_flashcards", "Flashcards gerados por IA", "ai_flashcards"),
     levelRow("ai_simulado", "Simulados gerados por IA (inclui o simulado do seu concurso)", "ai_simulado"),
+    levelRow("day_summary", "Fechar o dia com um resumo corrigido pela IA", "day_summary"),
   ];
 }
 
 /** O que mais pesa na escolha, para o cartão de cada plano (sem números de limite). */
 const HIGHLIGHTS: Record<PlanTier, string[]> = {
-  free: ["Simulados com provas anteriores do ENEM", "Painel de desempenho", "Revisão das questões que você errou", "Seu primeiro plano de estudos"],
   basic: ["Chat com IA para tirar dúvidas", "Correção de redação, também por foto", "Quizzes, flashcards e simulados com IA", "Estudar com seus arquivos e vídeos do YouTube"],
   full: ["O maior uso de IA do app", "Simulado com IA todo dia", "Mais vídeos e arquivos maiores", "Redação e plano com a IA mais avançada"],
 };
