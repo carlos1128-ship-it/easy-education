@@ -25,9 +25,12 @@ export type StudyStart = {
   activityId?: string;
 };
 
-/** Recurso de IA fora do plano? Então o bloco abre os simulados (provas anteriores do ENEM, para quem estuda para ele). */
+/**
+ * Recurso de IA fora do plano ou limite do dia gasto? Então o bloco abre uma atividade sem IA (provas anteriores
+ * do ENEM para quem estuda para ele, a revisão ou os simulados), em vez de travar o estudo do dia.
+ */
 function isLocked(error: unknown) {
-  return error instanceof PlanLimitError && error.info.code === "feature_locked";
+  return error instanceof PlanLimitError && (error.info.code === "feature_locked" || error.info.code === "limit_reached");
 }
 
 export class StudyStartError extends Error {

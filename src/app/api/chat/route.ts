@@ -7,7 +7,7 @@ import { generateChatWithTools } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { truncateForContext } from "@/lib/text";
-import { consumeFeature, type UsageTicket } from "@/lib/usage";
+import { consumeFeature, type UsageTicket, bindAiCallContext } from "@/lib/usage";
 import { chatSchema } from "@/lib/validators";
 import type { ChatInputMessage } from "@/types";
 
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     const payload = chatSchema.parse(await request.json());
     // Limite do plano (mensagens por dia), aplicado aqui no servidor antes de gastar IA.
     ticket = await consumeFeature(user, "chat_message");
+    bindAiCallContext(user, ticket.tier, "chat_message");
 
     const prisma = getPrisma();
     let context = "";

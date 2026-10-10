@@ -10,6 +10,8 @@ import { getStudentOrRedirect } from "@/lib/server-user";
 import { getTrailForUser } from "@/lib/study-trail";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
 import { StudySessionButton } from "@/components/study-plan/study-session-button";
+import { LevelCard } from "@/components/gamification/level-card";
+import { getGamification } from "@/lib/gamification";
 import { blockKey, blockStatus } from "@/lib/study-completion";
 import { getTodayRuns } from "@/lib/study-runs";
 import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
@@ -77,6 +79,7 @@ export default async function DashboardPage() {
   const plan = parseStudyPlan(latestPlan?.planData);
   const todayBlocks = getTodayPlanBlocks(plan);
   const todayRuns = todayBlocks.length ? await getTodayRuns(user.id) : new Map();
+  const gamification = await getGamification(user.id);
   const goalMinutes = profile?.dailyMinutes ?? 60;
   const dailyProgress = Math.min(100, Math.round((todayMinutes / Math.max(goalMinutes, 1)) * 100));
   const weeklyGoalMinutes = goalMinutes * 7;
@@ -209,6 +212,8 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+
+      <LevelCard stats={gamification} />
 
       {nextStep ? (
         <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-6 lg:p-6")} aria-label="Primeiros passos">

@@ -3,7 +3,7 @@ import type { StudyBlockRun } from "@prisma/client";
 import { getPrisma } from "@/lib/prisma";
 import { blockCompletion, blockKey, dayKeySP, segmentMinutes, type BlockStatus } from "@/lib/study-completion";
 import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
-import { buildRoadmap, roadmapChecks, type RoadmapStep } from "@/lib/study-roadmap";
+import { buildRoadmap, parseManualChecks, roadmapChecks, toggleManualCheck, type RoadmapStep } from "@/lib/study-roadmap";
 import { StudyStartError, startStudyBlockForUser, type StudyBlockInput } from "@/lib/study-start";
 
 /**
@@ -37,7 +37,10 @@ export type RunView = {
   timerStartedAt: string | null;
   completedBy: string | null;
   steps: RoadmapStep[];
+  /** Etapa feita (automático ou marcada pelo aluno). */
   checks: boolean[];
+  /** Etapa feita por um evento real (não dá para desmarcar). */
+  autoChecks: boolean[];
   /** Hora do servidor, para o cronômetro do navegador corrigir a diferença de relógio. */
   serverNow: string;
 };
@@ -169,7 +172,15 @@ export async function startBlockRun(user: UserRef, input: StudyBlockInput) {
     run = await prisma.studyBlockRun.update({ where: { id: run.id }, data: { timerStartedAt: new Date() } });
   }
 
-  const started = await startStudyBlockForUser(user, { ...input, subject: planned.subject, topic: planned.topic ?? "", type: planned.type });
+  let started;
+  try {
+    started = await startStudyBlockForUser(user, { ...input, subject: planned.subject, topic: planned.topic ?? "", type: planned.type });
+  } catch (error) {
+    // Não conseguiu preparar a atividade (limite do dia, IA fora do ar): o bloco volta a "pendente" em vez de
+    // ficar preso em "em andamento" sem atividade (antes, "Continuar" respondia 409 por 2 minutos).
+    await prisma.studyBlockRun.deleteMany({ where: { id: run.id, href: null } });
+    throw error;
+  }
   await prisma.studyBlockRun.update({
     where: { id: run.id },
     data: { href: started.href, activity: started.activity, activityId: started.activityId ?? null },
@@ -191,6 +202,20 @@ export async function pauseRun(userId: string, runId: string, options: { record:
   if (updated.count) await recordSegment(run, minutes);
   const fresh = await prisma.studyBlockRun.findUnique({ where: { id: run.id } });
   return fresh ? syncRun(fresh) : null;
+}
+
+/**
+ * O aluno marca (ou desmarca) uma etapa que já fez por conta própria, como "preparar o ambiente".
+ * Etapas marcadas por evento real continuam marcadas. Não conclui o bloco: isso segue a regra de study-completion.
+ */
+export async function toggleRunStep(userId: string, runId: string, step: number) {
+  const prisma = getPrisma();
+  const run = await prisma.studyBlockRun.findFirst({ where: { id: runId, userId } });
+  if (!run) return null;
+  const steps = buildRoadmap({ type: run.type, subject: run.subject, topic: run.topic, plannedMinutes: run.plannedMinutes });
+  if (!Number.isInteger(step) || step < 0 || step >= steps.length) throw new StudyStartError("Etapa inválida.", 400);
+  const next = toggleManualCheck(parseManualChecks(run.manualChecks, steps.length), step);
+  return prisma.studyBlockRun.update({ where: { id: run.id }, data: { manualChecks: next } });
 }
 
 /** Eventos do bloco para o roteiro: tempo, atividade, revisões e anotação. */
@@ -216,7 +241,9 @@ async function runEvents(run: StudyBlockRun, now: Date) {
 
 export async function toRunView(run: StudyBlockRun, now: Date = new Date()): Promise<RunView> {
   const steps = buildRoadmap({ type: run.type, subject: run.subject, topic: run.topic, plannedMinutes: run.plannedMinutes, practiceHref: run.href ?? undefined });
-  const checks = roadmapChecks(steps, await runEvents(run, now));
+  const autoChecks = roadmapChecks(steps, await runEvents(run, now));
+  const manual = new Set(parseManualChecks(run.manualChecks, steps.length));
+  const checks = autoChecks.map((auto, index) => auto || manual.has(index));
   return {
     id: run.id,
     subject: run.subject,
@@ -234,6 +261,7 @@ export async function toRunView(run: StudyBlockRun, now: Date = new Date()): Pro
     completedBy: run.completedBy,
     steps,
     checks,
+    autoChecks,
     serverNow: now.toISOString(),
   };
 }

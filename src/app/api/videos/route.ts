@@ -8,7 +8,7 @@ import { getPrisma } from "@/lib/prisma";
 import { PLANS } from "@/lib/plans";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { fetchCaptionInfo } from "@/lib/youtube-transcript";
-import { consumeFeature, requireTier } from "@/lib/usage";
+import { consumeFeature, requireTier, bindAiCallContext } from "@/lib/usage";
 import {
   fetchVideoMeta,
   formatTimestamp,
@@ -68,6 +68,7 @@ export async function POST(request: Request) {
     const meta = await fetchVideoMeta(parsed.id);
     // Vídeos por dia dependem do plano (sem assinatura, a rota recusa). O trecho repetido acima não gasta o limite.
     const ticket = await consumeFeature(user, "video_material", { tier });
+    bindAiCallContext(user, tier, "video_material");
 
     const range = startSeconds > 0 || requestedEnd !== null ? ` (${formatTimestamp(startSeconds)}–${requestedEnd !== null ? formatTimestamp(endSeconds) : "fim"})` : "";
     let file;

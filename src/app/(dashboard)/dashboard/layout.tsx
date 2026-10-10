@@ -8,12 +8,13 @@ import { StudyRunProvider } from "@/components/study-plan/study-run-provider";
 import { ensureProfileForUser } from "@/lib/profile";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { getUsageSnapshot } from "@/lib/usage";
+import { getGamification } from "@/lib/gamification";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, access } = await getStudentOrRedirect();
-  const [profile, usage] = await Promise.all([ensureProfileForUser(user), getUsageSnapshot(user, { tier: access.tier })]);
+  const [profile, usage, stats] = await Promise.all([ensureProfileForUser(user), getUsageSnapshot(user, { tier: access.tier }), getGamification(user.id)]);
 
   return (
     <PlanProvider tier={access.tier} usage={usage.features}>
@@ -24,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <Sidebar profileName={profile.name} studyGoal={profile.studyGoal} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header profileName={profile.name} studyGoal={profile.studyGoal} />
+        <Header profileName={profile.name} studyGoal={profile.studyGoal} stats={stats} />
         {/* Roteiro do bloco em andamento: barra recolhível no celular, coluna fixa no computador. */}
         <StudyRunBar />
         <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8 md:pb-32 lg:pb-8">{children}</main>

@@ -58,5 +58,5 @@ export async function getExamStyleForUser(userId: string) {
 /** Bloco de texto padrão para anexar aos prompts de geração. */
 export function learnerPromptBlock(learner: LearnerPromptProfile) {
   if (!learner.context && !learner.guidance) return "";
-  return `\nPerfil do aluno (personalize o conteúdo, os exemplos e a dificuldade para ele):\n${learner.context}${learner.guidance ? `\n${learner.guidance}` : ""}`;
+  return `\nPerfil do aluno (use para escolher o nível, o estilo e os exemplos; nunca cite o aluno, o curso que ele quer, a série, a prova ou o objetivo dele no enunciado, nas alternativas ou na explicação, nem escreva "um estudante de..." ou "para o ENEM"):\n${learner.context}${learner.guidance ? `\n${learner.guidance}` : ""}`;
 }

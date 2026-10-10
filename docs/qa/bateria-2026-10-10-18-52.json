@@ -1,0 +1,1399 @@
+{
+  "startedAt": "2026-10-10T18:52:17.988Z",
+  "base": "http://localhost:3000",
+  "reports": [
+    {
+      "profile": "etec",
+      "label": "Vestibulinho da ETEC, 9º ano do fundamental",
+      "userId": "2438ab59-daf4-4555-8cf3-59b7a4f2da3a",
+      "email": "qa.etec.1791658338019@easyeducation.test",
+      "quizzes": [
+        {
+          "id": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+          "subject": "Matematica",
+          "topic": "Frações e porcentagem",
+          "ms": 3895,
+          "count": 20,
+          "letters": {
+            "D": 4,
+            "C": 4,
+            "B": 4,
+            "A": 4,
+            "E": 4
+          },
+          "issues": 0,
+          "answered": true
+        },
+        {
+          "id": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+          "subject": "Ciencias da Natureza",
+          "topic": "Sistema solar",
+          "ms": 416,
+          "count": 20,
+          "letters": {
+            "C": 4,
+            "E": 4,
+            "A": 4,
+            "D": 4,
+            "B": 4
+          },
+          "issues": 0,
+          "answered": true
+        }
+      ],
+      "simulados": [
+        {
+          "kind": "etec",
+          "id": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+          "count": 50,
+          "ms": 29516
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "profile": "etec",
+      "area": "onboarding",
+      "severity": "ok",
+      "message": "plano gerado em 7307 ms (status 200)"
+    },
+    {
+      "profile": "etec",
+      "area": "simulado ETEC",
+      "severity": "aviso",
+      "message": "Q26: enunciado repetido no mesmo simulado ETEC"
+    },
+    {
+      "profile": "etec",
+      "area": "simulado ETEC",
+      "severity": "aviso",
+      "message": "Q44: enunciado repetido no mesmo simulado ETEC"
+    },
+    {
+      "profile": "etec",
+      "area": "simulado ETEC",
+      "severity": "ok",
+      "message": "50 questões em 29.5 s"
+    },
+    {
+      "profile": "etec",
+      "area": "flashcards (deck de 30)",
+      "severity": "erro",
+      "message": "503 IA temporariamente ocupada. Tente novamente em instantes."
+    },
+    {
+      "profile": "etec",
+      "area": "flashcards do quiz",
+      "severity": "erro",
+      "message": "consulta 200 (erradas: 6, deck recente: não); criados 0, 0 ligados à questão de origem (503 IA temporariamente ocupada. Tente novamente em instantes.)"
+    },
+    {
+      "profile": "etec",
+      "area": "bloco: iniciar e continuar",
+      "severity": "ok",
+      "message": "iniciar 200 (14.3 s, /dashboard/simulados/5971df7f-02c0-4a92-98d0-3da2b4e72ae3); continuar 200, reaproveitou: true, mesma atividade: true"
+    },
+    {
+      "profile": "etec",
+      "area": "roteiro no painel",
+      "severity": "ok",
+      "message": "3 etapas, marcadas: 0"
+    },
+    {
+      "profile": "etec",
+      "area": "check manual de etapa",
+      "severity": "ok",
+      "message": "etapa 1: 200"
+    },
+    {
+      "profile": "etec",
+      "area": "anotação no bloco",
+      "severity": "ok",
+      "message": "200"
+    },
+    {
+      "profile": "etec",
+      "area": "bloco concluído e travado",
+      "severity": "ok",
+      "message": "status concluido; painel: concluido; iniciar de novo: 409 (esperado 409)"
+    },
+    {
+      "profile": "etec",
+      "area": "anotações",
+      "severity": "ok",
+      "message": "3 criadas (200,200,200), filtro por matéria trouxe 1, anotação vazia: 400 (esperado 400)"
+    },
+    {
+      "profile": "etec",
+      "area": "fechar o dia",
+      "severity": "ok",
+      "message": "curto: 400 (esperado 400); correção 200 em 5.7 s, erros apontados: 2 (o texto tinha erros de propósito), cartões: 2"
+    },
+    {
+      "profile": "etec",
+      "area": "fechar o dia duas vezes",
+      "severity": "ok",
+      "message": "409 (esperado 409)"
+    },
+    {
+      "profile": "etec",
+      "area": "erros do resumo viram flashcards",
+      "severity": "ok",
+      "message": "200"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard",
+      "severity": "ok",
+      "message": "200 em 3500 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/plano",
+      "severity": "ok",
+      "message": "200 em 1967 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/trilha",
+      "severity": "ok",
+      "message": "200 em 3670 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/quizzes",
+      "severity": "ok",
+      "message": "200 em 3297 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/simulados",
+      "severity": "ok",
+      "message": "200 em 3439 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/flashcards",
+      "severity": "ok",
+      "message": "200 em 3876 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/anotacoes",
+      "severity": "ok",
+      "message": "200 em 5557 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/fechar-dia",
+      "severity": "ok",
+      "message": "200 em 7985 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/desempenho",
+      "severity": "ok",
+      "message": "200 em 5184 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/assinatura",
+      "severity": "ok",
+      "message": "200 em 4333 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/busca?q=revisar",
+      "severity": "ok",
+      "message": "200 em 6022 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/quizzes/3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "severity": "ok",
+      "message": "200 em 1733 ms"
+    },
+    {
+      "profile": "etec",
+      "area": "página /dashboard/simulados/0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "severity": "ok",
+      "message": "200 em 4060 ms"
+    }
+  ],
+  "independent": [
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Durante a aula de Educação Financeira e Matemática, os alunos analisaram a promoção de uma blusa de uniforme da ETEC que custava originalmente R$ 80,00 e passou a ser vendida com um desconto de 15%. Qual passou a ser o preço final da blusa após o desconto?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Calculamos o valor do desconto achando 15% de 80, que é 12, e subtraímos do preço original, resultando em 80 menos 12, que dá R$ 68,00. A alternativa R$ 12,00 está incorreta porque representa apenas o valor do desconto aplicado, e não o preço final do produto."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Uma bateria de celular estava com 80% de carga. Após o uso intenso em um jogo, a carga caiu para 20%. Qual foi a porcentagem de redução em relação à carga total inicial?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "A redução percentual é a diferença entre os valores, ou seja, 80% menos 20% resulta em uma queda de 60% da carga total. O distrator 20% ignora que a variação ocorreu sobre o valor total da bateria."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Durante uma feira de ciências interdisciplinar de Matemática e História, um grupo apresentou dados sobre reciclagem. Eles mostraram que de uma pilha de 60 garrafas PET recolhidas na escola, 2/5 foram arrecadadas pelos alunos do período da manhã. Quantas garrafas foram arrecadadas pelo período da manhã?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para encontrar a fração de uma quantidade, dividimos o total pelo denominador da fração e multiplicamos o resultado pelo numerador (60 dividido por 5 é igual a 12, e 12 vezes 2 é igual a 24). A alternativa de 12 garrafas está incorreta porque equivaleria a apenas 1/5 do total da pilha."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Para o preparo da tradicional coxinha vendida na lanchonete da escola técnica, a cantina utiliza 400 gramas de frango desfiado para cada receita completa. Se em um dia de grande movimento a equipe preparou apenas 3/4 de uma receita, quantos gramas de frango foram utilizados?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para calcular a fração de uma quantidade, dividimos o total pelo denominador e multiplicamos pelo numerador, ou seja, 400 dividido por 4 resulta em 100, e 100 vezes 3 dá 300 gramas. A alternativa 250 gramas está incorreta porque representa 5/8 da receita, e não 3/4."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma aula de Ciências, os alunos estudavam ecologia e analisaram uma tabela sobre o descarte de lixo em uma pequena cidade. O estudo apontou que 3/4 do lixo produzido são compostos por orgânicos e recicláveis, sendo que 2/3 desse total correspondem exclusivamente aos materiais recicláveis. Que porcentagem do lixo total da cidade os materiais recicláveis representam?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Em porcentagem, calcular uma fração de outra fração significa multiplicar os valores, ou seja, 2/3 de 3/4. Multiplicando as frações (2/3 x 3/4), obtemos 6/12, que simplificado resulta em 1/2, equivalente a exatos 50%. Um erro comum é somar as frações em vez de multiplicar quando queremos calcular a fração de uma parte."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma aula de Educação Física na ETEC, os alunos decidiram organizar um campeonato de futebol. Dos 40 alunos matriculados na turma do 9º ano, sabe-se que exatamente 3/8 deles optaram por jogar na linha, enquanto os demais preferiram atuar como goleiros ou ficar na torcida. Quantos alunos vão jogar na linha?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para calcular a fração de um número total, você deve dividir o total pelo denominador e multiplicar pelo numerador (40 dividido por 8 dá 5, e 5 vezes 3 resulta em 15). Como a resposta correta é 15 alunos, a alternativa com 20 alunos está errada porque representa metade da turma, e não 3/8."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Na preparação para o Vestibulinho da ETEC, Lucas organizou seu cronograma de estudos diário. Ele estuda matemática durante 90 minutos por dia e resolveu destinar 3/5 desse tempo para a resolução de exercícios de frações e porcentagem. Quantos minutos por dia Lucas gasta resolvendo essa matéria específica?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para encontrar a fração de uma quantidade, dividimos o valor total pelo denominador e multiplicamos pelo numerador. Logo, 90 dividido por 5 é 18, e 18 multiplicado por 3 resulta em 54 minutos. A alternativa de 36 minutos estaria incorreta pois representa apenas 2/5 do tempo total."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Para a fabricação de um detergente ecológico em um projeto de Ciências, um grupo de estudantes utilizou um galão contendo 5 litros de água. Sabendo que 20% desse volume total foi reservado para adicionar essência natural de eucalipto, quantos litros de essência foram utilizados?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Porcentagem significa uma parte de um total de 100; logo, 20% de 5 litros é o mesmo que calcular 0,20 multiplicado por 5, que resulta em 1,0 litro. A alternativa de 0,5 litro está incorreta pois representaria apenas 10% do total de água do galão."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Um estudante deseja comprar um tênis que custa R$ 250,00. A loja oferece um desconto de 15% para pagamentos à vista. Qual é o valor final do tênis após o desconto?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Porcentagem é uma fração de 100; calculamos 15% de 250 multiplicando 0,15 por 250, o que dá R$ 37,50 de desconto. Subtraindo R$ 37,50 de R$ 250,00, obtemos R$ 212,50, enquanto R$ 215,00 é um erro comum de cálculo mental."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Na preparação para o Vestibulinho da ETEC, um estudante analisou uma tabela com o consumo de energia de sua casa. O gráfico de setores mostrou que a geladeira consome 2/5 do total de energia elétrica mensal, enquanto o chuveiro elétrico representa 25% do consumo total. Sabendo que os demais aparelhos juntos consomem os 180 kWh restantes, qual é o consumo total de energia dessa residência em quilowatt-hora (kWh)?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para resolver, lembre-se de que frações e porcentagens são formas diferentes de representar partes de um todo. Transformando 2/5 em porcentagem, temos 40%, que somado aos 25% do chuveiro totaliza 65% de consumo para ambos; logo, os 180 kWh restantes correspondem aos 35% finais, o que nos dá um total de 600 kWh. A alternativa de 300 kWh está errada porque representa apenas a metade do consumo correto devido a um erro na divisão final."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Uma loja de vestuário localizada no centro de São Paulo anunciou uma jaqueta estilizada por R$ 120,00. No pagamento à vista, a loja oferece um desconto especial de 15%. Qual é o valor do desconto que o cliente recebe ao comprar a jaqueta à vista?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para calcular a porcentagem de um valor, transformamos a taxa em número decimal ou fração e multiplicamos pelo preço (15% de 120 é 0,15 vezes 120, que resulta em 18). A alternativa de R$ 15,00 está incorreta pois seria o desconto caso a taxa fosse de apenas 12,5%."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma campanha de conscientização ambiental promovida por um curso técnico da ETEC, divulgou-se um gráfico indicando que 3/5 de uma comunidade reciclam papel, enquanto 35% reciclam plástico. O restante da população não realiza nenhum tipo de reciclagem. Se a comunidade possui 2.000 habitantes, quantos moradores NÃO realizam nenhum desses dois tipos de reciclagem?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Convertemos frações para porcentagem para facilitar a soma: 3/5 equivalem a 60%, que somados aos 35% de recicladores de plástico dão 95% de pessoas engajadas em pelo menos uma reciclagem. Logo, apenas 5% da população não recicla nada, o que representa 100 habitantes de um total de 2.000. A alternativa de 500 habitantes é incorreta pois confundiu a porcentagem restante com uma fração maior do grupo."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Uma turma do 9º ano realizou uma pesquisa sobre a preferência de cursos técnicos integrados ao ensino médio na ETEC. Dos 40 alunos entrevistados, 15 escolheram o curso de Desenvolvimento de Sistemas. Que fração simplificada representa a quantidade de alunos que escolheu Desenvolvimento de Sistemas em relação ao total da turma?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Montamos a razão colocando a parte sobre o todo, ou seja, 15/40, e simplificamos numerador e denominador por 5, encontrando a fração irredutível 3/8. A alternativa 3/5 está incorreta pois resultaria de um cálculo com 24 alunos, e não 15."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma feira cultural promovida por uma ETEC, uma turma de informática vendeu geladinhos gourmet para arrecadar fundos para a formatura. O preço original de cada geladinho era R$ 5,00. No final da tarde, para liquidar o estoque restante, os organizadores aplicaram um desconto de 20% sobre o valor. Quanto passou a custar cada geladinho na liquidação?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para calcular a porcentagem, transformamos 20% em decimal (0,20) e multiplicamos pelo preço total, obtendo R$ 1,00 de desconto. Subtraindo esse valor do preço original de R$ 5,00, encontramos o novo preço de R$ 4,00. A alternativa R$ 1,00 está incorreta porque representa apenas o valor do desconto, e não o preço final do produto."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": false,
+      "question": "Para um trabalho interdisciplinar de Biologia e Matemática voltado à ETEC, um grupo pesquisou o desperdício de alimentos. Uma tabela de um supermercado local mostrou que 1/4 do estoque de frutas foi descartado na primeira semana e 30% na segunda semana. Se o supermercado tinha inicialmente 2.000 kg de frutas, quantos quilogramas restaram após essas duas semanas de perdas?",
+      "gabarito": "E",
+      "outra": "C",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Para resolver problemas de descontos sucessivos ou perdas, calculamos cada parte separadamente usando frações ou porcentagens equivalentes. 1/4 de 2.000 kg equivale a 500 kg perdidos, restando 1.500 kg; na segunda semana, perdeu-se 30% do total inicial (600 kg), resultando em 900 kg finais. A alternativa de 600 kg está errada pois representa apenas o valor da perda da segunda semana, esquecendo de subtrair o restante do estoque."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": false,
+      "question": "Durante uma aula prática de Biologia em um laboratório da ETEC, os estudantes analisaram uma amostra de solo que pesava inicialmente 400 gramas. Desse total, os alunos constataram que 15% correspondiam a matéria orgânica viva e o restante a minerais e água. Qual é a massa exata de matéria orgânica presente nessa amostra de solo?",
+      "gabarito": "E",
+      "outra": "D",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Calculamos a porcentagem multiplicando o valor total pela taxa percentual na forma de fração ou decimal, ou seja, 400 vezes 0,15, que resulta em 60 gramas. A alternativa de 30 gramas é um erro comum que ocorreria se o aluno calculasse apenas 7,5% por engano."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Para o trabalho de História sobre a Revolução Industrial, Júlia comprou cartolinas e gastou R$ 40,00, o que representava 1/5 da mesada que ela recebia dos pais. Na semana seguinte, ela recebeu a mesma mesada inteira, mas ganhou um aumento de 15% sobre o valor original. Qual é o valor da nova mesada de Júlia após o reajuste?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Se 1/5 da mesada é R$ 40,00, a mesada inteira (5/5) era R$ 200,00. Calculando o aumento de 15% sobre 200, temos 15% de 200 = 0,15 x 200 = R$ 30,00, resultando em uma nova mesada de R$ 230,00. O erro comum é calcular 15% somando apenas 15 reais, esquecendo de aplicar a porcentagem sobre o valor base total."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma situação do cotidiano familiar, a conta de energia elétrica da casa de Bruno teve um valor de R$ 120,00 no mês passado. Por causa de um descuido com o uso do ar-condicionado, a conta deste mês sofreu um acréscimo de 25%. No entanto, na semana seguinte, a família economizou energia e obteve um desconto de 20% sobre o valor já com o acréscimo. Qual é o valor final da conta de energia após essas duas alterações?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Um aumento de 25% em R$ 120,00 eleva a conta para R$ 150,00 (120 + 30). Depois, um desconto de 20% sobre R$ 150,00 reduz o valor em R$ 30,00 (20% de 150), retornando exatamente para R$ 120,00. O erro comum é achar que um aumento de 25% seguido de um desconto de 20% se anulam intuitivamente sem recalcular a base, mas aqui coincidiu pois 20% do novo valor era exatamente o acréscimo."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma receita de bolo de chocolate, a proporção de farinha de trigo deve ser de 2/5 da massa total. Se a massa total do bolo é de 1.000 gramas, quantos gramas de farinha são necessários?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Fração representa partes de um todo; dividindo 1.000 por 5 partes, temos 200 gramas por parte, e multiplicando por 2, chegamos a 400 gramas. O distrator 600 gramas estaria incorreto pois corresponderia a 3/5 da massa."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Matematica",
+      "agree": true,
+      "question": "Em uma aula prática de laboratório de Química na ETEC, os estudantes precisavam diluir uma solução. O frasco continha 500 mL de um líquido e os alunos consumiram 20% desse volume total para o experimento. Quantos mililitros de solução foram utilizados?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "3609810a-69eb-4d9b-b8da-6212a54e7f7e",
+      "explanation": "Porcentagem significa uma parte de um total de cem, então 20% de 500 é calculado multiplicando 500 por 0,20, o que resulta exatamente em 100 mL. A alternativa 50 mL está incorreta pois representa apenas 10% do volume inicial."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em uma aula de Geografia e Ciências, um professor apresentou uma tabela com a distância média dos planetas ao Sol. Mercúrio está a 58 milhões de km, enquanto a Terra está a 150 milhões de km. Com base no conceito de Sistema Solar, qual é a principal característica que define a posição desses planetas?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "O Sistema Solar é organizado pela força gravitacional do Sol, onde a distância influencia diretamente o clima e o período de translação. Como a Terra está mais longe que Mercúrio, ela recebe menos calor direto e leva mais tempo para completar sua órbita, tornando incorreta a afirmação de que todos possuem a mesma distância."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Ao observar o céu noturno, um estudante de 14 anos notou que a Lua apresentava diferentes formas ao longo do mês. Esse fenômeno, estudado em Ciências, ocorre devido à posição relativa entre Terra, Lua e Sol. Qual é o nome desse ciclo e o que ele representa?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "As fases da Lua ocorrem porque a Lua não possui luz própria e sua face iluminada pelo Sol muda conforme ela se move ao redor da Terra. O eclipse solar é um evento raro e pontual, não sendo o ciclo mensal de mudança de aparência da Lua."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "O Sol é uma estrela que fornece energia para a vida na Terra. Sobre a importância do Sol para o cotidiano terrestre, é correto afirmar que:",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "O Sol é uma estrela que realiza fusão nuclear, sendo a fonte primária de energia para a fotossíntese, processo que sustenta a base da cadeia alimentar. O Sol não é um planeta, descartando a primeira alternativa."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Ao observar o céu noturno, um morador de uma cidade pequena notou que a Lua apresentava diferentes formas ao longo do mês. Esse fenômeno, conhecido como fases da Lua, ocorre devido a:",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "As fases da Lua dependem da geometria entre o Sol, a Terra e a Lua, que determina quanto da face iluminada vemos. A alternativa que menciona a temperatura está incorreta, pois a temperatura não altera a forma visual do satélite."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em uma conversa sobre o Sistema Solar, um amigo comentou que a Terra é o único planeta com água líquida em abundância, o que a torna especial. Ele se perguntou se em outros lugares do universo poderia existir vida como a conhecemos. Considerando as condições necessárias para a vida como a conhecemos, qual fator é crucial para a existência de água líquida na superfície de um planeta?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A existência de água líquida na superfície de um planeta depende muito da sua distância da estrela (no nosso caso, o Sol). A 'zona habitável' é a região ao redor de uma estrela onde as temperaturas são adequadas para que a água possa existir em estado líquido. Se um planeta está muito perto, a água evapora; se está muito longe, congela, como vemos no nosso próprio Sistema Solar com Mercúrio (muito quente) e Netuno (muito frio)."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "A gravidade é a força que mantém os planetas orbitando o Sol e os objetos presos ao solo terrestre. Se compararmos a Terra com Júpiter, o maior planeta do Sistema Solar, podemos afirmar que:",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A força da gravidade é diretamente proporcional à massa do objeto; como Júpiter é muito mais massivo que a Terra, sua gravidade é maior. A ideia de que a gravidade é igual em todos os planetas é falsa, pois cada um possui massas e raios diferentes."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Durante uma aula de Física sobre gravidade, o professor explicou que a força gravitacional é o que mantém os planetas em órbita ao redor do Sol. Ele usou o exemplo de uma bola sendo girada em um barbante: se o barbante arrebentar, a bola sai em linha reta. A manutenção das órbitas dos planetas é um exemplo de como a gravidade age no Sistema Solar. Qual das alternativas descreve corretamente a relação entre massa e força gravitacional?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A lei da gravitação universal diz que a força gravitacional entre dois corpos é diretamente proporcional ao produto de suas massas. Isso significa que quanto maior a massa de um objeto, maior será sua força de atração gravitacional. O Sol, por ter uma massa muito maior que a de qualquer planeta, exerce a força gravitacional dominante que os mantém em órbita, assim como a Terra atrai você para o chão."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Os planetas do Sistema Solar são divididos em dois grupos principais: os rochosos e os gasosos. Qual das alternativas abaixo apresenta apenas planetas classificados como gasosos?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "Os planetas gasosos, também chamados de gigantes, são Júpiter, Saturno, Urano e Netuno, compostos majoritariamente por gases e gelo. A alternativa A está errada porque Mercúrio, Vênus e Terra são planetas rochosos."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em um gráfico de distância média em relação ao Sol, percebemos que a Terra ocupa uma posição privilegiada, chamada de 'zona habitável'. O que caracteriza essa região?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A zona habitável é a distância ideal de uma estrela onde a água pode existir em estado líquido, condição fundamental para a vida como conhecemos. A alternativa E está incorreta pois, quanto mais perto do Sol, maior a incidência de radiação e temperaturas extremas."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Para preparar um trabalho de Biologia e Ciências sobre o Sistema Solar, um grupo analisou um gráfico sobre a presença de atmosfera nos planetas internos. O gráfico mostrava que Vênus possui uma camada densa de dióxido de carbono que gera um forte efeito estufa, enquanto a Lua (que orbita a Terra) quase não tem atmosfera. Qual das alternativas explica corretamente a consequência disso, usando o exemplo de um carro fechado no sol?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A atmosfera densa de Vênus retém o calor do Sol de forma extrema, assim como os vidros fechados de um carro estacionado sob o sol forte. A alternativa B está incorreta porque a falta de atmosfera na Lua gera variações térmicas drásticas, indo de calor extremo a frio congelante."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "A Terra realiza diversos movimentos no espaço. O movimento que a Terra faz ao redor do seu próprio eixo, responsável pela alternância entre o dia e a noite, é chamado de:",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A rotação é o giro da Terra em torno de si mesma, como um pião, durando um dia. A translação, citada na alternativa A, é o movimento da Terra ao redor do Sol, que define o ano."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Um grupo de estudantes está montando um projeto sobre o Sistema Solar para a feira de ciências da escola. Eles decidiram representar os planetas em escala, mas se depararam com uma dificuldade: a grande diferença de tamanho entre eles. O professor de Ciências sugeriu que eles pesquisassem sobre a composição dos planetas para entender melhor essa variação. Qual das alternativas abaixo descreve corretamente a principal diferença entre os planetas rochosos e os gigantes gasosos do nosso Sistema Solar?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "Os planetas rochosos, como a Terra, são compostos principalmente por rochas e metais e possuem superfícies sólidas. Já os gigantes gasosos, como Júpiter e Saturno, são planetas muito maiores, formados predominantemente por gases como hidrogênio e hélio, sem uma superfície sólida definida. É como comparar uma bola de gude (planeta rochoso) com um balão gigante cheio de ar (gigante gasoso)."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em uma aula de Física e Astronomia, o professor apresentou uma tabela com a distância média dos planetas rochosos até o Sol: Mercúrio (58 milhões de km), Vênus (108 milhões de km), Terra (150 milhões de km) e Marte (228 milhões de km). Analisando os dados da tabela, o que podemos concluir sobre a relação entre a distância do Sol e a temperatura de um planeta rochoso, lembrando que no nosso dia a dia a água ferve mais rápido perto do fogo?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "No Sistema Solar, a luz e o calor diminuem conforme nos afastamos da estrela, funcionando como uma fogueira em que quem está mais perto sente mais calor. A alternativa D está incorreta porque a distância altera diretamente a quantidade de energia térmica que o planeta recebe."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em uma aula de Ciências, um estudante observou que a Terra leva aproximadamente 365 dias para completar uma volta ao redor do Sol. Esse movimento, fundamental para a contagem do tempo em nosso cotidiano, é chamado de:",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "O movimento de translação é o deslocamento da Terra em torno do Sol, durando cerca de um ano. A rotação, citada em outra alternativa, é o giro da Terra em torno de seu próprio eixo, causando o dia e a noite, e não o ano."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Um estudante do 9º ano leu uma notícia sobre o planeta Marte e encontrou o seguinte dado: enquanto um ano na Terra dura 365 dias, um ano em Marte dura cerca de 687 dias terrestres. Considerando o conceito de translação estudado em Ciências, por que isso acontece?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "O ano de um planeta é o tempo que ele leva para dar uma volta ao redor do Sol (translação); como Marte está mais longe, o caminho é maior, igual a uma pista de corrida mais externa. A alternativa E está incorreta porque as luas não exercem esse tipo de força de atração para atrasar o ano."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em um projeto de Geografia sobre o Sistema Solar, um grupo de alunos montou uma tabela comparativa. Eles notaram que os planetas rochosos (Mercúrio, Vênus, Terra e Marte) possuem características distintas dos planetas gasosos (Júpiter, Saturno, Urano e Netuno). Qual característica define os planetas rochosos?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "Os planetas rochosos ou telúricos possuem crostas sólidas, ao contrário dos gigantes gasosos. A alternativa que menciona densidade baixa descreve os planetas gasosos, não os rochosos."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Ao observar o céu noturno, um estudante notou que alguns pontos brilhantes não piscam como as estrelas, mas mantêm um brilho fixo. Ao pesquisar, descobriu que se tratava de planetas. Qual é a principal diferença física entre uma estrela, como o Sol, e um planeta?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "Estrelas como o Sol geram energia interna, enquanto planetas são corpos que orbitam estrelas e brilham apenas refletindo a luz que recebem. A alternativa E está incorreta porque inverte essa definição fundamental."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Em uma aula de Ciências, um professor explicou que o Sistema Solar é composto por uma estrela central e diversos corpos celestes que orbitam ao seu redor. Considerando a organização básica do nosso sistema, qual é o papel do Sol nesse conjunto?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "O Sol é uma estrela que possui a maior parte da massa do Sistema Solar, exercendo uma força gravitacional que mantém todos os planetas em órbita. Diferente da alternativa C, o Sol produz sua própria luz, não sendo um planeta."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Um aluno, ao estudar sobre os movimentos da Terra, confundiu o movimento de rotação com o de translação. Ele achava que o movimento de rotação era o que fazia a Terra girar ao redor do Sol, causando as estações do ano. O professor de Geografia aproveitou para esclarecer essa dúvida, explicando a diferença entre os dois movimentos. Qual das alternativas descreve corretamente o movimento de rotação da Terra e sua principal consequência?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "O movimento de rotação é o giro que a Terra realiza em torno de seu próprio eixo, como um pião girando. Esse movimento leva aproximadamente 24 horas para ser completado e é o responsável pela alternância entre dia e noite. Já o movimento de translação é o giro da Terra ao redor do Sol, que leva cerca de 365 dias e, junto com a inclinação do eixo terrestre, causa as estações do ano."
+    },
+    {
+      "profile": "etec",
+      "kind": "quiz",
+      "subject": "Ciencias da Natureza",
+      "agree": true,
+      "question": "Durante uma pesquisa na internet sobre o Sistema Solar, uma aluna encontrou a seguinte tabela comparativa de gravidade: na Terra, uma pessoa de 60 kg pesa o equivalente a 60 kgf; já em Júpiter, devido à sua imensa massa, o peso dessa mesma pessoa seria de cerca de 151 kgf. Relacionando essa situação com o conceito de massa e gravidade em Ciências, o que justifica essa diferença?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "9e7ea334-cd3e-4948-aac9-314f5b96ef01",
+      "explanation": "A gravidade é a força de atração exercida por corpos com massa; quanto maior o planeta, mais forte ele puxa tudo para baixo. A alternativa B está incorreta porque, embora Júpiter seja gasoso, sua massa gigantesca gera uma gravidade superficial muito superior à da Terra."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um cientista observa uma reação química onde uma substância A reage com uma substância B para formar uma substância C, liberando calor. Esse tipo de reação, que libera energia para o ambiente, é classificada como:",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Reações exotérmicas são aquelas que liberam energia, como a queima de um combustível ou a combustão em um fogão. O conceito fundamental é que, ao final do processo, o sistema transfere calor para o ambiente, tornando o recipiente mais quente ao toque."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o trecho de uma crônica sobre o cotidiano urbano: 'O semáforo fechou e, instantaneamente, uma sinfonia de buzinas tomou conta da avenida. Entre os carros impacientes, vendedores ambulantes ofereciam água fresca, equilibrando caixas pesadas sob o sol escaldante.' Esse texto utiliza a linguagem literária para descrever uma cena urbana comum. Qual é a principal função da expressão 'sinfonia de buzinas' nesse contexto?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Na literatura, usamos figuras de linguagem como a metáfora para comparar elementos de forma figurada, sem o uso de conectivos de comparação. A expressão 'sinfonia de buzinas' compara o som barulhento do trânsito a uma orquestra desorganizada para enfatizar o caos sonoro. É como quando dizemos que 'a rua virou um formigueiro' para indicar que há muitas pessoas andando ao mesmo tempo."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma aula de Geografia, o professor apresentou um mapa com curvas de nível, que são linhas que unem pontos de mesma altitude no relevo. Se um caminhante se desloca por uma trilha onde as curvas de nível estão extremamente próximas umas das outras, podemos afirmar que o terreno apresenta",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Em cartografia, as curvas de nível mostram a altitude do terreno e a inclinação da superfície. Quando essas linhas estão muito próximas umas das outras, significa que a altitude varia rapidamente em uma curta distância, caracterizando uma encosta íngreme ou um declive acentuado. O erro comum é achar que linhas próximas indicam vales planos, quando na verdade mostram subidas ou descidas muito íngremes."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante a Revolução Industrial, o surgimento das máquinas a vapor alterou profundamente a organização do trabalho e a sociedade. Analise a frase: 'O tempo do relógio substituiu o tempo da natureza'. Essa mudança de mentalidade, típica da transição para a modernidade, reflete:",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Com a introdução das fábricas, o trabalho passou a ser cronometrado para maximizar a produção, diferentemente do campo, onde o ritmo dependia das estações e do clima. O conceito básico é a disciplina fabril, onde o relógio dita o início e o fim das tarefas, uma prática que ainda hoje organiza a rotina de escolas e empresas."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma campanha de conscientização sobre o uso de água, uma escola instalou um reservatório de 500 litros. Se uma torneira pingando desperdiça 2 litros por dia, quantos litros serão economizados em um mês de 30 dias se o vazamento for consertado?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para resolver, multiplicamos o desperdício diário pelo número de dias, ou seja, 2 litros vezes 30 dias, resultando em 60 litros. O conceito básico aqui é a multiplicação aplicada ao consumo de recursos, onde o total economizado é a taxa de desperdício diária vezes o período."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "No mapa de uma cidade, a escala utilizada é de 1:50.000, o que significa que cada 1 centímetro no mapa corresponde a 50.000 centímetros na realidade. Se a distância entre a praça central e a escola no mapa é de 4 centímetros, qual é a distância real entre esses dois pontos em quilômetros?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico de escala cartográfica é uma proporção matemática entre a medida no papel e a medida real. Multiplicando 4 cm por 50.000, encontramos 200.000 centímetros reais, que, ao serem convertidos para metros dividindo por 100 e para quilômetros dividindo por 1.000, resultam exatamente em 2 km."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": false,
+      "question": "Observe a tabela de produção de uma pequena fábrica de calçados durante uma semana: Segunda (120 pares), Terça (135 pares), Quarta (110 pares), Quinta (145 pares) e Sexta (140 pares). Qual foi a média diária de produção de calçados dessa fábrica?",
+      "gabarito": "D",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para calcular a média, somamos todos os valores (120 + 135 + 110 + 145 + 140 = 650) e dividimos pelo número de dias, que é 5. Ao dividir 650 por 5, obtemos 130 pares por dia. É como calcular quanto dinheiro você economizou em média por dia ao somar todas as suas economias da semana e dividir pelo número de dias."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante uma aula de laboratório, um estudante misturou água e óleo de cozinha em um béquer. Observou-se que os dois líquidos não se misturaram, formando duas camadas distintas, sendo que o óleo ficou na parte superior. Esse fenômeno ocorre devido a uma propriedade física chamada:",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico de densidade relaciona a massa de um material com o volume que ele ocupa. No dia a dia, vemos que o óleo flutua na água porque sua densidade é menor que a da água, impedindo que eles se misturem e formando fases separadas."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um ciclista registrou em uma tabela a distância percorrida em quilômetros (km) a cada hora durante um treino de resistência: 1ª hora: 20 km, 2ª hora: 40 km, 3ª hora: 60 km. Mantendo exatamente esse mesmo padrão de proporção direta, qual será a distância total percorrida pelo ciclista ao completar 5 horas de treino?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Identificamos que a cada hora o ciclista percorre 20 km constantes, caracterizando uma velocidade média de 20 km/h. Multiplicando essa taxa horária pelas 5 horas solicitadas, temos 20 vezes 5, resultando em 100 quilômetros. No nosso dia a dia, fazemos o mesmo cálculo simples ao estimar quanto tempo gastaremos em uma viagem de carro mantendo a mesma velocidade."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Ana e Bruno estão organizando uma festa e precisam dividir igualmente 72 salgadinhos em bandejas. Se cada bandeja deve conter exatamente 8 salgadinhos, quantas bandejas eles conseguirão preencher completamente?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "A divisão exata de quantidades é uma operação matemática básica usada para repartir elementos em partes iguais. Dividindo o total de 72 salgadinhos pela quantidade de 8 salgadinhos por bandeja, obtemos exatamente 9 bandejas preenchidas."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante um experimento de Ciências no laboratório da escola, misturou-se água e óleo de cozinha em um béquer. Após alguns minutos em repouso, observou-se claramente a separação dos líquidos em duas camadas distintas. Esse tipo de mistura é classificado como",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico diferencia misturas homogêneas (que têm uma só fase) de heterogêneas (que têm duas ou mais fases). Como a água e o óleo não se dissolvem um no outro e possuem densidades diferentes, eles formam duas camadas visíveis, caracterizando uma mistura heterogênea. O erro comum é achar que qualquer líquido misturado forma uma solução homogênea."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Uma loja de materiais escolares fez um levantamento da quantidade de cadernos vendidos em uma semana e organizou os dados em um gráfico de colunas: Segunda-feira: 30 unidades, Terça-feira: 45 unidades, Quarta-feira: 25 unidades, Quinta-feira: 60 unidades, Sexta-feira: 80 unidades. Qual foi a média diária de cadernos vendidos de segunda a sexta-feira?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para calcular a média aritmética, somamos todos os valores e dividimos pelo número total de dias. A soma das vendas é 30 mais 45 mais 25 mais 60 mais 80, totalizando 240 unidades. Dividindo 240 por 5 dias, obtemos exatamente 48 unidades por dia. É o mesmo raciocínio que usamos para calcular a nossa média de notas escolares ao somar todas as avaliações e dividir pela quantidade delas."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante uma aula de Ciências, um grupo de estudantes analisou o processo de digestão humana. Eles discutiram sobre o órgão onde ocorre a maior parte da absorção dos nutrientes dos alimentos que ingerimos para a corrente sanguínea.",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "No corpo humano, o processo de digestão transforma os alimentos em substâncias menores para que possam ser aproveitadas. O intestino delgado é o órgão responsável pela maior parte da absorção de nutrientes, graças às suas paredes internas repletas de dobras e vilosidades que aumentam a superfície de contato. Os distratores citam outros órgãos que participam da digestão ou absorção de água, mas não da maioria dos nutrientes."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma embalagem de cereal matinal, consta que a porção de 30 g contém 120 kcal. Um jovem decide comer uma tigela contendo 75 g desse cereal. Quantas quilocalorias ele estará ingerindo nessa refeição?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Podemos resolver essa situação usando uma regra de três simples com proporções matemáticas. Se 30 g fornecem 120 kcal, 1 g fornece 4 kcal, logo, multiplicando 75 g por 4 kcal, encontramos o valor de 300 kcal."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante a leitura de um poema modernista, um estudante notou que os versos não seguiam uma métrica rígida e não apresentavam rimas tradicionais, características marcantes da poesia da Semana de Arte Moderna de 1922. Essa liberdade na construção dos versos é chamada de:",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito de versos livres na literatura refere-se àqueles que não possuem rima nem métrica fixa, permitindo que o autor expresse seus sentimentos de forma mais coloquial. É como falar livremente em uma conversa com amigos, sem se preocupar com regras gramaticais rígidas ou rimas combinadas."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o trecho: 'A urbanização acelerada trouxe desafios significativos para o planejamento das cidades brasileiras. A falta de saneamento básico em áreas periféricas reflete a desigualdade socioespacial, impactando diretamente a saúde pública e a qualidade de vida dos moradores.' Com base no texto e nos conhecimentos de Geografia, o fenômeno descrito é uma consequência direta de qual processo?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O êxodo rural é o deslocamento de pessoas do campo para a cidade em busca de emprego, o que, sem planejamento, gera o crescimento desordenado das periferias. Esse processo histórico explica por que muitas cidades brasileiras enfrentam hoje a falta de saneamento básico em áreas de ocupação rápida. O conceito básico aqui é a migração campo-cidade e o planejamento urbano."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um agricultor deseja cercar um terreno retangular de 12 metros de comprimento e 8 metros de largura para criar uma horta. Sabendo que ele precisa de 3 voltas completas de arame farpado ao redor de todo o perímetro do terreno, quantos metros de arame ele precisará comprar?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O perímetro de um retângulo é a soma de todos os seus lados, calculada por 2 vezes a soma do comprimento com a largura, ou seja, 2 vezes 20, que resulta em 40 metros. Como são necessárias 3 voltas, multiplicamos 40 por 3, totalizando 120 metros. É como dar três voltas completas em um quarteirão quadrado para medir a distância total percorrida."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Para calcular o consumo de energia elétrica de um chuveiro, a concessionária utiliza a unidade quilowatt-hora (kWh). Se um chuveiro tem potência de 5400 W (o mesmo que 5,4 kW) e fica ligado por 30 minutos (0,5 hora) por dia, qual será o consumo de energia desse chuveiro em 30 dias?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico de consumo elétrico é a multiplicação da potência pelo tempo de uso. Multiplicando 5,4 kW por 0,5 hora, temos 2,7 kWh consumidos por dia. Em 30 dias, o cálculo de 2,7 kWh multiplicado por 30 resulta em 81 kWh."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um estudante analisou a tabela abaixo com o consumo médio de água por habitante em quatro bairros de uma cidade durante o mês de outubro, medido em metros cúbicos (m³): Bairro Alpha: 12 m³, Bairro Beta: 15 m³, Bairro Gamma: 10 m³, Bairro Delta: 18 m³. Sabendo que a meta da prefeitura é que o consumo não ultrapasse a média de 14 m³ por habitante, qual bairro apresentou o consumo mais próximo da meta estabelecida?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para encontrar o valor mais próximo de 14 m³, calculamos a distância de cada valor até 14. O Bairro Beta consumiu 15 m³, ficando a apenas 1 unidade de distância da meta, o que representa o valor mais próximo entre as opções dadas. No nosso dia a dia, quando comparamos preços no supermercado, usamos a mesma lógica de ver qual valor chega mais perto do nosso orçamento."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma aula de Geografia e Ciências, os alunos estudavam o fenômeno do Efeito Estufa e o Aquecimento Global. Um gráfico de barras mostrou o aumento das emissões globais de dióxido de carbono (CO₂) nas últimas décadas. Assinale a alternativa que explica corretamente a relação entre esse gás e o aumento da temperatura do planeta.",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O efeito estufa é um fenômeno natural vital que mantém a Terra aquecida, mas o excesso de gases como o CO₂ intensifica essa retenção de calor. Funciona exatamente como o interior de um carro fechado sob o sol: os vidros deixam a luz entrar, mas o calor fica preso lá dentro. Sem esse equilíbrio, a vida na Terra seria inviável pelo frio extremo."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": false,
+      "question": "Uma receita de bolo para 6 pessoas pede 3 ovos, 2 xícaras de farinha e 1 xícara de açúcar. Se uma pessoa quiser fazer o mesmo bolo para atender a 15 pessoas em uma festa de aniversário, de quantos ovos ela precisará?",
+      "gabarito": "D",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para ajustar receitas para mais pessoas, usamos a proporção direta da matemática básica. Dividindo 15 por 6, descobrimos que a receita deve ser multiplicada por 2,5, e multiplicando 3 ovos por 2,5, precisamos exatamente de 7,5 ovos."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma experiência de laboratório, um estudante observa que uma planta mantida em um ambiente sem luz solar começa a apresentar folhas amareladas e crescimento reduzido. Esse fenômeno ocorre porque a planta não consegue realizar um processo fundamental para a produção de seu próprio alimento. Qual é esse processo?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "A fotossíntese é o processo pelo qual as plantas usam a luz solar para transformar água e gás carbônico em glicose, que é o 'alimento' da planta. Sem a luz, o processo é interrompido, impedindo a produção de energia necessária para o desenvolvimento. É como se a planta ficasse sem sua fonte de energia, assim como um aparelho eletrônico descarregado."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em um experimento de Ciências, um grupo observou que uma planta colocada em um local sem luz solar apresentou folhas amareladas e crescimento reduzido após duas semanas. Esse fenômeno ocorre porque a ausência de luz impede que a planta realize corretamente um processo fundamental para sua sobrevivência. Qual é esse processo?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "A fotossíntese é o processo em que as plantas usam a luz solar, água e gás carbônico para produzir glicose, sua fonte de energia. Sem luz, a planta não consegue fabricar alimento, enfraquecendo como um ser humano que fica sem se alimentar por muito tempo. Esse processo é essencial para a cor verde das folhas, devido à produção de clorofila."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o trecho de uma crônica: 'O vento soprava forte na manhã de outono, fazendo as folhas secas dançarem pelo calçamento da praça, enquanto os transeuntes apressavam o passo para fugir da garoa.' No texto, a função principal dos adjetivos 'forte', 'secas' e 'apressavam' (em sentido descritivo) é",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Na gramática, os adjetivos e termos descritivos servem para qualificar e dar características aos substantivos, construindo imagens mentais mais nítidas no leitor. No trecho, palavras como forte e secas qualificam o vento e as folhas, ajudando a compor o cenário da crônica. Os alunos costumam confundir adjetivos com verbos ou advérbios, mas aqui a função é estritamente caracterizadora."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o cartaz de uma campanha de doação de agasalhos: 'O inverno está chegando, mas o calor humano pode aquecer quem mais precisa. Doe um casaco e compartilhe solidariedade.' A eficácia comunicativa desse tipo de texto baseia-se no duplo sentido da palavra 'aquecer'. Esse recurso expressivo explora:",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O texto joga com o sentido literal (proteger do frio) e o sentido conotativo (demonstrar carinho e empatia através da doação). Na língua portuguesa, exploramos figuras de linguagem para dar mais força emocional à mensagem. É semelhante a quando dizemos que 'um abraço acolheu o coração', unindo sensações físicas a sentimentos."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Para calcular o consumo de energia elétrica de um chuveiro, a concessionária utiliza a grandeza quilowatt-hora (kWh), que mede a energia consumida ao longo do tempo. Se um chuveiro tem potência de 5400 W (o mesmo que 5,4 kW) e permanece ligado por 30 minutos em um dia, qual é a energia consumida nesse período, em kWh?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico é que a energia elétrica é calculada multiplicando a potência pelo tempo de uso. Quando a potência está em quilowatts e o tempo em horas, 30 minutos correspondem a 0,5 hora. Fazendo o cálculo de 5,4 kW multiplicados por 0,5 h, o resultado da energia consumida é de 2,7 kWh."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante uma pesquisa histórica sobre a industrialização brasileira, um grupo analisou um gráfico de linhas que mostrava o crescimento da população urbana em relação à rural entre 1950 e 1980. O gráfico indicava que a linha da população urbana disparou para cima, enquanto a rural caiu. Esse fenômeno demográfico e social ocorrido no período é conhecido como:",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O êxodo rural foi o movimento migratório em que milhões de pessoas saíram do campo para morar nas cidades, atraídas pelo processo de industrialização que gerava postos de trabalho urbanos. É semelhante a quando famílias saem de cidades pequenas em busca de melhores oportunidades de estudo e trabalho em metrópoles."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": false,
+      "question": "Em uma embalagem de cereal matinal, consta a informação nutricional de que uma porção de 30 gramas fornece 120 calorias. Se um jovem consome uma quantidade equivalente a três porções e meia dessa embalagem no seu café da manhã, quantas calorias ele terá ingerido?",
+      "gabarito": "E",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para resolver este problema de matemática aplicado ao cotidiano, multiplicamos o valor calórico de uma porção pelo número de porções consumidas. Três porções fornecem 360 calorias, calculadas como 3 vezes 120. Meia porção fornece 60 calorias, que é a metade de 120. Somando 360 com 60, encontramos o total de 420 calorias."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um ciclista pedala por uma ciclovia mantendo uma velocidade constante. Em 2 horas, ele percorre uma distância de 30 quilômetros. Mantendo exatamente o mesmo ritmo, qual será a distância percorrida por ele após 5 horas de pedalada?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para resolver problemas de proporção e velocidade constante, podemos usar a regra de três simples. Se em 2 horas ele percorre 30 quilômetros, em 1 hora ele percorre 15 quilômetros. Multiplicando a velocidade horária de 15 quilômetros por hora pelas 5 horas solicitadas, obtemos o total de 75 quilômetros."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o trecho de uma crônica: 'O ônibus vinha lotado, o calor castigava e o cobrador tentava dar troco com paciência enquanto o motorista desviava dos buracos da avenida.' O recurso linguístico predominante nesse trecho é:",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "No cotidiano, crônicas usam a narração para retratar cenas urbanas comuns de forma simples e direta. O texto descreve um cenário real de transporte público sem rigidez técnica, caracterizando uma narrativa do dia a dia."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "A atmosfera terrestre é composta por várias camadas, sendo a mais próxima da superfície a troposfera, onde ocorrem os principais fenômenos meteorológicos e vive a maior parte dos seres vivos. Entre os gases que compõem o ar seco, o mais abundante é o:",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico de ciências sobre a composição do ar mostra que ele é uma mistura de gases, sendo o nitrogênio o mais abundante, presente em cerca de 78% do total. Da mesma forma que o ar que enche um pneu de bicicleta tem vários componentes, a atmosfera é rica principalmente nesse gás inerte."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "A escravidão no Brasil colonial e imperial foi marcada por diversas formas de resistência por parte dos africanos escravizados e seus descendentes. Entre essas formas, destacavam-se os quilombos, que eram",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Na história brasileira, os quilombos representaram a principal forma de resistência coletiva contra o cativeiro, reunindo negros fugitivos em locais de difícil acesso para viverem em liberdade. O Quilombo dos Palmares foi o mais famoso deles, simbolizando a luta pela sobrevivência e pela preservação cultural. Os distratores inventam funções oficiais ou pacíficas que não correspondem à realidade histórica dessas comunidades de resistência."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma campanha de doação de sangue, um hospital registrou o tipo sanguíneo de 200 voluntários. Os dados mostraram que 80 pessoas tinham sangue O, 60 tinham tipo A, 40 tinham tipo B e 20 tinham tipo AB. Qual é a porcentagem de voluntários que possuem o tipo sanguíneo O?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico de porcentagem calcula a razão entre a parte e o todo multiplicada por 100. Dividindo o número de pessoas com sangue O, que é 80, pelo total de 200 voluntários, obtemos 0,4, que, transformado em porcentagem, chega a 40%."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma lanchonete, um combo promocional de hambúrguer com batata frita custa R$ 25,00. Se o estabelecimento decidir aplicar um reajuste de aumento de 12% nesse valor para o próximo mês, qual passará a ser o novo preço do combo?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico de acréscimo percentual consiste em calcular a porcentagem do valor inicial e somá-la a ele. Calculando 12% de 25 reais, obtemos 3 reais de aumento, que, somados aos 25 reais originais, resultam no novo preço de 28 reais."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "A Revolução Industrial iniciada na Inglaterra no século XVIII transformou profundamente a produção de mercadorias e a organização da sociedade. Uma das principais mudanças sociais desse período foi:",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito histórico da Revolução Industrial envolve a transição do trabalho manual e caseiro para o sistema fabril mecanizado. Como um exemplo do cotidiano atual, pense em como as roupas que vestimos são feitas em larga escala por máquinas e linhas de montagem, algo que nasceu nessa época."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o trecho: 'A urbanização acelerada nas metrópoles brasileiras trouxe desafios significativos, como a ocupação irregular de encostas e o aumento da impermeabilização do solo'. Com base nessa afirmação e em seus conhecimentos de Geografia, qual é a principal consequência ambiental desse processo durante o período de chuvas intensas?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "A impermeabilização do solo, causada pelo asfalto e concreto, impede que a água da chuva seja absorvida pela terra, forçando-a a correr pela superfície. Isso causa enchentes, e a ocupação de encostas retira a vegetação que segura o solo, provocando deslizamentos. É o mesmo princípio de um copo de água transbordando quando não há mais espaço para o líquido ser absorvido."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um fabricante de sucos deseja embalar 1.200 litros de suco em garrafas de 750 mililitros. Sabendo que 1 litro equivale a 1.000 mililitros, qual é o número mínimo de garrafas necessárias para envasar todo o produto?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para resolver, primeiro convertemos 1.200 litros para mililitros, resultando em 1.200.000 ml. Dividindo esse total pela capacidade de cada garrafa (750 ml), obtemos exatamente 1.600 unidades. Como no cotidiano precisamos garantir que todo o volume seja armazenado, a divisão exata nos dá o número de recipientes necessários."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma embalagem de cereal matinal, consta que a porção recomendada é de 30 gramas, o que fornece 120 calorias. Se uma pessoa consumir um prato contendo 75 gramas desse mesmo cereal, quantas calorias ela estará ingerindo?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Utilizamos a regra de três simples e direta para manter a proporção entre a quantidade de gramas e as calorias. Dividindo 75 gramas por 30 gramas, descobrimos que a porção consumida é 2,5 vezes maior. Multiplicando 120 calorias por 2,5, o resultado é 300 calorias."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Em uma aula de Ciências, a turma analisou um gráfico de setores (gráfico de pizza) que mostrava a matriz energética do Brasil. A maior fatia representava fontes renováveis, destacando a energia hidrelétrica. No entanto, o professor lembrou que a construção de grandes hidrelétricas causa impactos socioambientais. Qual dos seguintes fenômenos está diretamente associado à instalação de uma barragem hidrelétrica?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "As hidrelétricas utilizam a força da água dos rios, mas exigem a formação de um lago artificial (reservatório). Esse processo alaga florestas e terras habitadas, alterando profundamente o ecossistema local e obrigando famílias a saírem de suas casas. Funciona como quando enchemos uma bacia grande no quintal e cobrimos tudo o que estava no chão."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "A urbanização acelerada e sem planejamento das grandes metrópoles brasileiras a partir da segunda metade do século XX gerou diversos problemas socioambientais. Um exemplo típico desse processo no cotidiano urbano é:",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Em cidades que cresceram sem planejamento, a falta de moradia acessível empurra populações para encostas vulneráveis. Isso gera riscos graves de deslizamentos durante chuvas fortes, refletindo um problema social e urbano recorrente."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um ciclista pedala por uma ciclovia e percebe que sua velocidade média é de 15 km/h. Se ele precisa percorrer uma distância de 45 km para chegar ao seu destino, quanto tempo durará esse percurso?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "No cotidiano, a relação entre velocidade, distância e tempo é dada pela fórmula tempo igual à distância dividida pela velocidade. Dividindo os 45 km de distância pelos 15 km/h de velocidade, obtemos exatamente 3 horas de viagem."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um cartaz de conscientização sobre o consumo de água traz a seguinte manchete: Uma torneira pingando gasta cerca de 46 litros de água por dia. Quantos litros de água serão desperdiçados por essa mesma torneira em uma semana inteira?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para resolver problemas de proporção envolvendo dias da semana, multiplicamos o consumo diário pelo número de dias. Uma semana possui 7 dias, então multiplicamos 46 litros por 7, o que resulta em 322 litros desperdiçados."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante uma aula de Ciências, um grupo de estudantes mediu a temperatura de um copo de água que estava a 20 graus Celsius e o colocou em um aquecedor. A temperatura subiu 3 graus Celsius a cada minuto. Qual será a temperatura da água após 4 minutos?",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito básico envolve resolver uma expressão de multiplicação e soma. Multiplicamos os 4 minutos pelos 3 graus que sobem por minuto, obtendo um aumento de 12 graus Celsius. Somando esse valor à temperatura inicial de 20 graus Celsius, chegamos a 32 graus Celsius."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Durante uma aula de laboratório, um estudante misturou água e óleo de cozinha em um béquer. O óleo flutuou sobre a água, formando duas fases distintas. Esse fenômeno físico ocorre porque:",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "No dia a dia, vemos que azeite e água não se misturam por causa da polaridade química e da densidade. O óleo é menos denso e apolar, enquanto a água é polar, o que impede a dissolução e faz o óleo ficar na superfície."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o fragmento de um texto publicitário de conscientização: 'Desperdiçar água hoje é escolher a sede amanhã. Cada gota economizada no chuveiro garante que o futuro não seja árido.' Do ponto de vista gramatical e argumentativo, o uso dos verbos no imperativo ('economize', 'pense') e a oposição entre 'hoje' e 'amanhã' têm como principal objetivo:",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Os textos publicitários e de conscientização usam verbos no imperativo para dar ordens ou conselhos diretos, chamando o leitor para a ação. A oposição temporal entre hoje e amanhã serve para alertar sobre as consequências futuras de atos presentes. É a mesma estratégia usada em campanhas de trânsito para convencer motoristas a dirigirem com segurança."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Mariana comprou uma blusa que custava 80 reais. Como ela pagou à vista no dinheiro, recebeu um desconto de 15 por cento sobre o valor total. Quanto Mariana pagou pela blusa após o desconto?",
+      "gabarito": "C",
+      "outra": "C",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para calcular porcentagens, transformamos o valor em uma fração ou decimal e aplicamos ao total da compra. 15 por cento de 80 reais corresponde a 12 reais de desconto. Subtraindo esses 12 reais do preço original de 80 reais, o valor final pago é de 68 reais."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Leia o trecho: 'A urbanização acelerada das cidades brasileiras no século XX trouxe desafios como a ocupação irregular de encostas e a falta de saneamento básico'. Esse fenômeno geográfico e histórico está diretamente associado a qual processo?",
+      "gabarito": "A",
+      "outra": "A",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O êxodo rural foi o movimento de migração das pessoas do campo para as cidades em busca de trabalho nas indústrias. Como exemplo, muitas famílias saíram do interior para as grandes capitais, o que causou um crescimento desordenado das cidades, refletindo a ocupação irregular mencionada."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Um ônibus intermunicipal sai da rodoviária às 8 horas e 15 minutos da manhã e chega ao seu destino às 11 horas e 45 minutos do mesmo dia. Quanto tempo durou a viagem inteira?",
+      "gabarito": "D",
+      "outra": "D",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "Para calcular intervalos de tempo, subtraímos o horário de início do horário de chegada. Das 8 horas e 15 minutos até as 11 horas e 15 minutos temos exatamente 3 horas, e somando mais 30 minutos até as 11 e 45 chegamos a 3 horas e 30 minutos de viagem."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Na Roma Antiga, a economia e a estrutura social dependiam fortemente de uma classe específica de trabalhadores que não tinham direitos civis, sendo considerados propriedades de seus senhores. Como era chamada essa camada da população?",
+      "gabarito": "E",
+      "outra": "E",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "O conceito histórico da estrutura romana baseava-se no trabalho de pessoas capturadas em guerras ou compradas, que realizavam os serviços braçais sem remuneração ou liberdade. Assim como os produtos que compramos na loja nos pertencem, os romanos antigos tratavam esses trabalhadores como posses."
+    },
+    {
+      "profile": "etec",
+      "kind": "simulado ETEC",
+      "subject": "Multidisciplinar",
+      "agree": true,
+      "question": "Na frase 'Embora o projeto fosse inovador, os recursos financeiros eram limitados', a palavra 'embora' estabelece uma relação de sentido de:",
+      "gabarito": "B",
+      "outra": "B",
+      "quizId": "0f8d4b67-7d4b-4b0a-b181-e2b7a12c840f",
+      "explanation": "A conjunção 'embora' introduz uma ideia de oposição ou ressalva, permitindo que a ação principal ocorra apesar de um problema. No dia a dia, é como dizer 'embora esteja chovendo, vou sair', onde a chuva é um obstáculo que não cancela o plano de sair."
+    }
+  ],
+  "verdicts": [
+    {
+      "profile": "etec",
+      "n": 1,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Durante a aula de Educação Financeira e Matemática, os alunos analisaram a promoção de uma blusa de uniforme da ETEC que custava originalmente R$ 80,00 e passou",
+      "subject": "Matematica"
+    },
+    {
+      "profile": "etec",
+      "n": 2,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Na preparação para o Vestibulinho da ETEC, Lucas organizou seu cronograma de estudos diário. Ele estuda matemática durante 90 minutos por dia e resolveu destina",
+      "subject": "Matematica"
+    },
+    {
+      "profile": "etec",
+      "n": 3,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Uma turma do 9º ano realizou uma pesquisa sobre a preferência de cursos técnicos integrados ao ensino médio na ETEC. Dos 40 alunos entrevistados, 15 escolheram ",
+      "subject": "Matematica"
+    },
+    {
+      "profile": "etec",
+      "n": 4,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Em uma receita de bolo de chocolate, a proporção de farinha de trigo deve ser de 2/5 da massa total. Se a massa total do bolo é de 1.000 gramas, quantos gramas ",
+      "subject": "Matematica"
+    },
+    {
+      "profile": "etec",
+      "n": 5,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Em uma conversa sobre o Sistema Solar, um amigo comentou que a Terra é o único planeta com água líquida em abundância, o que a torna especial. Ele se perguntou ",
+      "subject": "Ciencias da Natureza"
+    },
+    {
+      "profile": "etec",
+      "n": 6,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "A Terra realiza diversos movimentos no espaço. O movimento que a Terra faz ao redor do seu próprio eixo, responsável pela alternância entre o dia e a noite, é c",
+      "subject": "Ciencias da Natureza"
+    },
+    {
+      "profile": "etec",
+      "n": 7,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Ao observar o céu noturno, um estudante notou que alguns pontos brilhantes não piscam como as estrelas, mas mantêm um brilho fixo. Ao pesquisar, descobriu que s",
+      "subject": "Ciencias da Natureza"
+    },
+    {
+      "profile": "etec",
+      "n": 8,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Em uma aula de Geografia, o professor apresentou um mapa com curvas de nível, que são linhas que unem pontos de mesma altitude no relevo. Se um caminhante se de",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 9,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Um ciclista registrou em uma tabela a distância percorrida em quilômetros (km) a cada hora durante um treino de resistência: 1ª hora: 20 km, 2ª hora: 40 km, 3ª ",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 10,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Durante a leitura de um poema modernista, um estudante notou que os versos não seguiam uma métrica rígida e não apresentavam rimas tradicionais, características",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 11,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Uma receita de bolo para 6 pessoas pede 3 ovos, 2 xícaras de farinha e 1 xícara de açúcar. Se uma pessoa quiser fazer o mesmo bolo para atender a 15 pessoas em ",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 12,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Durante uma pesquisa histórica sobre a industrialização brasileira, um grupo analisou um gráfico de linhas que mostrava o crescimento da população urbana em rel",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 13,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Em uma campanha de doação de sangue, um hospital registrou o tipo sanguíneo de 200 voluntários. Os dados mostraram que 80 pessoas tinham sangue O, 60 tinham tip",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 14,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Em uma aula de Ciências, a turma analisou um gráfico de setores (gráfico de pizza) que mostrava a matriz energética do Brasil. A maior fatia representava fontes",
+      "subject": "Multidisciplinar"
+    },
+    {
+      "profile": "etec",
+      "n": 15,
+      "nivel_ok": true,
+      "estilo_ok": true,
+      "gabarito_ok": true,
+      "uma_correta": true,
+      "explicacao_ok": true,
+      "comentario": "",
+      "question": "Leia o fragmento de um texto publicitário de conscientização: 'Desperdiçar água hoje é escolher a sede amanhã. Cada gota economizada no chuveiro garante que o f",
+      "subject": "Multidisciplinar"
+    }
+  ],
+  "costUsd": 0.108229
+}

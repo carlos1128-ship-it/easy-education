@@ -18,7 +18,7 @@ export function lettersLabel(optionCount: OptionCount = 4) {
 
 /** Instrução de formato da resposta da IA, com o número certo de alternativas. */
 export function answerFormatInstruction(optionCount: OptionCount = 4) {
-  return `options (array com o TEXTO completo de cada uma das ${optionCount} alternativas, na ordem ${lettersLabel(optionCount)}, sem a letra na frente; nunca escreva so a letra), correctAnswer (apenas ${lettersFor(optionCount).join(", ")})`;
+  return `options (array com o TEXTO completo de cada uma das ${optionCount} alternativas, na ordem ${lettersLabel(optionCount)}, sem a letra na frente; nunca escreva so a letra), correctAnswer (apenas ${lettersFor(optionCount).join(", ")}; na explicacao, sempre em portugues do Brasil, cite o conteudo da alternativa, nunca a letra, porque a ordem das alternativas muda depois; confira que a conta da explicacao chega exatamente ao valor da alternativa correta)`;
 }
 
 type PersistedQuestion = {
@@ -165,27 +165,41 @@ export async function generateQuizQuestions(
 ): Promise<GeneratedQuizQuestion[]> {
   const accepted: GeneratedQuizQuestion[] = [];
   const seen = new Set<string>();
+  const fingerprints: QuestionFingerprint[] = [];
   for (let round = 0; round < 3 && accepted.length < count; round += 1) {
     const missing = count - accepted.length;
     let raw: unknown[];
     try {
-      raw = await generate(missing, round);
+      // Pede um pouco a mais: a conferência descarta algumas e, sem folga, o aluno recebia 89 de 90.
+      raw = await generate(requestWithBuffer(missing, round), round);
     } catch (error) {
       if (!accepted.length) throw error;
       break;
     }
     const candidates: GeneratedQuizQuestion[] = [];
-    for (const question of sanitizeGeneratedQuizQuestions(raw, missing, quality.optionCount ?? 4)) {
+    for (const question of sanitizeGeneratedQuizQuestions(raw, raw.length, quality.optionCount ?? 4)) {
       const key = questionDedupeKey(question);
-      if (seen.has(key) || quality.reject?.(question)) continue;
+      if (seen.has(key) || quality.reject?.(question) || explanationContradictsAnswer(question)) continue;
+      // Quase repetida (mesma situação com outro número, como dois chuveiros de 5500 W e 5400 W): também sai.
+      const fingerprint = questionFingerprint(question);
+      if (fingerprints.some((other) => isNearDuplicate(other, fingerprint))) continue;
       seen.add(key);
+      fingerprints.push(fingerprint);
       candidates.push(question);
     }
     const checked = quality.verify ? await quality.verify(candidates) : { items: candidates, verified: false };
     if (checked.verified && checked.items.length) quality.onVerified?.(checked.items);
-    accepted.push(...checked.items);
+    accepted.push(...checked.items.slice(0, count - accepted.length));
   }
   return fillQuestionCount(accepted, count);
+}
+
+/**
+ * Quantas questões pedir à IA quando faltam `missing`: 10% a mais na 1ª rodada (a conferência costuma descartar
+ * de 3% a 10%) e 25% + 1 nas seguintes, que já são reposição.
+ */
+export function requestWithBuffer(missing: number, round: number) {
+  return missing + (round === 0 ? Math.ceil(missing * 0.1) : Math.ceil(missing * 0.25) + 1);
 }
 
 /**
@@ -284,4 +298,113 @@ export function describeSubjectForPrompt(subject: string, topic?: string) {
  */
 export function optionCountForStyle(style: string | null | undefined): OptionCount {
   return /\b(enem|etec|etecs|vestibulinho|fuvest|fcc|vunesp|fgv|cesgranrio)\b/i.test(style ?? "") ? 5 : 4;
+}
+
+/** Troca as letras citadas na explicação ("alternativa C", "letra b", "(C)") pelas novas posições. */
+export function remapLetterMentions(text: string, map: Record<string, string>) {
+  return text
+    .replace(/\b(alternativas?|letras?|op[çc][ãa]o|op[çc][õo]es|itens?)(\s+)(["“']?)([A-Ea-e])\b/g, (match, word: string, space: string, quote: string, letter: string) => {
+      const next = map[letter.toUpperCase()];
+      return next ? `${word}${space}${quote}${letter === letter.toLowerCase() ? next.toLowerCase() : next}` : match;
+    })
+    .replace(/\(([A-E])\)/g, (match, letter: string) => (map[letter] ? `(${map[letter]})` : match));
+}
+
+/**
+ * Espalha o gabarito entre as letras. A IA tende a pôr a resposta certa sempre na mesma letra (na bateria de
+ * 10/10/2026, 11 de 20 questões caíram na A). Cada questão tem a resposta certa movida para uma letra de uma
+ * sequência embaralhada que cobre todas as letras por igual; as outras alternativas mudam de lugar ao acaso,
+ * e as letras citadas na explicação acompanham.
+ */
+export function balanceCorrectLetters(questions: GeneratedQuizQuestion[], random: () => number = Math.random): GeneratedQuizQuestion[] {
+  const shuffle = <T,>(items: T[]) => {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  };
+  const targets: number[] = [];
+  return questions.map((question) => {
+    const count = question.options.length;
+    const correct = LETTERS.indexOf(question.correctAnswer as (typeof LETTERS)[number]);
+    if (count < 2 || correct < 0 || correct >= count) return question;
+    if (!targets.length) targets.push(...shuffle(Array.from({ length: count }, (_, index) => index)));
+    const target = targets.pop()! % count;
+    const others = shuffle(Array.from({ length: count }, (_, index) => index).filter((index) => index !== correct));
+    const order = [...others.slice(0, target), correct, ...others.slice(target)];
+    const map: Record<string, string> = {};
+    order.forEach((oldIndex, newIndex) => (map[LETTERS[oldIndex]] = LETTERS[newIndex]));
+    return {
+      ...question,
+      options: order.map((oldIndex, newIndex) => `${LETTERS[newIndex]}) ${optionBody(question.options[oldIndex])}`),
+      correctAnswer: LETTERS[target],
+      explanation: remapLetterMentions(question.explanation, map),
+    };
+  });
+}
+
+/** Números de um texto, normalizados ("R$ 37,50" → "37.5", "1.200" → "1200"). */
+function numbersIn(text: string) {
+  return (text.match(/\d+(?:[.,]\d+)*/g) ?? []).map((raw) => {
+    const value = /,\d{1,2}$/.test(raw) ? raw.replace(/\./g, "").replace(",", ".") : raw.replace(/[.,](?=\d{3}\b)/g, "").replace(",", ".");
+    return String(Number(value));
+  });
+}
+
+/**
+ * A explicação contradiz o gabarito? Vale para questões de resposta numérica: se a explicação chega ao número de
+ * OUTRA alternativa e nunca menciona o número da alternativa marcada como certa, o gabarito está errado
+ * (na bateria de 10/10/2026: gabarito "R$ 75,00" com a explicação calculando "R$ 37,50", que era outra alternativa).
+ */
+export function explanationContradictsAnswer(question: GeneratedQuizQuestion) {
+  const index = LETTERS.indexOf(question.correctAnswer as (typeof LETTERS)[number]);
+  if (index < 0 || index >= question.options.length) return false;
+  const values = question.options.map((option) => numbersIn(optionBody(option)));
+  // Só quando cada alternativa é basicamente um número diferente (respostas de conta).
+  if (values.some((list) => list.length !== 1) || new Set(values.map((list) => list[0])).size !== values.length) return false;
+  // Resultado da conta = o último número da explicação que é valor de alguma alternativa, antes do trecho que
+  // comenta os distratores ("a alternativa B erra...").
+  const cut = question.explanation.search(/(alternativa|op[çc][ãa]o|\bletra\b|\berr[ao]|incorret|distrator|as demais)/i);
+  const reasoning = cut > 0 ? question.explanation.slice(0, cut) : question.explanation;
+  const optionValues = values.map((list) => list[0]);
+  const final = numbersIn(reasoning).filter((value) => optionValues.includes(value)).at(-1);
+  return final !== undefined && final !== optionValues[index];
+}
+
+/** A partir desta semelhança (0 a 1), duas questões contam como a mesma. */
+export const NEAR_DUPLICATE = 0.5;
+/** Enunciado com pelo menos tantas palavras é uma situação-problema (não um comando curto de banca). */
+const LONG_STATEMENT = 15;
+/** Semelhança só dos enunciados longos a partir da qual é a mesma situação (água e óleo da bateria: 0,39). */
+const STATEMENT_DUPLICATE = 0.35;
+
+export type QuestionFingerprint = { all: Set<string>; statement: Set<string> };
+
+function words(text: string) {
+  return new Set(normalizeForMatch(text).split(/[^a-z]+/).filter((word) => word.length > 3));
+}
+
+/** Palavras do enunciado (e do enunciado com as alternativas), sem acento, sem números e sem palavras curtas. */
+export function questionFingerprint(question: Pick<GeneratedQuizQuestion, "question" | "options">): QuestionFingerprint {
+  return { statement: words(question.question), all: words(`${question.question} ${question.options.map(optionBody).join(" ")}`) };
+}
+
+/**
+ * Mesma questão com outros números ou outras palavras? Compara enunciado + alternativas; e, quando o enunciado é
+ * longo (uma situação), compara só o enunciado. Comandos curtos de banca ("Assinale a alternativa correta...")
+ * repetem de propósito e não contam.
+ */
+export function isNearDuplicate(a: QuestionFingerprint, b: QuestionFingerprint) {
+  if (similarity(a.all, b.all) >= NEAR_DUPLICATE) return true;
+  return Math.min(a.statement.size, b.statement.size) >= LONG_STATEMENT && similarity(a.statement, b.statement) >= STATEMENT_DUPLICATE;
+}
+
+/** Semelhança de Jaccard entre dois conjuntos de palavras. */
+export function similarity(a: Set<string>, b: Set<string>) {
+  if (!a.size || !b.size) return 0;
+  let shared = 0;
+  for (const word of a) if (b.has(word)) shared += 1;
+  return shared / (a.size + b.size - shared);
 }

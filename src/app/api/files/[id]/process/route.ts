@@ -8,7 +8,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { getPrisma } from "@/lib/prisma";
 import { createStorageServerClient } from "@/lib/supabase/storage";
 import { extractTextFromBuffer } from "@/lib/text";
-import { assertWithinSafetyCaps } from "@/lib/usage";
+import { assertWithinSafetyCaps, bindAiCallContext, requireTier } from "@/lib/usage";
 import { isVideoFile, processVideoMaterial } from "@/lib/youtube";
 
 /** Vídeo do YouTube pode levar até alguns minutos para ser lido de novo. */
@@ -25,6 +25,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     if (response) return response;
     // O envio já gastou o limite do plano; aqui só vale o teto global de segurança do dia (leitura de foto e vídeo gastam IA).
     await assertWithinSafetyCaps(user);
+    bindAiCallContext(user, await requireTier(user), "file_upload");
 
     const { id } = await context.params;
     const prisma = getPrisma();

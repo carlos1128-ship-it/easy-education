@@ -91,6 +91,17 @@ export type RoadmapEvents = {
   completed?: boolean;
 };
 
+/** Índices marcados pelo aluno, lidos do banco (JSON). Ignora o que não for índice válido. */
+export function parseManualChecks(value: unknown, stepCount: number): number[] {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.filter((item): item is number => Number.isInteger(item) && item >= 0 && item < stepCount))].sort((a, b) => a - b);
+}
+
+/** Liga ou desliga uma etapa na lista do aluno. */
+export function toggleManualCheck(current: number[], step: number) {
+  return current.includes(step) ? current.filter((item) => item !== step) : [...current, step].sort((a, b) => a - b);
+}
+
 /** Quais etapas estão feitas (mesma ordem de `steps`). Etapa de tempo vale quando os minutos chegam ao fim dela. */
 export function roadmapChecks(steps: RoadmapStep[], events: RoadmapEvents): boolean[] {
   let elapsedUntil = 0;

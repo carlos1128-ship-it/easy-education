@@ -130,6 +130,10 @@ Plano semanal de 7 dias, com até 2 blocos por dia (estudo, revisão, simulado o
 
 **Fechar o dia (opcional):** o aluno escreve o que estudou (200 a 5.000 caracteres) e a IA corrige com base no que ele fez no dia: o que está certo, o que está errado, o que faltou e o que revisar amanhã. Os erros viram flashcards sem nova chamada à IA, e a correção pode ser ouvida com a voz do aparelho. Não mexe na ofensiva.
 
+**Roteiro com check manual (10/10/2026):** além dos checks automáticos, o aluno pode tocar no círculo de uma etapa para marcá-la como feita (por exemplo, "preparar o ambiente"). As etapas marcadas por evento real ficam travadas como feitas. Isso não conclui o bloco sozinho: o bloco segue a regra de conclusão.
+
+**Fala:** "Falar" dita o texto por voz (reconhecimento do próprio navegador, em português) no resumo do dia e nas anotações; "Ouvir" lê em voz alta a explicação de cada questão do quiz, a frente e o verso dos flashcards e a correção do resumo do dia. Custo zero de IA. Funciona no Chrome, no Edge e no Safari.
+
 **Anotações:** o aluno anota dentro das questões, no roteiro do bloco ou na tela **Minhas anotações** (filtro por matéria). Só ele vê; entram na busca; não gastam IA.
 
 ### 6.10 Trilha e troféus
@@ -142,6 +146,7 @@ O chat responde dúvidas de conteúdo em texto simples e **executa ações**: cr
 Painel com evolução geral, desempenho e evolução por matéria, histórico de redações, mapa de calor de atividade e as matérias com mais erros. Alimenta a revisão e as notificações.
 
 ### 6.13 Motivação e hábito
+- **XP e níveis (10/10/2026):** cada atividade dá XP (questão certa +10, errada +2, cartão revisado +3, bloco concluído +50, resumo do dia +30, redação +40, minuto estudado +1, até 120 por dia). Os níveis pedem 100 XP a mais a cada nível, com títulos (Calouro, Estudante, Dedicado, Focado, Expert, Mestre, Lenda). O XP sai do histórico, sem tabela nova (`src/lib/xp.ts`, `src/lib/gamification.ts`). O topo do app mostra a ofensiva e o nível; o Início mostra o card de nível com a meta de 50 XP do dia e o XP de cada dia da semana; o quiz mostra a faixa de resultado ("Mandou bem! +10 XP") com a coruja reagindo e o XP ganho na sessão.
 - **Ofensiva:** dias seguidos com estudo ou quiz concluído.
 - **Meta diária** em minutos, definida no onboarding.
 - **Notificações no app** (sininho), calculadas com dados reais: ofensiva, meta, flashcards vencendo, simulado novo e quizzes não terminados. Há espaço pronto para promoções.

@@ -9,8 +9,10 @@ import { QuizOption, type QuizOptionState } from "@/components/ui/quiz-option";
 import { ExplanationText } from "@/components/quiz/explanation-text";
 import { QuizFlashcardsOffer } from "@/components/quiz/quiz-flashcards-offer";
 import { NoteButton } from "@/components/notes/note-button";
+import { SpeakButton } from "@/components/audio/speak-button";
 import { OwlMascot, usePreloadOwls, type OwlMood } from "@/components/mascot/owl-mascot";
-import { Check, Volume2, VolumeX, X } from "lucide-react";
+import { Check, Volume2, VolumeX, X, Zap } from "lucide-react";
+import { XP_RULES } from "@/lib/xp";
 import { cn } from "@/lib/utils";
 import { playSound, primeSounds, useSoundsEnabled } from "@/lib/sounds";
 import type { QuizRunnerQuestion } from "@/lib/quiz-questions";
@@ -202,6 +204,10 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
   const pageConfirmed = pageQuestions.filter((item) => answers[item.id]);
   const pageCorrect = pageConfirmed.filter((item) => answers[item.id] === item.correctAnswer).length;
   const hasDraft = pageQuestions.some((item) => !answers[item.id] && drafts[item.id]);
+  // XP desta sessão (mesmas regras de src/lib/xp.ts): certa +10, errada +2.
+  const sessionXp = questions.reduce((sum, item) => (answers[item.id] ? sum + (answers[item.id] === item.correctAnswer ? XP_RULES.correct : XP_RULES.wrong) : sum), 0);
+  // Quiz (uma por página): depois de confirmar, a faixa de baixo vira o resultado, como nos apps de estudo.
+  const result = mode === "quiz" && pageConfirmed.length === 1 ? (pageCorrect ? "right" : "wrong") : null;
   let streak = 0;
   for (let k = index; k >= 0 && answers[questions[k].id] === questions[k].correctAnswer; k--) streak++;
 
@@ -241,6 +247,11 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
               {mode === "simulado" ? `Questões ${index + 1}-${Math.min(index + pageSize, questions.length)}` : `Questão ${index + 1}`} de {questions.length}
             </span>
             <Progress value={(answeredCount / questions.length) * 100} className="w-40 lg:w-full" />
+            {sessionXp ? (
+              <span className="inline-flex items-center gap-1 text-xs font-extrabold tabular-nums text-brand-strong">
+                <Zap className="size-3.5 fill-current" aria-hidden="true" /> +{sessionXp} XP nesta sessão
+              </span>
+            ) : null}
           </div>
           <SoundToggle />
         </div>
@@ -339,7 +350,10 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
                     {confirmed === question.correctAnswer ? "Você acertou." : `Errou. Resposta correta: ${question.correctAnswer}`}
                   </p>
                   <p className="mt-2 text-ink-muted"><ExplanationText text={question.explanation} videoId={videoId} /></p>
-                  <NoteButton compact className="mt-3" link={{ quizId, questionId: question.id, questionKind: "quiz" }} />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <SpeakButton text={question.explanation} label="Ouvir a explicação" className="min-h-8 px-2.5 text-xs" />
+                    <NoteButton compact link={{ quizId, questionId: question.id, questionKind: "quiz" }} />
+                  </div>
                 </div>
               ) : null}
             </section>
@@ -347,7 +361,28 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
         })}
       </div>
 
-      <div className="sticky bottom-0 z-10 -mx-1 mt-6 grid grid-cols-2 gap-2 rounded-2xl border border-border bg-surface/90 p-3 shadow-pop backdrop-blur sm:flex sm:justify-between">
+      <div className="sticky bottom-0 z-10 -mx-1 mt-6">
+      {result ? (
+        <div
+          role="status"
+          className={cn(
+            "flex items-center gap-3 rounded-t-2xl border-x border-t px-4 py-3 text-[15px] font-extrabold",
+            result === "right" ? "border-success/40 bg-success-tint text-success" : "border-danger/40 bg-danger-tint text-danger",
+          )}
+        >
+          <OwlMascot mood={result === "right" ? (streak >= 3 ? "comemorando" : "feliz") : "determinada"} size={48} className="-my-2 flex-none" />
+          <span className="flex-1">
+            {result === "right" ? (streak >= 3 ? `${streak} seguidas! Mandou muito bem.` : "Mandou bem!") : `Quase! A certa é a ${pageQuestions[0].correctAnswer}.`}
+          </span>
+          <span className="flex-none text-sm tabular-nums">+{result === "right" ? XP_RULES.correct : XP_RULES.wrong} XP</span>
+        </div>
+      ) : null}
+      <div
+        className={cn(
+          "grid grid-cols-2 gap-2 border p-3 shadow-pop backdrop-blur sm:flex sm:justify-between",
+          result ? (result === "right" ? "rounded-b-2xl border-success/40 bg-success-tint" : "rounded-b-2xl border-danger/40 bg-danger-tint") : "rounded-2xl border-border bg-surface/90",
+        )}
+      >
         <Button
           variant="outline"
           className="order-2 sm:order-none"
@@ -357,13 +392,14 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
           Anterior
         </Button>
         <div className="contents sm:flex sm:gap-2">
-          <Button variant="outline" className="order-1 col-span-2 sm:order-none" disabled={saving || pageQuestions.every((item) => answers[item.id])} onClick={confirmPage}>
+          <Button variant="outline" className={cn("order-1 col-span-2 sm:order-none", result && "hidden")} disabled={saving || pageQuestions.every((item) => answers[item.id])} onClick={confirmPage}>
             {saving ? "Salvando..." : mode === "simulado" ? "Confirmar página" : "Confirmar resposta"}
           </Button>
           <Button className="order-3 rounded-lg bg-brand text-on-brand hover:bg-brand-strong sm:order-none" disabled={!canGoNext || saving} onClick={goNext}>
-            {isLastPage ? "Finalizar" : "Próxima"}
+            {isLastPage ? "Finalizar" : result ? "Continuar" : "Próxima"}
           </Button>
         </div>
+      </div>
       </div>
       </div>
     </div>

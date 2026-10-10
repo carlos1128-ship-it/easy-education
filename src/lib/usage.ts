@@ -39,6 +39,14 @@ export async function requireTier(user: UserRef, feature: FeatureKey | null = nu
   return access.tier;
 }
 
+/**
+ * Liga as próximas chamadas à IA desta requisição ao aluno, ao plano e ao recurso (custo em ai_call_logs, tetos de
+ * custo e modelos por plano). Chame no corpo da rota, depois de consumeFeature/assertWithinSafetyCaps.
+ */
+export function bindAiCallContext(user: UserRef, tier: PlanTier, feature: FeatureKey | null) {
+  setAiCallContext({ userId: user.id, plan: tier, feature });
+}
+
 /** Recusa arquivo maior que o limite do plano (antes de gastar o uso diário de envios). */
 export function assertUploadSize(tier: PlanTier, bytes: number) {
   if (bytes > PLANS[tier].uploadMaxBytes) throw new PlanLimitError(fileTooLargeInfo(tier));
@@ -166,6 +174,10 @@ export async function withFeature<T>(
   options: { tier?: PlanTier; amount?: number } = {},
 ): Promise<T> {
   const ticket = await consumeFeature(user, feature, options);
+  // O contexto precisa ser definido AQUI, e não dentro de consumeFeature: o AsyncLocalStorage definido dentro de
+  // uma função aguardada não volta para quem a chamou (até 10/10/2026, 579 de 581 chamadas ficaram sem aluno,
+  // e os tetos de custo por aluno nunca disparavam).
+  setAiCallContext({ userId: user.id, plan: ticket.tier, feature });
   try {
     return await run(ticket);
   } catch (error) {

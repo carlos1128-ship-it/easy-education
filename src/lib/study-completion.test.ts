@@ -103,3 +103,17 @@ describe("ofensiva no horário de Brasília", () => {
     expect(calculateStreak([new Date("2026-10-08T22:00:00Z")], now)).toBe(0);
   });
 });
+
+import { parseManualChecks, toggleManualCheck } from "@/lib/study-roadmap";
+
+describe("check manual no roteiro", () => {
+  it("lê só índices válidos do banco, sem repetir", () => {
+    expect(parseManualChecks([2, 0, 2, 9, -1, "x", 1.5], 4)).toEqual([0, 2]);
+    expect(parseManualChecks(null, 4)).toEqual([]);
+  });
+  it("marca e desmarca", () => {
+    expect(toggleManualCheck([], 1)).toEqual([1]);
+    expect(toggleManualCheck([0, 1], 1)).toEqual([0]);
+    expect(toggleManualCheck([2], 0)).toEqual([0, 2]);
+  });
+});

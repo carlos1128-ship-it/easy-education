@@ -5,13 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CircleHelp, Search, Sparkles } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { StatsChips } from "@/components/gamification/stats-chips";
+import type { Gamification } from "@/lib/gamification";
 import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { startProductTour } from "@/components/onboarding/product-tour";
 import { MobileSidebar } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getProfileInitials } from "@/lib/subjects";
 
-export function Header({ profileName, studyGoal }: { profileName: string; studyGoal?: string }) {
+export function Header({ profileName, studyGoal, stats }: { profileName: string; studyGoal?: string; stats?: Gamification }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const initials = getProfileInitials(profileName).toUpperCase();
@@ -28,14 +30,17 @@ export function Header({ profileName, studyGoal }: { profileName: string; studyG
       <div className="-ml-2 lg:hidden">
         <MobileSidebar profileName={profileName} studyGoal={studyGoal} />
       </div>
-      <Link href="/dashboard" prefetch={false} className="flex flex-1 no-underline lg:hidden">
-        <Logo size="sm" />
+      <Link href="/dashboard" prefetch={false} className="flex min-w-0 flex-1 no-underline lg:hidden">
+        {/* Com ofensiva e nível no topo, o celular mostra só o símbolo (cabe tudo em 320 px). */}
+        <Logo size="sm" variant={stats ? "symbol" : "horizontal"} />
       </Link>
+      {/* Ofensiva e nível sempre à vista; no celular ficam no lugar da busca. */}
+      {stats ? <StatsChips stats={stats} className="lg:hidden" /> : null}
       <Link
         href="/dashboard/busca"
         prefetch={false}
         aria-label="Buscar"
-        className="grid size-11 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink lg:hidden"
+        className={stats ? "hidden" : "grid size-11 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink lg:hidden"}
       >
         <Search size={20} strokeWidth={1.75} aria-hidden="true" />
       </Link>
@@ -53,6 +58,7 @@ export function Header({ profileName, studyGoal }: { profileName: string; studyG
         />
       </form>
       <div className="hidden flex-1 lg:block" />
+      {stats ? <StatsChips stats={stats} className="hidden lg:flex" /> : null}
       <Link
         href="/dashboard/chat"
         prefetch={false}

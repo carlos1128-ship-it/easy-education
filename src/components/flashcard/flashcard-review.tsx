@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { SpeakButton } from "@/components/audio/speak-button";
 import { Button } from "@/components/ui/button";
 import { readApiJson } from "@/lib/client-response";
 
@@ -96,6 +97,9 @@ export function FlashcardReview({ cards }: { cards: Flashcard[] }) {
           </div>
         </div>
       </button>
+      <div className="mt-3 flex justify-center">
+        <SpeakButton key={`${card.id}-${flipped}`} text={flipped ? card.back : card.front} label={flipped ? "Ouvir a resposta" : "Ouvir a pergunta"} />
+      </div>
       {flipped ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <Button variant="outline" disabled={saving} onClick={() => review("again")}>Não sabia</Button>

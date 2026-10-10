@@ -1,8 +1,8 @@
-import { generationModelFor } from "@/lib/ai-quality-gate";
+import { STRONG_MODEL, generationModelFor } from "@/lib/ai-quality-gate";
 import { generateJSONList } from "@/lib/gemini";
 import { addToPool, bankReferencesFor, copiesReference, poolKey, takeFromPool } from "@/lib/question-pool";
 import { verifyQuizQuestions } from "@/lib/question-quality";
-import { generateQuizQuestions, optionCountForStyle, QUIZ_CHUNK_SIZE, questionDedupeKey, quizQuestionsSchemaFor, type OptionCount } from "@/lib/quiz-questions";
+import { balanceCorrectLetters, generateQuizQuestions, optionCountForStyle, QUIZ_CHUNK_SIZE, questionDedupeKey, quizQuestionsSchemaFor, type OptionCount } from "@/lib/quiz-questions";
 import type { GeneratedQuizQuestion } from "@/types";
 
 function shuffle<T>(items: T[]) {
@@ -12,6 +12,12 @@ function shuffle<T>(items: T[]) {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
+}
+
+/** Matéria de contas (Matemática, Física, Química, Estatística, Finanças): a conferência usa o modelo mais forte. */
+export function isExactScience(subject: string, topic?: string | null) {
+  const text = `${subject} ${topic ?? ""}`.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  return /(matematic|fisic|quimic|estatistic|probabilidad|financ|contabil|raciocinio logico|estequiometri|multidisciplinar)/.test(text);
 }
 
 /**
@@ -37,7 +43,7 @@ export async function produceQuestions(input: {
   const key = input.personalMaterial ? null : poolKey(input);
   const reused = key ? await takeFromPool(input.userId, key, input.count, optionCount).catch(() => []) : [];
   const missing = input.count - reused.length;
-  if (missing <= 0) return shuffle(reused);
+  if (missing <= 0) return balanceCorrectLetters(shuffle(reused));
 
   const references = input.personalMaterial ? null : await bankReferencesFor(input.userId, input.subject, input.topic).catch(() => null);
   // Portão de qualidade: matéria reprovada na última avaliação gera com o modelo mais forte.
@@ -56,12 +62,14 @@ export async function produceQuestions(input: {
         model,
       }),
     {
-      verify: (questions) => verifyQuizQuestions(questions, optionCount),
+      // Exatas (contas): na bateria de 10/10/2026 os gabaritos errados vieram todos daqui; confere com o modelo mais forte.
+      verify: (questions) => verifyQuizQuestions(questions, optionCount, isExactScience(input.subject, input.topic) ? { model: STRONG_MODEL } : {}),
       optionCount,
       reject: references ? (question) => copiesReference(question, references.statements) : undefined,
       onVerified: (questions) => approved.push(...questions),
     },
   );
   if (key) await addToPool(input.userId, key, approved.filter((question) => fresh.includes(question)));
-  return shuffle([...reused, ...fresh]);
+  // Gabarito espalhado entre as letras (a IA vicia numa letra só).
+  return balanceCorrectLetters(shuffle([...reused, ...fresh]));
 }

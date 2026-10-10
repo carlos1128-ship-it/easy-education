@@ -567,6 +567,8 @@ model StudyBlockRun {
   timerStartedAt DateTime? @map("timer_started_at")
   /// Minutos já registrados neste bloco (somando as pausas).
   studiedMinutes Int       @default(0) @map("studied_minutes")
+  /// Etapas do roteiro que o próprio aluno marcou como feitas (índices). Somam com os checks automáticos.
+  manualChecks   Json      @default("[]") @map("manual_checks")
   completedAt    DateTime? @map("completed_at")
   /// atividade | tempo
   completedBy    String?   @map("completed_by")

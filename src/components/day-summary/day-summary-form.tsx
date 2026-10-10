@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Layers, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
+import { DictateButton } from "@/components/audio/dictate-button";
 import { SpeakButton } from "@/components/audio/speak-button";
 import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { Button } from "@/components/ui/button";
@@ -144,6 +145,7 @@ export function DaySummaryForm({ initialContent, initialFeedback, hasStudied }: 
         className="min-h-60 text-[15px] leading-6"
       />
       <div className="flex flex-wrap items-center justify-between gap-3">
+        {hasStudied && !busy ? <DictateButton label="Falar o resumo" onText={(text) => setContent((current) => (current.trim() ? `${current.trimEnd()} ${text}` : text).slice(0, SUMMARY_MAX_CHARS))} /> : null}
         <span id="contador-resumo" className={cn("text-sm tabular-nums", length && !valid ? "text-warning" : "text-ink-muted")}>
           {length < SUMMARY_MIN_CHARS ? `${length} de ${SUMMARY_MIN_CHARS} caracteres no mínimo` : `${length} de ${SUMMARY_MAX_CHARS} caracteres`}
         </span>

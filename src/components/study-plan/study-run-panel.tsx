@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { CheckCircle2, ChevronDown, ChevronUp, Circle, ExternalLink, Pause, X } from "lucide-react";
 import { toast } from "sonner";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { NoteButton } from "@/components/notes/note-button";
 import { useStudyRun } from "@/components/study-plan/study-run-provider";
 import type { RunView } from "@/lib/study-runs";
@@ -79,19 +80,43 @@ function usePanel() {
     setDismissed(run.id);
   }
 
-  return { run: visible ? run : null, elapsed, busy, act, dismiss };
+  /** O aluno marca ou desmarca uma etapa que já fez (as automáticas ficam marcadas). Atualiza na hora e confirma no servidor. */
+  async function toggleStep(step: number) {
+    if (!run || run.autoChecks[step]) return;
+    const optimistic = { ...run, checks: run.checks.map((value, index) => (index === step ? !value : value)) };
+    setRun(optimistic);
+    try {
+      const response = await fetch(`/api/study-plan/run/${run.id}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "toggle_step", step }) });
+      if (!response.ok) throw new Error();
+      setRun(((await response.json()) as { run: RunView }).run);
+    } catch {
+      setRun(run);
+      toast.error("Não foi possível marcar a etapa.");
+    }
+  }
+
+  return { run: visible ? run : null, elapsed, busy, act, dismiss, toggleStep };
 }
 
-function StepList({ run }: { run: RunView }) {
+function StepList({ run, onToggle }: { run: RunView; onToggle: (step: number) => void }) {
   return (
     <ol className="m-0 flex list-none flex-col gap-2 p-0">
       {run.steps.map((step, index) => {
         const checked = run.checks[index];
+        const auto = run.autoChecks[index];
         return (
           <li key={step.title} className={cn("flex gap-2.5 rounded-xl p-2.5", checked ? "bg-success-tint" : "bg-surface-muted")}>
-            <span className="mt-0.5 flex-none" aria-hidden="true">
-              {checked ? <CheckCircle2 className="size-5 text-success" /> : <Circle className="size-5 text-ink-muted" />}
-            </span>
+            <button
+              type="button"
+              onClick={() => onToggle(index)}
+              disabled={auto}
+              aria-pressed={checked}
+              aria-label={auto ? `${step.title}: feito automaticamente` : checked ? `Desmarcar ${step.title}` : `Marcar ${step.title} como feito`}
+              title={auto ? "Marcado automaticamente" : checked ? "Desmarcar" : "Já fiz esta etapa"}
+              className="mt-0.5 grid size-7 flex-none place-items-center rounded-full hover:bg-surface disabled:cursor-default"
+            >
+              {checked ? <CheckCircle2 className="size-5 text-success" aria-hidden="true" /> : <Circle className="size-5 text-ink-muted" aria-hidden="true" />}
+            </button>
             <div className="min-w-0 flex-1">
               <p className={cn("m-0 flex items-baseline justify-between gap-2 text-sm font-semibold text-ink", checked && "opacity-70")}>
                 <span>
@@ -156,7 +181,9 @@ function Controls({ run, busy, act, dismiss }: Pick<ReturnType<typeof usePanel>,
 }
 
 function Header({ run, elapsed }: { run: RunView; elapsed: number }) {
-  const done = run.checks.filter(Boolean).length;
+  // Etapa atual = a primeira ainda não feita (o aluno pode marcar fora de ordem).
+  const pending = run.checks.findIndex((checked) => !checked);
+  const current = pending < 0 ? run.steps.length : pending + 1;
   return (
     <div className="min-w-0">
       <p className="m-0 flex items-center gap-2 text-[13px] font-medium text-ink-muted">
@@ -168,7 +195,7 @@ function Header({ run, elapsed }: { run: RunView; elapsed: number }) {
             <span className="relative inline-flex size-2.5 rounded-full bg-brand" />
           </span>
         )}
-        {run.status === "concluido" ? "Bloco concluído" : `Etapa ${Math.min(done + 1, run.steps.length)} de ${run.steps.length}`}
+        {run.status === "concluido" ? "Bloco concluído" : pending < 0 ? "Todas as etapas feitas" : `Etapa ${current} de ${run.steps.length}`}
       </p>
       <p className="m-0 truncate text-[15px] font-bold text-ink">
         {run.subject}
@@ -183,7 +210,7 @@ function Header({ run, elapsed }: { run: RunView; elapsed: number }) {
 
 /** Painel lateral fixo do roteiro, no computador. Ocupa a própria coluna, então não cobre o conteúdo. */
 export function StudyRunAside() {
-  const { run, elapsed, busy, act, dismiss } = usePanel();
+  const { run, elapsed, busy, act, dismiss, toggleStep } = usePanel();
   if (!run) return null;
   return (
     <aside aria-label="Roteiro do bloco" className="hidden w-[340px] flex-none flex-col gap-4 overflow-y-auto border-l border-border bg-surface p-5 lg:flex">
@@ -196,20 +223,23 @@ export function StudyRunAside() {
           Abrir a atividade do bloco
         </Link>
       ) : null}
-      <StepList run={run} />
+      <StepList run={run} onToggle={toggleStep} />
+      {run.status === "concluido" ? (
+        <OwlMascot mood="comemorando" size={96} message="Bloco concluído! +50 XP" className="self-center" />
+      ) : null}
       {run.status === "concluido" ? (
         <Link href="/dashboard/fechar-dia" className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand text-sm font-medium text-on-brand no-underline hover:bg-brand-strong">
           Fechar o dia com um resumo
         </Link>
       ) : null}
-      <p className="m-0 text-xs leading-5 text-ink-muted">As etapas se marcam sozinhas: quando o tempo de cada uma passa, quando você termina a atividade, revisa os cartões ou escreve a anotação do bloco.</p>
+      <p className="m-0 text-xs leading-5 text-ink-muted">As etapas se marcam sozinhas quando o tempo passa, quando você termina a atividade, revisa os cartões ou escreve a anotação. Já fez alguma por conta própria? Toque no círculo para marcar.</p>
     </aside>
   );
 }
 
 /** Barra recolhível do roteiro, no celular. Fica no fluxo da página (embaixo do cabeçalho), sem cobrir nada. */
 export function StudyRunBar() {
-  const { run, elapsed, busy, act, dismiss } = usePanel();
+  const { run, elapsed, busy, act, dismiss, toggleStep } = usePanel();
   const pathname = usePathname();
   // Aberta só na página em que o aluno abriu: trocar de página recolhe a barra.
   const [openOn, setOpenOn] = useState<string | null>(null);
@@ -237,7 +267,7 @@ export function StudyRunBar() {
               Abrir a atividade do bloco
             </Link>
           ) : null}
-          <StepList run={run} />
+          <StepList run={run} onToggle={toggleStep} />
         </div>
       ) : null}
     </section>

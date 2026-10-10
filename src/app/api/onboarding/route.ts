@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { buildLearnerContext, goalLabel } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
 import { createStudyPlanForUser } from "@/lib/study-plan-generation";
-import { assertWithinSafetyCaps, consumeFeature, requireTier } from "@/lib/usage";
+import { assertWithinSafetyCaps, consumeFeature, requireTier, bindAiCallContext } from "@/lib/usage";
 import { onboardingSchema } from "@/lib/validators";
 
 export async function POST(request: Request) {
@@ -49,6 +49,7 @@ export async function POST(request: Request) {
     const regenerate = Boolean(existingPlan && payload.regeneratePlan);
     const ticket = regenerate ? await consumeFeature(user, "study_plan", { tier }) : null;
     if (!existingPlan) await assertWithinSafetyCaps(user, { tier });
+    bindAiCallContext(user, tier, "study_plan");
 
     let planResult: Awaited<ReturnType<typeof createStudyPlanForUser>> | null = null;
     try {
