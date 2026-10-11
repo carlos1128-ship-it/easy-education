@@ -131,10 +131,6 @@ export function LandingPage() {
                 sizes="(min-width: 1024px) 380px, 300px"
                 className="absolute bottom-0 left-1/2 h-[96%] w-auto max-w-none -translate-x-1/2 lg:left-[56%] lg:h-[94%] dark:[mask-image:linear-gradient(to_bottom,#000_82%,transparent)]"
               />
-              {/* Coruja de capa voando ao lado da foto (pacote do mascote). */}
-              <div className="owl-anim absolute -left-2 top-2 z-[3] w-[120px] lg:-left-6 lg:top-[6%] lg:w-[190px]" style={{ animation: "owl-drift 6s ease-in-out infinite" }} aria-hidden="true">
-                <Image src={owlSrc("heroi")} alt="" width={OWLS.heroi.w} height={OWLS.heroi.h} unoptimized priority className="owl-anim owl-glow h-auto w-full" style={owlAnimationStyle("heroi")} />
-              </div>
               <span className="absolute right-[10%] top-[8%] z-[3] hidden size-14 items-center justify-center rounded-full border border-border bg-surface text-brand-strong shadow-pop lg:flex">
                 <IconCards size={22} />
               </span>
@@ -341,12 +337,6 @@ export function LandingPage() {
         <div className="relative mx-auto max-w-[1600px] overflow-hidden rounded-3xl">
           <Image src={landingFinalCta.image.src} alt="" fill sizes="(min-width: 1232px) 1232px, 100vw" className="object-cover object-[center_35%]" />
           <div className="relative flex flex-col items-center gap-4 bg-cta-overlay px-5 pb-7 pt-10 text-center lg:px-14 lg:py-16">
-            <div className="owl-anim pointer-events-none absolute left-[4%] top-1/2 hidden w-[210px] -translate-y-1/2 lg:block" style={{ animation: "owl-drift 7s ease-in-out infinite" }} aria-hidden="true">
-              <Image src={owlSrc("piscando")} alt="" width={OWLS.piscando.w} height={OWLS.piscando.h} unoptimized className="owl-anim owl-glow h-auto w-full" style={owlAnimationStyle("piscando")} />
-            </div>
-            <div className="owl-anim pointer-events-none absolute right-[4%] top-1/2 hidden w-[170px] -translate-y-1/2 lg:block" aria-hidden="true">
-              <Image src={owlSrc("festa")} alt="" width={OWLS.festa.w} height={OWLS.festa.h} unoptimized className="owl-anim owl-glow h-auto w-full" style={owlAnimationStyle("festa")} />
-            </div>
             <h2 className={cn(h2, "max-w-[620px] font-black text-white")}>{landingFinalCta.title}</h2>
             <p className={cn(leadLarge, "max-w-[480px] text-[#dbeafe]")}>{landingFinalCta.text}</p>
             <Link

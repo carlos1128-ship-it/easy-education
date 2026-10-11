@@ -229,13 +229,13 @@ export default async function DashboardPage() {
 
       <LevelCard stats={gamification} />
 
-      {/* Provas anteriores: a detetive chama para as questões que já caíram (e as ultrassecretas). */}
+      {/* Provas anteriores: a coruja escolar chama para as questões que já caíram. */}
       <Link
         href="/dashboard/provas"
         className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border-2 border-b-4 border-brand/40 bg-surface p-4 no-underline shadow-card transition-all hover:-translate-y-0.5 hover:border-brand lg:gap-6 lg:p-5"
       >
         <span className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-brand/10 blur-2xl" aria-hidden="true" />
-        <OwlMascot mood="detetive" size={92} className="relative flex-none" />
+        <OwlMascot mood="escolar" size={92} className="relative flex-none" />
         <span className="relative flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-brand-strong">Provas anteriores</span>
           <span className="text-lg font-extrabold leading-tight text-ink">ENEM, FUVEST, UNICAMP e ETEC: treine com o que já caiu</span>

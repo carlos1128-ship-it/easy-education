@@ -102,7 +102,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
           <p title={profileName} className="m-0 line-clamp-2 text-sm font-bold leading-[1.3] text-ink">
             {profileName}
           </p>
-          <span className="self-start whitespace-nowrap rounded-full bg-brand-tint px-2 py-[5px] text-xs font-medium leading-none text-brand-strong">
+          <span title={studyGoal ?? "Plano ativo"} className="self-start max-w-full truncate whitespace-nowrap rounded-full bg-brand-tint px-2 py-[5px] text-xs font-medium leading-none text-brand-strong">
             {studyGoal ?? "Plano ativo"}
           </span>
         </div>
