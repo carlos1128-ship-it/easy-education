@@ -59,7 +59,21 @@ export const ENEM_AREAS: Record<string, string> = {
 };
 
 /** Exame inicial do banco. Novos exames entram como linhas na tabela `exams`, sem mudar código. */
-export const SEED_EXAMS = [{ slug: "enem", name: "ENEM", styleLabel: "ENEM", sortOrder: 1 }] as const;
+export const SEED_EXAMS = [
+  { slug: "enem", name: "ENEM", styleLabel: "ENEM", sortOrder: 1 },
+  { slug: "fuvest", name: "FUVEST", styleLabel: "FUVEST (USP)", sortOrder: 2 },
+  { slug: "unicamp", name: "UNICAMP", styleLabel: "vestibular da UNICAMP", sortOrder: 3 },
+  { slug: "etec", name: "Vestibulinho ETEC", styleLabel: "Vestibulinho ETEC", sortOrder: 4 },
+] as const;
+
+/** Exames com provas anteriores na área "Provas anteriores" (ordem da tela). */
+export const PAST_EXAMS = {
+  enem: { name: "ENEM", short: "ENEM", tagline: "Exame Nacional do Ensino Médio" },
+  fuvest: { name: "FUVEST", short: "FUVEST", tagline: "Vestibular da USP · 1ª fase" },
+  unicamp: { name: "UNICAMP", short: "UNICAMP", tagline: "Vestibular da Unicamp · 1ª fase" },
+  etec: { name: "Vestibulinho ETEC", short: "ETEC", tagline: "Ensino técnico e médio do Centro Paula Souza" },
+} as const;
+export type PastExamSlug = keyof typeof PAST_EXAMS;
 
 /** Matérias iniciais (a IA classifica cada questão numa delas, dentro da área da questão). */
 export const SEED_SUBJECTS: Array<{ slug: string; name: string; area: string; sortOrder: number }> = [
@@ -85,6 +99,28 @@ export const ENEM_SOURCE = {
   name: "INEP",
   url: "https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos",
   license: "CC BY-ND 3.0 (site do INEP)",
+} as const;
+
+/**
+ * Vestibulares sem licença aberta declarada: a prova é pública (publicada pela própria banca) e entra
+ * com o texto da prova e a fonte citada em cada questão. Ver docs/fontes-questoes.md (ressalva jurídica).
+ */
+export const VESTIBULAR_SOURCES = {
+  fuvest: {
+    name: "FUVEST",
+    url: "https://www.fuvest.br/acervo-vestibular/",
+    license: "Prova pública da FUVEST, sem licença aberta declarada; uso educacional com citação da fonte. Transcrição: conjunto BLUEX (arXiv 2307.05410)",
+  },
+  unicamp: {
+    name: "Comvest (UNICAMP)",
+    url: "https://www.comvest.unicamp.br/vestibulares-anteriores/",
+    license: "Prova pública da Comvest, sem licença aberta declarada; uso educacional com citação da fonte. Transcrição: conjunto BLUEX (arXiv 2307.05410)",
+  },
+  etec: {
+    name: "Centro Paula Souza (Vestibulinho ETEC)",
+    url: "https://vestibulinho.etec.sp.gov.br/provas-gabaritos/",
+    license: "Prova pública do Vestibulinho, \"preservada pela Lei de Propriedade Intelectual\" (termos do site); uso educacional com citação da fonte",
+  },
 } as const;
 
 export function slugify(value: string) {

@@ -35,7 +35,7 @@ export function LevelCard({ stats, className }: { stats: Gamification; className
           </div>
           <p className="m-0 mt-1 text-xs text-ink-muted">Faltam {stats.toNext} XP para o nível {stats.level + 1}</p>
         </div>
-        <OwlMascot mood={levelOwl(stats, goalDone)} size={76} priority className="flex-none" />
+        <OwlMascot mood={levelOwl(stats, goalDone)} size={96} priority className="flex-none" />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2">

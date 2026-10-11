@@ -178,7 +178,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
     return (
       <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-6 shadow-card">
         <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
-          <OwlMascot mood={result.mood} size={176} />
+          <OwlMascot mood={result.mood} size={200} />
           <div>
             <h1 className="text-2xl font-bold text-ink">Resultado</h1>
             <p className="mt-3 text-4xl font-extrabold text-brand">{percent}%</p>
@@ -239,7 +239,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
   return (
     <div className="grid w-full gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-10">
       <aside className="flex flex-wrap items-center justify-between gap-4 lg:sticky lg:top-0 lg:flex-col lg:items-start lg:self-start">
-        <OwlMascot mood={mood} message={message} size={120} />
+        <OwlMascot mood={mood} message={message} size={136} />
         {timeLimit ? <ExamCountdown minutes={timeLimit.minutes} startedAt={timeLimit.startedAt} /> : null}
         <div className="ml-auto flex items-center gap-3 lg:ml-0 lg:w-full">
           <div className="flex flex-col items-end gap-2 lg:flex-1 lg:items-start">
@@ -370,7 +370,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
             result === "right" ? "border-success/40 bg-success-tint text-success" : "border-danger/40 bg-danger-tint text-danger",
           )}
         >
-          <OwlMascot mood={result === "right" ? (streak >= 3 ? "comemorando" : "feliz") : "determinada"} size={48} className="-my-2 flex-none" />
+          <OwlMascot mood={result === "right" ? (streak >= 3 ? "comemorando" : "feliz") : "determinada"} size={60} className="-my-2 flex-none" />
           <span className="flex-1">
             {result === "right" ? (streak >= 3 ? `${streak} seguidas! Mandou muito bem.` : "Mandou bem!") : `Quase! A certa é a ${pageQuestions[0].correctAnswer}.`}
           </span>

@@ -203,7 +203,7 @@ export function ProductTour({ autoStart }: { autoStart: boolean }) {
           />
         ) : null}
         <div className="flex items-start gap-3">
-          {step.owl ? <OwlMascot mood={step.owl} size={64} /> : null}
+          {step.owl ? <OwlMascot mood={step.owl} size={84} /> : null}
           <div className="min-w-0 flex-1">
             <p className="m-0 text-xs font-medium text-ink-muted">
               {index + 1} de {STEPS.length}

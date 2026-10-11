@@ -16,6 +16,8 @@ import { estimateAreaScore, estimateOverallScore, percent } from "@/lib/bank/est
 import type { BankOption } from "@/lib/bank/import";
 import { aiStyleNote, isAiQuestion, sourceLabel } from "@/lib/bank/labels";
 import { nextSchedule, type ReviewGrade } from "@/lib/bank/spaced";
+import { isUltrasecret, topKeysForExam, ultrasecretLocked } from "@/lib/bank/ultrasecret";
+import type { PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 
 export class BankError extends Error {
@@ -144,6 +146,10 @@ export type ClientQuestion = {
   options: BankOption[];
   bookmarked: boolean;
   reviewStatus: string;
+  /** Ultrassecreta: assunto que mais cai no exame (ver past-exams.ts). */
+  ultrasecret?: boolean;
+  /** Trancada no plano do aluno: sem texto, só o convite para desbloquear ou pular. */
+  locked?: boolean;
 };
 
 export type Reveal = { correctLabel: string; explanation: string | null; reviewStatus: string };
@@ -180,6 +186,12 @@ export function toClientQuestion(row: QuestionRow, bookmarked = false): ClientQu
     bookmarked,
     reviewStatus: row.reviewStatus,
   };
+}
+
+/** Questão trancada (ultrassecreta no plano Básico): vai ao navegador sem enunciado nem alternativas. */
+export function toLockedClientQuestion(row: QuestionRow): ClientQuestion {
+  const options = parseOptions(row.options).map((option) => ({ label: option.label, text: "", imageUrl: null }));
+  return { ...toClientQuestion(row), supportText: null, statement: "", images: [], options, locked: true, ultrasecret: true };
 }
 
 export function toReveal(row: Pick<QuestionRow, "correctLabel" | "explanation" | "reviewStatus">): Reveal {
@@ -301,11 +313,12 @@ export function revealsAfterAnswer(kind: string) {
   return kind === "practice";
 }
 
-export async function answerQuestion(input: { userId: string; questionId: string; selected: string; timeMs: number; sessionId?: string }) {
+export async function answerQuestion(input: { userId: string; questionId: string; selected: string; timeMs: number; sessionId?: string; tier?: PlanTier | null }) {
   const prisma = getPrisma();
   const selected = input.selected.trim().toUpperCase();
   const found = await getQuestionForUser(input.userId, input.questionId);
   if (!found) throw new BankError("Questão não encontrada.", 404);
+
   const options = parseOptions(found.row.options);
   if (!options.some((option) => option.label === selected)) throw new BankError("Alternativa inválida.", 400);
 
@@ -317,6 +330,10 @@ export async function answerQuestion(input: { userId: string; questionId: string
     const ids = Array.isArray(session.questionIds) ? (session.questionIds as string[]) : [];
     if (!ids.includes(input.questionId)) throw new BankError("Questão fora desta sessão.", 400);
     kind = session.kind;
+    // Treino de provas anteriores: a questão ultrassecreta (assunto que mais cai no exame) só abre no plano Completo.
+    if (kind === "practice" && found.row.origin === ORIGIN.official && ultrasecretLocked(input.tier) && isUltrasecret(found.row, await topKeysForExam(found.row.exam.slug))) {
+      throw new BankError("Questão ultrassecreta: faz parte do plano Completo.", 403);
+    }
     const existing = await prisma.bankAnswer.findUnique({ where: { sessionId_questionId: { sessionId: session.id, questionId: input.questionId } } });
     if (existing) {
       if (!revealsAfterAnswer(kind)) return { recorded: true as const, alreadyAnswered: true };

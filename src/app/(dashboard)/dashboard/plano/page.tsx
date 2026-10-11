@@ -50,7 +50,7 @@ export default async function PlanoPage() {
     <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-8">
       <header className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="flex items-center gap-4">
-          <OwlMascot mood="estudando" size={84} priority className="flex-none" />
+          <OwlMascot mood="estudando" size={112} priority className="flex-none" />
         <div>
           <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
             <Sparkles className="size-4" aria-hidden="true" />

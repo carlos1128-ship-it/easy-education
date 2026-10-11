@@ -142,7 +142,7 @@ function SectionBlock({ unit, trail, openId, setOpenId }: { unit: TrailUnit; tra
 
       <div className="relative flex flex-col items-center gap-4 py-4">
         <div className={cn("pointer-events-none absolute top-[150px] hidden md:block", mirror === 1 ? "left-[4%]" : "right-[4%]", locked && "opacity-50 grayscale")} aria-hidden="true">
-          <OwlMascot mood={unitMood(unit, trail)} size={150} />
+          <OwlMascot mood={unitMood(unit, trail)} size={170} />
         </div>
         {unit.nodes.map((node, index) => {
           const open = openId === node.id;

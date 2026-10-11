@@ -62,7 +62,8 @@ async function fetchYear(year: number) {
     await sleep(1500);
   }
   // A lista padrão traz as 5 de língua estrangeira em Espanhol; as de Inglês vêm num pedido à parte.
-  const english = await fetchJson<{ questions: EnemDevQuestion[] }>(`${API}/exams/${year}/questions?limit=10&offset=0&language=ingles`);
+  // Edições sem língua estrangeira (2009) respondem 400 a esse pedido.
+  const english = await fetchJson<{ questions: EnemDevQuestion[] }>(`${API}/exams/${year}/questions?limit=10&offset=0&language=ingles`).catch(() => ({ questions: [] }));
   all.push(...english.questions.filter((question) => question.language === "ingles"));
   return all;
 }

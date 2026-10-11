@@ -29,7 +29,7 @@ export default async function FecharDiaPage() {
   return (
     <div className="mx-auto flex w-full max-w-[860px] flex-col gap-6">
       <div className="flex items-center gap-4">
-        {!feedback ? <OwlMascot mood="cantando" size={84} priority className="flex-none" /> : null}
+        {!feedback ? <OwlMascot mood="cantando" size={112} priority className="flex-none" /> : null}
       <header className="min-w-0">
         <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
           <Moon className="size-4" aria-hidden="true" /> Opcional · não mexe na sua ofensiva

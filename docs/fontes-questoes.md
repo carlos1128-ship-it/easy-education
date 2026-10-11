@@ -1,6 +1,6 @@
 # Fontes e licenças das questões do banco
 
-Atualizado em 09/10/2026. Regra do projeto: **só entra no banco o que tem fonte e licença registradas aqui**. Fonte com licença incerta não é importada.
+Atualizado em 11/10/2026. Regra do projeto: **só entra no banco o que tem fonte e licença registradas aqui**. Fonte com licença incerta não é importada.
 
 ## Fontes avaliadas
 
@@ -9,7 +9,9 @@ Atualizado em 09/10/2026. Regra do projeto: **só entra no banco o que tem fonte
 | **INEP** — provas e gabaritos do ENEM (fonte primária) | https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos | Rodapé do site: "Todo o conteúdo deste site está publicado sob a licença **Creative Commons Atribuição-SemDerivações 3.0 Não Adaptada**" (texto lido na página em 09/10/2026). | Edições de 1998 a 2025 listadas na página, em PDF | **Origem** de todas as questões importadas; ver observações |
 | **enem.dev** (API pública, `https://api.enem.dev/v1`; código em https://github.com/yunger7/enem-api) | https://docs.enem.dev | Documentação: "Todos os dados são públicos e podem ser utilizados sem a necessidade de atribuição de créditos, respeitando a licença GNU GPL-2.0". O projeto afirma que os dados vêm dos PDFs do INEP, transformados em JSON. | 2009 a 2023, cerca de 2.700 questões (ex.: 2022 → 183 e 2023 → 181 na API) | **Usada como transcrição de conveniência** das provas do INEP (piloto) |
 | SAT / College Board | — | Questões do SAT são protegidas por direito autoral; não há licença aberta. | — | **Não importado** |
-| Outros vestibulares e concursos | — | Não avaliados | — | **Não importado** |
+| **FUVEST (USP)** e **Comvest (UNICAMP)**, 1ª fase, via conjunto acadêmico **BLUEX** (https://github.com/Portuguese-Benchmark-Datasets/BLUEX, arXiv 2307.05410) | https://www.fuvest.br/acervo-vestibular/ · https://www.comvest.unicamp.br/vestibulares-anteriores/ | As bancas publicam as provas, mas **não declaram licença aberta**. O BLUEX (transcrição revisada à mão das provas oficiais) também não declara licença. | FUVEST 2018–2024 (621 importadas), UNICAMP 2018–2024 (484) | **Importado e publicado** em 11/10/2026 a pedido do dono (ver ressalva 5) |
+| **Vestibulinho ETEC** (Centro Paula Souza / Fundação FAT) | https://vestibulinho.etec.sp.gov.br/provas-gabaritos/ | Termos do site: "Os conteúdos dos sites como: textos, desenhos, fotos, etc estão preservados pela Lei de Propriedade Intelectual" (todos os direitos reservados) | 15 cadernos de 2017 a 2026 (731 importadas) | **Importado e publicado** em 11/10/2026 a pedido do dono (ver ressalva 5) |
+| UNESP (Vunesp), outros vestibulares e concursos | — | Não avaliados | — | **Não importado** |
 | Outros conjuntos abertos de questões do ENEM (ex.: bases públicas em plataformas de dados) | — | Não avaliados a fundo | — | **Não importado** |
 
 ## O que a licença do INEP permite e o que isso exige de nós
@@ -28,6 +30,37 @@ O que o app faz para respeitar isso:
 2. **A licença do enem.dev (GPL-2.0) não substitui a do INEP.** O enem.dev apenas transcreveu as provas do INEP; a base legal do uso é a do INEP (CC BY-ND). A GPL-2.0 sobre dados é incomum, e o app usa os dados como serviço (não distribui código). Mesmo assim, o certo é, antes de escalar, **buscar os PDFs direto no INEP** (o importador foi escrito para trocar de fonte sem mexer no resto).
 3. **Imagens.** As imagens ficam hospedadas no enem.dev e o app só aponta para elas. Se o enem.dev sair do ar, as imagens quebram. Antes de escalar, copiar as imagens para o armazenamento próprio.
 4. **A fonte marca imagens que não conseguiu extrair** com uma figura "This image is broken" (`https://enem.dev/broken-image.svg`) respondendo status 200. Um teste só de "a imagem abre" não percebe isso. O importador recusa essas questões, e o script `scripts/bank/purge-broken.ts` limpa as que já tinham entrado.
+
+5. **FUVEST, UNICAMP e ETEC não têm licença aberta.** Diferente do INEP (CC BY-ND), essas bancas não liberam o reuso; a ETEC diz expressamente que o conteúdo é protegido. As provas foram importadas em 11/10/2026 porque o dono pediu um banco dessas provas. Cada questão mostra a prova, o ano e o número, e o texto é o da prova oficial (uso educacional com citação, como fazem cursinhos e plataformas de estudo). **Precisa de confirmação jurídica.** Para tirar do ar sem apagar nada:
+
+   ```sql
+   update bank_questions set is_published = false
+   where exam_id in (select id from exams where slug in ('fuvest', 'unicamp', 'etec'));
+   ```
+
+## Provas anteriores: FUVEST, UNICAMP e ETEC (11/10/2026)
+
+| Exame | Origem do texto | Gabarito | Imagens | Matéria | Publicadas |
+|---|---|---|---|---|---|
+| FUVEST 2018–2024 | BLUEX (transcrição revisada à mão) | o do BLUEX (oficial) | copiadas para o bucket público `questoes` do Supabase | a do BLUEX | 621 |
+| UNICAMP 2018–2024 | BLUEX | o do BLUEX (oficial) | idem | a do BLUEX | 484 (4 alternativas, A a D) |
+| ETEC 2017–2026 (15 cadernos) | transcrição do PDF oficial pela IA (`extract-etec.ts`), sem resumir nem corrigir | **PDF oficial de gabarito** (nunca a IA) | página renderizada e recortada; recorte refinado pela IA (`refine-etec-figures.ts`) | escolhida pela IA numa lista fechada | 731 (4 anuladas e 5 incompletas ficaram de fora) |
+
+Conferência da transcrição da ETEC (`verify-transcription.ts`): a IA resolve cada questão sem ver o gabarito; se divergir, um modelo mais forte resolve de novo; se ainda divergir, a questão é despublicada e o lote ganha o sufixo `-revisar` para um professor olhar.
+
+Comandos (os PDFs ficam fora do repositório; ver o cabeçalho de cada script):
+
+```bash
+npx tsx --env-file=.env.local scripts/bank/import-vestibular.ts --dir ./bluex --publish
+npx tsx --env-file=.env.local scripts/bank/extract-etec.ts --dir ./etec --out ./etec/json
+npx tsx --env-file=.env.local scripts/bank/import-etec.ts --dir ./etec --json ./etec/json --publish
+npx tsx --env-file=.env.local scripts/bank/refine-etec-figures.ts --dir ./etec --json ./etec/json
+npx tsx --env-file=.env.local scripts/bank/verify-transcription.ts --exam etec
+```
+
+ENEM: em 11/10/2026 entraram também as edições de **2009 a 2018** (`import-enem.ts --years 2009,...,2018 --all --publish --batch enem-2009-2018`): 1.803 questões novas, total de 2.766 publicadas.
+
+**Questão ultrassecreta** (tela Provas anteriores): é uma questão de uma das 3 matérias com mais questões daquele exame no acervo ("assunto que mais cai"), escolhida de forma fixa (1 em cada 4 dessas matérias). No plano Básico ela vem trancada no treino e pode ser pulada; no Completo, abre. Não é previsão de prova. Regra em `src/lib/bank/ultrasecret.ts`, conferida no servidor (`answerQuestion`).
 
 ## Lote piloto (importado em 09/10/2026)
 

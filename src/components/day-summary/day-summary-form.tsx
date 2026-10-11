@@ -52,7 +52,7 @@ function Feedback({ feedback }: { feedback: DaySummaryFeedback }) {
   return (
     <section aria-label="Correção do resumo" className="flex flex-col gap-5 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6">
       <div className="flex flex-col items-center gap-4 sm:flex-row">
-        <OwlMascot mood={feedback.wrong.length ? "determinada" : "comemorando"} size={112} />
+        <OwlMascot mood={feedback.wrong.length ? "determinada" : "comemorando"} size={132} />
         <div className="flex flex-1 flex-col gap-3">
           <p className="m-0 text-[17px] font-semibold text-ink">{feedback.overview || "Dia fechado."}</p>
           <SpeakButton text={feedbackSpeech(feedback)} label="Ouvir a correção" className="self-start" />

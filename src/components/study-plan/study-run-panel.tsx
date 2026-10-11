@@ -225,7 +225,7 @@ export function StudyRunAside() {
       ) : null}
       <StepList run={run} onToggle={toggleStep} />
       {run.status === "concluido" ? (
-        <OwlMascot mood="comemorando" size={96} message="Bloco concluído! +50 XP" className="self-center" />
+        <OwlMascot mood="comemorando" size={112} message="Bloco concluído! +50 XP" className="self-center" />
       ) : null}
       {run.status === "concluido" ? (
         <Link href="/dashboard/fechar-dia" className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand text-sm font-medium text-on-brand no-underline hover:bg-brand-strong">

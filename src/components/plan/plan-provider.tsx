@@ -67,7 +67,7 @@ function UpgradeDialog({ info, onClose }: { info: PlanLimitInfo | null; onClose:
         {info && copy ? (
           <>
             <DialogHeader className="items-start gap-3">
-              <OwlMascot mood={copy.owl} size={120} priority />
+              <OwlMascot mood={copy.owl} size={140} priority />
               <DialogTitle className="text-xl font-bold leading-snug text-ink">{copy.title}</DialogTitle>
               <DialogDescription className="text-[15px] leading-relaxed text-ink-muted">{message}</DialogDescription>
             </DialogHeader>

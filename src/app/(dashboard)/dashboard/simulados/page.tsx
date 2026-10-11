@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ClipboardCheck, Clock, Landmark, Sparkles, Target } from "lucide-react";
+import { ClipboardCheck, Clock, Landmark, ScrollText, Sparkles, Target } from "lucide-react";
 import { LockedNotice } from "@/components/plan/usage-hint";
 import { SimuladoCreateForm } from "@/components/quiz/simulado-create-form";
 import { ConcursoCard } from "@/components/simulados/concurso-card";
@@ -79,12 +79,20 @@ export default async function SimuladosPage() {
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <div className="flex items-center gap-4">
-        <OwlMascot mood="professora" size={84} priority className="flex-none" />
+        <OwlMascot mood="professora" size={112} priority className="flex-none" />
       <div>
         <p className="text-sm font-medium text-brand-strong">Simulados</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Prática em ritmo de prova</h1>
       </div>
       </div>
+
+      <Link href="/dashboard/provas" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-sm no-underline shadow-card transition-colors hover:border-brand/50">
+        <ScrollText className="size-5 flex-none text-brand-strong" aria-hidden="true" />
+        <span className="flex-1 text-ink">
+          <span className="font-bold">Provas anteriores:</span> ENEM, FUVEST, UNICAMP e Vestibulinho ETEC, com treino por matéria e a prova completa de cada ano.
+        </span>
+        <span className="font-semibold text-brand-strong">Abrir</span>
+      </Link>
 
       {enem ? (
         <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6">

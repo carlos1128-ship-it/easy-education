@@ -79,7 +79,7 @@ export default async function DesempenhoPage({ searchParams }: { searchParams: P
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
       <div className="flex items-center gap-4">
-        <OwlMascot mood="grecia" size={84} priority className="flex-none" />
+        <OwlMascot mood="grecia" size={112} priority className="flex-none" />
       <div>
         <p className="text-sm font-medium text-brand-strong">Desempenho</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Evolução dos estudos</h1>

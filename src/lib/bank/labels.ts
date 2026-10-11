@@ -15,7 +15,7 @@ const VARIANT_LABEL: Record<string, string> = { ingles: "Inglês", espanhol: "Es
 export function sourceLabel(question: SourceInfo) {
   if (question.origin === ORIGIN.ai) return "Gerada por IA";
   const variant = question.variant ? ` (${VARIANT_LABEL[question.variant] ?? question.variant})` : "";
-  const edition = question.edition ? `, caderno ${question.edition}` : "";
+  const edition = !question.edition ? "" : /semestre/.test(question.edition) ? ` (${question.edition})` : `, caderno ${question.edition}`;
   return `${question.exam.name} ${question.year}${edition}, Questão ${question.number}${variant}`;
 }
 

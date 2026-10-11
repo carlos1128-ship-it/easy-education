@@ -38,7 +38,7 @@ import { SUPPORT_EMAIL, legalLinks, supportMailto } from "@/lib/site";
 import { EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
-import { owlAnimationStyle } from "@/lib/owls";
+import { OWLS, owlAnimationStyle, owlSrc } from "@/lib/owls";
 
 const container = "mx-auto max-w-[1520px] px-5 lg:px-12 2xl:px-16";
 const sectionTop = "pt-16 lg:pt-24";
@@ -131,9 +131,10 @@ export function LandingPage() {
                 sizes="(min-width: 1024px) 380px, 300px"
                 className="absolute bottom-0 left-1/2 h-[96%] w-auto max-w-none -translate-x-1/2 lg:left-[56%] lg:h-[94%] dark:[mask-image:linear-gradient(to_bottom,#000_82%,transparent)]"
               />
-              <span className="absolute left-[6%] top-[38%] z-[3] hidden size-14 items-center justify-center rounded-full border border-border bg-surface text-brand-strong shadow-pop lg:flex">
-                <IconSquareCheck size={22} />
-              </span>
+              {/* Coruja de capa voando ao lado da foto (pacote do mascote). */}
+              <div className="owl-anim absolute -left-2 top-2 z-[3] w-[120px] lg:-left-6 lg:top-[6%] lg:w-[190px]" style={{ animation: "owl-drift 6s ease-in-out infinite" }} aria-hidden="true">
+                <Image src={owlSrc("heroi")} alt="" width={OWLS.heroi.w} height={OWLS.heroi.h} unoptimized priority className="owl-anim owl-glow h-auto w-full" style={owlAnimationStyle("heroi")} />
+              </div>
               <span className="absolute right-[10%] top-[8%] z-[3] hidden size-14 items-center justify-center rounded-full border border-border bg-surface text-brand-strong shadow-pop lg:flex">
                 <IconCards size={22} />
               </span>
@@ -255,10 +256,21 @@ export function LandingPage() {
 
       {/* Recursos */}
       <section id="recursos" className={cn(container, sectionTop, "flex scroll-mt-24 flex-col gap-7 lg:gap-16")}>
-        <div className="flex max-w-[640px] flex-col gap-3">
-          <span className={eyebrow}>{landingResources.eyebrow}</span>
-          <h2 className={h2}>{landingResources.title}</h2>
-          <p className={lead}>{landingResources.text}</p>
+        <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex max-w-[640px] flex-col gap-3">
+            <span className={eyebrow}>{landingResources.eyebrow}</span>
+            <h2 className={h2}>{landingResources.title}</h2>
+            <p className={lead}>{landingResources.text}</p>
+          </div>
+          <Image
+            src={owlSrc("educacao")}
+            alt=""
+            width={OWLS.educacao.w}
+            height={OWLS.educacao.h}
+            unoptimized
+            className="owl-anim owl-glow h-auto w-full max-w-[460px] self-center lg:w-[440px]"
+            style={owlAnimationStyle("educacao")}
+          />
         </div>
 
         <QuizFeature />
@@ -319,6 +331,7 @@ export function LandingPage() {
           <span className={eyebrow}>{landingFaq.eyebrow}</span>
           <h2 className={h2}>{landingFaq.title}</h2>
           {landingFaq.contactLine ? <p className="m-0 text-ink-muted">{landingFaq.contactLine}</p> : null}
+          <Image src={owlSrc("pensando")} alt="" width={OWLS.pensando.w} height={OWLS.pensando.h} unoptimized className="owl-glow mt-4 hidden h-auto w-[220px] lg:block" />
         </div>
         <LandingFaq />
       </section>
@@ -328,6 +341,12 @@ export function LandingPage() {
         <div className="relative mx-auto max-w-[1600px] overflow-hidden rounded-3xl">
           <Image src={landingFinalCta.image.src} alt="" fill sizes="(min-width: 1232px) 1232px, 100vw" className="object-cover object-[center_35%]" />
           <div className="relative flex flex-col items-center gap-4 bg-cta-overlay px-5 pb-7 pt-10 text-center lg:px-14 lg:py-16">
+            <div className="owl-anim pointer-events-none absolute left-[4%] top-1/2 hidden w-[210px] -translate-y-1/2 lg:block" style={{ animation: "owl-drift 7s ease-in-out infinite" }} aria-hidden="true">
+              <Image src={owlSrc("piscando")} alt="" width={OWLS.piscando.w} height={OWLS.piscando.h} unoptimized className="owl-anim owl-glow h-auto w-full" style={owlAnimationStyle("piscando")} />
+            </div>
+            <div className="owl-anim pointer-events-none absolute right-[4%] top-1/2 hidden w-[170px] -translate-y-1/2 lg:block" aria-hidden="true">
+              <Image src={owlSrc("festa")} alt="" width={OWLS.festa.w} height={OWLS.festa.h} unoptimized className="owl-anim owl-glow h-auto w-full" style={owlAnimationStyle("festa")} />
+            </div>
             <h2 className={cn(h2, "max-w-[620px] font-black text-white")}>{landingFinalCta.title}</h2>
             <p className={cn(leadLarge, "max-w-[480px] text-[#dbeafe]")}>{landingFinalCta.text}</p>
             <Link
@@ -607,7 +626,7 @@ function ChatCard() {
           fill
           unoptimized
           sizes="(min-width: 1024px) 340px, 92vw"
-          className="owl-anim rounded-3xl bg-white object-contain object-top pb-14"
+          className="owl-anim owl-glow rounded-3xl bg-gradient-to-b from-brand-tint to-transparent object-contain object-top p-3 pb-14"
           style={owlAnimationStyle(chat.image.owl)}
         />
         <div className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-1.5 rounded-2xl bg-surface p-2.5 shadow-pop">
@@ -637,7 +656,7 @@ function PlanCard() {
           fill
           unoptimized
           sizes="(min-width: 1024px) 340px, 92vw"
-          className="owl-anim rounded-3xl bg-white object-contain object-top pb-24"
+          className="owl-anim owl-glow rounded-3xl bg-gradient-to-b from-brand-tint to-transparent object-contain object-top p-3 pb-24"
           style={owlAnimationStyle(plan.image.owl)}
         />
         <div className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-1 rounded-2xl bg-surface p-2 shadow-pop">

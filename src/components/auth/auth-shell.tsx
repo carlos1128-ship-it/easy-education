@@ -8,7 +8,7 @@ export function AuthShell({ title, subtitle, owl, children }: { title: string; s
       <section className="w-full max-w-[440px] rounded-3xl border border-border bg-surface px-6 py-9 shadow-pop sm:px-8">
         <div className="flex flex-col items-center text-center">
           {owl ? (
-            <OwlMascot mood={owl} size={150} priority />
+            <OwlMascot mood={owl} size={190} priority />
           ) : (
             <>
               <Image src="/brand/icone-azul.svg" alt="" width={64} height={64} unoptimized preload className="size-16 drop-shadow-[0_8px_16px_rgba(37,99,235,0.3)] dark:hidden" />

@@ -34,7 +34,7 @@ export default async function AnotacoesPage({ searchParams }: { searchParams: Pr
     <div className="mx-auto flex w-full max-w-[960px] flex-col gap-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-center gap-4">
-          <OwlMascot mood="pensando" size={84} priority className="flex-none" />
+          <OwlMascot mood="pensando" size={112} priority className="flex-none" />
         <div>
           <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
             <NotebookPen className="size-4" aria-hidden="true" /> Só você vê

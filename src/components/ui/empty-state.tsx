@@ -23,7 +23,7 @@ export function EmptyState({
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border-strong bg-surface p-8 text-center">
       {owl ? (
-        <OwlMascot mood={owl} size={150} className="mb-3" />
+        <OwlMascot mood={owl} size={170} className="mb-3" />
       ) : (
         <div className="mb-4 grid size-12 place-items-center rounded-lg bg-brand-tint text-brand-strong">
           <Icon className="size-6" aria-hidden="true" />

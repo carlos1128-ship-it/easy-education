@@ -3,6 +3,7 @@ import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { answerQuestion } from "@/lib/bank/service";
+import { getAccessState } from "@/lib/billing";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
@@ -19,7 +20,9 @@ export async function POST(request: Request) {
     if (response) return response;
     if (!checkRateLimit(`bank-answer:${user.id}`, 120, 60_000).ok) return NextResponse.json({ error: "Muitas respostas em pouco tempo." }, { status: 429 });
     const payload = schema.parse(await request.json());
-    return NextResponse.json(await answerQuestion({ userId: user.id, ...payload }));
+    // O plano decide se a questão ultrassecreta pode ser respondida (só no Completo).
+    const access = await getAccessState(user);
+    return NextResponse.json(await answerQuestion({ userId: user.id, ...payload, tier: access.tier }));
   } catch (error) {
     return apiErrorResponse(error, { scope: "bank.answer", fallback: "Não foi possível salvar a resposta." });
   }

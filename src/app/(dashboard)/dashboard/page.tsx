@@ -15,6 +15,7 @@ import { blockKey, blockStatus } from "@/lib/study-completion";
 import { getTodayRuns } from "@/lib/study-runs";
 import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
 import { cn } from "@/lib/utils";
+import { OwlMascot, type OwlMood } from "@/components/mascot/owl-mascot";
 
 /* Apresentação */
 
@@ -121,6 +122,9 @@ export default async function DashboardPage() {
       ? "Seu painel acompanha progresso real, gerações da IA e revisões feitas na plataforma."
       : "Comece gerando seu primeiro quiz. Seu acerto, suas horas e sua sequência aparecem aqui assim que você estudar.";
 
+  // Coruja do topo: comemora a meta, estuda junto quando há plano para hoje, dá boas-vindas a quem está começando.
+  const heroOwl: OwlMood = dailyProgress >= 100 ? "festa" : todayBlocks.length ? "estudando" : hasAnyData ? "piscando" : "feliz";
+
   const metas = [
     {
       title: "Meta diária",
@@ -161,9 +165,19 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-5">
-      <section className={cn("flex flex-col items-stretch gap-6 rounded-3xl border border-border bg-hero-panel p-5 shadow-card lg:flex-row lg:p-8")}>
+      <section className={cn("flex flex-col items-stretch gap-6 rounded-3xl border border-border bg-hero-panel p-5 shadow-card lg:p-8 2xl:flex-row")}>
+        <div className="flex min-w-0 flex-1 items-center gap-4 lg:gap-6">
+        <div className="relative hidden flex-none sm:block" aria-hidden="true">
+          <span className="absolute inset-x-2 bottom-1 h-6 rounded-[50%] bg-brand/15 blur-md" />
+          <OwlMascot mood={heroOwl} size={150} priority className="relative lg:hidden" />
+          <OwlMascot mood={heroOwl} size={184} priority className="relative hidden lg:flex" />
+        </div>
         <div className="flex min-w-0 flex-1 flex-col gap-2.5">
-          <p className="m-0 text-[15px] font-medium text-ink-muted">{name ? `Olá, ${name}` : "Olá"}</p>
+          <div className="flex items-center gap-3 sm:hidden">
+            <OwlMascot mood={heroOwl} size={76} priority className="flex-none" />
+            <p className="m-0 text-[15px] font-medium text-ink-muted">{name ? `Olá, ${name}` : "Olá"}</p>
+          </div>
+          <p className="m-0 hidden text-[15px] font-medium text-ink-muted sm:block">{name ? `Olá, ${name}` : "Olá"}</p>
           <h1 className="m-0 text-[26px] font-extrabold leading-[1.15] tracking-[-0.02em] text-ink [text-wrap:balance] lg:text-4xl lg:leading-[1.15]">
             {profile?.studyGoal ? `Foco em ${profile.studyGoal}` : "Seu painel de estudos"}
           </h1>
@@ -183,7 +197,8 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </div>
-        <div className="grid w-full grid-cols-1 gap-x-8 gap-y-5 self-center sm:grid-cols-2 lg:w-[520px] xl:w-[600px]">
+        </div>
+        <div className="grid w-full grid-cols-1 gap-x-8 gap-y-5 self-center sm:grid-cols-2 2xl:w-[560px] 2xl:border-l 2xl:border-border 2xl:pl-8">
           {metas.map((meta) => (
             <div key={meta.title} className="flex items-center gap-3.5">
               <div className="relative size-[52px] flex-shrink-0 lg:size-[60px]">
@@ -213,6 +228,21 @@ export default async function DashboardPage() {
       </section>
 
       <LevelCard stats={gamification} />
+
+      {/* Provas anteriores: a detetive chama para as questões que já caíram (e as ultrassecretas). */}
+      <Link
+        href="/dashboard/provas"
+        className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border-2 border-b-4 border-brand/40 bg-surface p-4 no-underline shadow-card transition-all hover:-translate-y-0.5 hover:border-brand lg:gap-6 lg:p-5"
+      >
+        <span className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-brand/10 blur-2xl" aria-hidden="true" />
+        <OwlMascot mood="detetive" size={92} className="relative flex-none" />
+        <span className="relative flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-brand-strong">Provas anteriores</span>
+          <span className="text-lg font-extrabold leading-tight text-ink">ENEM, FUVEST, UNICAMP e ETEC: treine com o que já caiu</span>
+          <span className="text-sm text-ink-muted">Treinos de 10 questões por matéria, a prova completa de cada ano e as ultrassecretas, dos assuntos que mais caem.</span>
+        </span>
+        <ArrowRight size={22} className="relative hidden flex-none text-brand-strong transition-transform group-hover:translate-x-1 sm:block" aria-hidden="true" />
+      </Link>
 
       {nextStep ? (
         <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-6 lg:p-6")} aria-label="Primeiros passos">

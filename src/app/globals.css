@@ -381,6 +381,22 @@
 @keyframes owl-heart { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.08); } 30% { transform: scale(0.98); } 45% { transform: scale(1.06); } 60% { transform: scale(1); } }
 @keyframes owl-pulse { 0%, 100% { transform: scale(0.97); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.05); } }
 @keyframes owl-nod { 0%, 100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(-2deg) translateY(-2%); } }
+/* Patinete atravessando a tela de carregamento (ida e volta, virando na ponta). */
+@keyframes owl-ride {
+  0% { transform: translateX(-40cqw) scaleX(1); }
+  46% { transform: translateX(40cqw) scaleX(1); }
+  50% { transform: translateX(40cqw) scaleX(-1); }
+  96% { transform: translateX(-40cqw) scaleX(-1); }
+  100% { transform: translateX(-40cqw) scaleX(1); }
+}
+@keyframes owl-dust { 0% { opacity: 0.7; transform: translateX(0) scale(0.6); } 100% { opacity: 0; transform: translateX(-28px) scale(1.4); } }
+/* Coruja voando pela tela (landing, ao lado das chamadas). */
+@keyframes owl-drift { 0%, 100% { transform: translate(0, 0) rotate(-4deg); } 25% { transform: translate(6px, -14px) rotate(1deg); } 50% { transform: translate(-4px, -22px) rotate(3deg); } 75% { transform: translate(-8px, -8px) rotate(-1deg); } }
+
+/* Contorno da coruja: no claro, sombra leve para a coruja branca não sumir no fundo claro; no escuro, halo azul. */
+.owl-glow { filter: drop-shadow(0 0 1px rgb(30 64 175 / 0.28)) drop-shadow(0 6px 12px rgb(15 23 42 / 0.12)); }
+.dark .owl-glow { filter: drop-shadow(0 0 1px rgb(255 255 255 / 0.3)) drop-shadow(0 8px 26px rgb(59 130 246 / 0.4)); }
+
 @media (prefers-reduced-motion: reduce) {
   .owl-anim {
     animation: none !important;

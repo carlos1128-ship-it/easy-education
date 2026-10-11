@@ -1,23 +1,4 @@
-import {
-  BarChart,
-  BookOpen,
-  Calendar,
-  CalendarCheck,
-  ClipboardCheck,
-  CreditCard,
-  FileEdit,
-  Folder,
-  Layers,
-  LayoutDashboard,
-  NotebookPen,
-  PenTool,
-  Route,
-  Settings,
-  Sparkles,
-  Target,
-  Upload,
-  type LucideIcon,
-} from "lucide-react";
+import { BarChart, BookOpen, Calendar, CalendarCheck, ClipboardCheck, CreditCard, FileEdit, Folder, Layers, LayoutDashboard, NotebookPen, PenTool, Route, Settings, Sparkles, Target, Upload, type LucideIcon, ScrollText } from "lucide-react";
 
 type NavItem = {
   href: string;
@@ -37,6 +18,7 @@ export const navItems: NavItem[] = [
   { href: "/dashboard/plano", label: "Plano de estudo", icon: Calendar, group: "Meus Estudos" },
   { href: "/dashboard/redacao", label: "Redação", icon: PenTool, group: "Meus Estudos" },
   { href: "/dashboard/simulados", label: "Simulados", icon: ClipboardCheck, group: "Meus Estudos" },
+  { href: "/dashboard/provas", label: "Provas anteriores", icon: ScrollText, group: "Meus Estudos" },
   { href: "/dashboard/anotacoes", label: "Anotações", icon: NotebookPen, group: "Meus Estudos" },
   { href: "/dashboard/desempenho", label: "Desempenho", icon: BarChart, group: "Meus Estudos" },
   { href: "/dashboard/assinatura", label: "Assinatura", icon: CreditCard, group: "Footer" },
