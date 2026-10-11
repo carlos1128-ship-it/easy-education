@@ -43,12 +43,17 @@ export async function POST(request: Request) {
         title: simulado ? `Simulado de ${payload.subject}` : undefined,
       });
 
-    // O aluno escolheu questões de provas: precisa de plano, mas não gasta o limite de IA.
+    // Questões prontas (padrão do formulário): precisa de plano, mas não gasta o limite de IA. Matéria sem
+    // questões no banco (ex.: Direito) segue para a IA.
     if (payload.source === "provas" && !payload.fileId) {
       await requireTier(user);
-      const quiz = await fromBank();
-      revalidateQuizPages();
-      return NextResponse.json({ quizId: quiz.id });
+      try {
+        const quiz = await fromBank();
+        revalidateQuizPages();
+        return NextResponse.json({ quizId: quiz.id });
+      } catch (error) {
+        if (!(error instanceof NoBankQuestionsError)) throw error;
+      }
     }
 
     try {

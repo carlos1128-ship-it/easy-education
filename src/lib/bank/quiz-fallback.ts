@@ -40,6 +40,11 @@ const SUBJECT_WORDS: Array<[RegExp, string]> = [
 export function bankSubjectsFor(subject: string, topic?: string | null) {
   const text = normalize(`${subject} ${topic ?? ""}`);
   const found = new Set<string>();
+  // Nome exato de uma matéria do banco ("Educação Física", "Tecnologias da Informação").
+  for (const part of subject.split(/[,;]/)) {
+    const exact = SEED_SUBJECTS.find((item) => normalize(item.name) === normalize(part.trim()));
+    if (exact) found.add(exact.slug);
+  }
   for (const [pattern, slug] of SUBJECT_WORDS) if (pattern.test(text)) found.add(slug);
   // "Ciências" (Fundamental) = Física, Química e Biologia.
   if (!found.size && /ciencias/.test(text)) ["fisica", "quimica", "biologia"].forEach((slug) => found.add(slug));

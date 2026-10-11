@@ -26,7 +26,8 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   const [difficulty, setDifficulty] = useState("medio");
   const [fileId, setFileId] = useState("none");
   const [subjects, setSubjects] = useState(["Matematica"]);
-  const [source, setSource] = useState<"ia" | "provas">("ia");
+  // Padrão: questões prontas (provas anteriores, sem IA). A IA entra se o aluno escolher ou se a matéria não tiver banco.
+  const [source, setSource] = useState<"ia" | "provas">("provas");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,7 +76,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
     <form onSubmit={submit} className="rounded-2xl border border-border bg-surface p-5 shadow-card">
       <div className="mb-4 flex items-center gap-2">
         <Sparkles className="size-5 text-brand-strong" />
-        <h2 className="font-bold text-ink">Gerar quiz com IA</h2>
+        <h2 className="font-bold text-ink">Montar um quiz</h2>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
@@ -93,8 +94,8 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="provas">Prontas, de provas anteriores</SelectItem>
               <SelectItem value="ia">Criadas pela IA no seu estilo</SelectItem>
-              <SelectItem value="provas">De provas anteriores (ENEM, vestibulares, ETEC)</SelectItem>
             </SelectContent>
           </Select>
         </div>
