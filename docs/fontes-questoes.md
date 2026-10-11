@@ -11,7 +11,10 @@ Atualizado em 11/10/2026. Regra do projeto: **só entra no banco o que tem fonte
 | SAT / College Board | — | Questões do SAT são protegidas por direito autoral; não há licença aberta. | — | **Não importado** |
 | **FUVEST (USP)** e **Comvest (UNICAMP)**, 1ª fase, via conjunto acadêmico **BLUEX** (https://github.com/Portuguese-Benchmark-Datasets/BLUEX, arXiv 2307.05410) | https://www.fuvest.br/acervo-vestibular/ · https://www.comvest.unicamp.br/vestibulares-anteriores/ | As bancas publicam as provas, mas **não declaram licença aberta**. O BLUEX (transcrição revisada à mão das provas oficiais) também não declara licença. | FUVEST 2018–2024 (621 importadas), UNICAMP 2018–2024 (484) | **Importado e publicado** em 11/10/2026 a pedido do dono (ver ressalva 5) |
 | **Vestibulinho ETEC** (Centro Paula Souza / Fundação FAT) | https://vestibulinho.etec.sp.gov.br/provas-gabaritos/ | Termos do site: "Os conteúdos dos sites como: textos, desenhos, fotos, etc estão preservados pela Lei de Propriedade Intelectual" (todos os direitos reservados) | 15 cadernos de 2017 a 2026 (731 importadas) | **Importado e publicado** em 11/10/2026 a pedido do dono (ver ressalva 5) |
-| UNESP (Vunesp), outros vestibulares e concursos | — | Não avaliados | — | **Não importado** |
+| **Vestibular FATEC** (Centro Paula Souza / Fundação FAT) | https://vestibular.fatec.sp.gov.br/provas-gabaritos/ | Mesmos termos do site da ETEC (conteúdo protegido) | 15 provas de 2017 a 2026 (821 importadas) | **Importado e publicado** em 11/10/2026 (ressalva 5) |
+| **UNESP (Vunesp)** 1ª fase, e **FUVEST/UNICAMP** de anos fora do BLUEX | PDFs do acervo público https://github.com/diogopelaes/provas-vestibulares (cópias das provas e gabaritos oficiais) | Sem licença aberta declarada (nem das bancas nem do repositório) | UNESP 2015–2026, FUVEST 2010–2017 e 2025–2026, UNICAMP 2011–2017 e 2025–2026 | **Em importação** (transcrição do PDF pela IA; ressalva 5) |
+| ENCCEJA (INEP) | https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/encceja/provas-e-gabaritos | CC BY-ND (INEP), mas as provas só ficam no sistema com login (enccejanacional.inep.gov.br), sem PDF aberto | — | **Não importado** (sem acesso aberto aos PDFs) |
+| Outros vestibulares e concursos | — | Não avaliados | — | **Não importado** |
 | Outros conjuntos abertos de questões do ENEM (ex.: bases públicas em plataformas de dados) | — | Não avaliados a fundo | — | **Não importado** |
 
 ## O que a licença do INEP permite e o que isso exige de nós
@@ -31,11 +34,11 @@ O que o app faz para respeitar isso:
 3. **Imagens.** As imagens ficam hospedadas no enem.dev e o app só aponta para elas. Se o enem.dev sair do ar, as imagens quebram. Antes de escalar, copiar as imagens para o armazenamento próprio.
 4. **A fonte marca imagens que não conseguiu extrair** com uma figura "This image is broken" (`https://enem.dev/broken-image.svg`) respondendo status 200. Um teste só de "a imagem abre" não percebe isso. O importador recusa essas questões, e o script `scripts/bank/purge-broken.ts` limpa as que já tinham entrado.
 
-5. **FUVEST, UNICAMP e ETEC não têm licença aberta.** Diferente do INEP (CC BY-ND), essas bancas não liberam o reuso; a ETEC diz expressamente que o conteúdo é protegido. As provas foram importadas em 11/10/2026 porque o dono pediu um banco dessas provas. Cada questão mostra a prova, o ano e o número, e o texto é o da prova oficial (uso educacional com citação, como fazem cursinhos e plataformas de estudo). **Precisa de confirmação jurídica.** Para tirar do ar sem apagar nada:
+5. **FUVEST, UNICAMP, UNESP, ETEC e FATEC não têm licença aberta.** Diferente do INEP (CC BY-ND), essas bancas não liberam o reuso; a ETEC diz expressamente que o conteúdo é protegido. As provas foram importadas em 11/10/2026 porque o dono pediu um banco dessas provas. Cada questão mostra a prova, o ano e o número, e o texto é o da prova oficial (uso educacional com citação, como fazem cursinhos e plataformas de estudo). **Precisa de confirmação jurídica.** Para tirar do ar sem apagar nada:
 
    ```sql
    update bank_questions set is_published = false
-   where exam_id in (select id from exams where slug in ('fuvest', 'unicamp', 'etec'));
+   where exam_id in (select id from exams where slug in ('fuvest', 'unicamp', 'etec', 'fatec', 'unesp'));
    ```
 
 ## Provas anteriores: FUVEST, UNICAMP e ETEC (11/10/2026)
@@ -61,6 +64,14 @@ npx tsx --env-file=.env.local scripts/bank/verify-transcription.ts --exam etec
 ENEM: em 11/10/2026 entraram também as edições de **2009 a 2018** (`import-enem.ts --years 2009,...,2018 --all --publish --batch enem-2009-2018`): 1.803 questões novas, total de 2.766 publicadas.
 
 **Questão ultrassecreta** (tela Provas anteriores): é uma questão de uma das 3 matérias com mais questões daquele exame no acervo ("assunto que mais cai"), escolhida de forma fixa (1 em cada 4 dessas matérias). No plano Básico ela vem trancada no treino e pode ser pulada; no Completo, abre. Não é previsão de prova. Regra em `src/lib/bank/ultrasecret.ts`, conferida no servidor (`answerQuestion`).
+
+## Gabarito com várias versões da prova (11/10/2026)
+
+FUVEST (2010–2017: provas V, K, Q, X, Z), UNICAMP (2011–2014: 4 versões) e outras publicam um gabarito por versão, com a ordem das questões embaralhada. O caderno do acervo é de uma versão só, e o PDF não diz qual. `parseKeyVersions` (src/lib/bank/etec.ts) lê todas as versões; na importação, a IA resolve uma amostra de questões só de texto **sem ver o gabarito**, e fica a versão com mais concordância (a certa passa de 50% e fica pelo menos 20 pontos acima das outras, que ficam perto do acaso). Sem essa folga, o caderno não é importado. Depois, `verify-transcription.ts` confere questão por questão, como na ETEC.
+
+## Banco como reserva da IA (11/10/2026)
+
+O quiz e o simulado gerados por IA usam o banco quando a IA não pode atender: limite do plano esgotado, teto de custo do dia/mês, ou erro da IA (`src/app/api/quiz/generate/route.ts`, `src/lib/bank/quiz-fallback.ts`). Não gasta IA nem o limite. Para o aluno é um quiz normal (sem aviso de "reserva"); cada questão começa com a prova de origem, por exemplo "(ENEM 2015, Questão 140)", que é a atribuição exigida pela licença do INEP. No formulário do quiz o aluno também pode escolher "De provas anteriores". Só entram questões de texto (sem figura nem tabela), da matéria pedida, de preferência da prova do objetivo do aluno e que ele ainda não viu.
 
 ## Lote piloto (importado em 09/10/2026)
 
