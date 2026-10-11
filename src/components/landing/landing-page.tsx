@@ -7,7 +7,6 @@ import {
   IconAlert,
   IconArrowRight,
   IconBook,
-  IconCards,
   IconCheck,
   IconChevronDown,
   IconClock,
@@ -104,7 +103,8 @@ export function LandingPage() {
                   {landingHero.cta}
                 </Link>
               </div>
-              <div className="mt-1 flex flex-col flex-wrap gap-x-7 gap-y-3.5 lg:mt-5 lg:flex-row">
+              <p className="m-0 -mt-2 max-w-[560px] pl-1 text-[13px] leading-5 text-ink-muted">{landingHero.reassurance}</p>
+              <div className="mt-1 flex flex-col flex-wrap gap-x-7 gap-y-3.5 lg:mt-3 lg:flex-row">
                 {landingHero.highlights.map((label, index) => {
                   const Icon = heroIcons[index];
                   return (
@@ -119,29 +119,30 @@ export function LandingPage() {
               </div>
             </div>
 
-            <div className="relative min-h-[440px] lg:min-h-[580px]">
-              <div className="absolute left-1/2 top-[30px] size-[350px] -translate-x-1/2 rounded-full bg-hero-ring lg:left-[56%] lg:top-[12%] lg:size-[520px]" />
-              <div className="absolute left-1/2 top-[60px] size-[290px] -translate-x-1/2 rounded-full bg-brand-soft lg:left-[56%] lg:top-[calc(12%+50px)] lg:size-[420px]" />
-              <Image
-                src={landingHero.image.src}
-                width={landingHero.image.width}
-                height={landingHero.image.height}
-                alt={landingHero.image.alt}
-                priority
-                sizes="(min-width: 1024px) 380px, 300px"
-                className="absolute bottom-0 left-1/2 h-[96%] w-auto max-w-none -translate-x-1/2 lg:left-[56%] lg:h-[94%] dark:[mask-image:linear-gradient(to_bottom,#000_82%,transparent)]"
-              />
-              <span className="absolute right-[10%] top-[8%] z-[3] hidden size-14 items-center justify-center rounded-full border border-border bg-surface text-brand-strong shadow-pop lg:flex">
-                <IconCards size={22} />
-              </span>
-              <div className="absolute bottom-4 left-3 z-[3] flex items-center gap-2.5 rounded-2xl border border-border bg-surface py-2 pl-2 pr-3.5 shadow-pop lg:-left-8 lg:bottom-[72px]">
-                <span className="grid size-[34px] flex-none place-items-center rounded-full bg-warning-tint text-warning">
-                  <IconClock size={16} strokeWidth={2} />
-                </span>
-                <span className="flex flex-col gap-0.5">
-                  <span className="text-[13px] font-bold leading-4 text-ink">{landingHero.floatingCard.title}</span>
-                  <span className="text-[11px] font-medium leading-[14px] text-ink-muted">{landingHero.floatingCard.note}</span>
-                </span>
+            {/* Coruja da capa: uns 15 cm no monitor (perto de um palmo) e a largura útil do celular.
+                No celular o card fica embaixo dela; por cima, cobriria os pés. */}
+            <div className="relative flex items-center justify-center px-5 pb-8 pt-2 lg:min-h-[580px] lg:px-0 lg:pb-12 lg:pt-0">
+              <div className="relative w-[min(340px,86vw)] lg:w-[min(560px,96%)] xl:w-[600px]">
+                <div className="absolute inset-[9%] rounded-full bg-hero-ring" aria-hidden="true" />
+                <Image
+                  src={landingHero.image.src}
+                  width={landingHero.image.width}
+                  height={landingHero.image.height}
+                  alt={landingHero.image.alt}
+                  preload
+                  sizes="(min-width: 1280px) 600px, (min-width: 1024px) 560px, 340px"
+                  className="owl-anim relative block h-auto w-full dark:brightness-[0.9]"
+                  style={owlAnimationStyle("pulando")}
+                />
+                <div className="relative z-[3] mx-auto -mt-2 flex w-fit items-center gap-2.5 rounded-2xl border border-border bg-surface py-2 pl-2 pr-3.5 shadow-pop lg:absolute lg:-left-10 lg:bottom-[10%] lg:mx-0 lg:mt-0">
+                  <span className="grid size-[34px] flex-none place-items-center rounded-full bg-warning-tint text-warning">
+                    <IconClock size={16} strokeWidth={2} />
+                  </span>
+                  <span className="flex flex-col gap-0.5">
+                    <span className="text-[13px] font-bold leading-4 text-ink">{landingHero.floatingCard.title}</span>
+                    <span className="text-[11px] font-medium leading-[14px] text-ink-muted">{landingHero.floatingCard.note}</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>

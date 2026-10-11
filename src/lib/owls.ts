@@ -53,6 +53,8 @@ export const OWLS = {
   pensando: { w: 1254, h: 1254, src: "/mascote/coruja-v2-pensando.webp" },
   /** Herói de capa: voando ao lado de chamadas (landing, conquistas, oferta do plano). */
   heroi: { w: 1254, h: 1254, src: "/mascote/coruja-v2-voando.webp", anim: "owl-float 3.4s", origin: "50% 50%" },
+  /** Capa da landing: pulando entre os materiais de estudo (já vem com cor mais suave que o original). */
+  pulando: { w: 1120, h: 1037, src: "/mascote/coruja-v2-pulando.webp", anim: "owl-drift 6s", origin: "50% 50%" },
   /** Questão "ultrassecreta" (preferida dos examinadores) e provas anteriores. */
   detetive: { w: 1254, h: 1254, src: "/mascote/coruja-v2-historia.webp", anim: "owl-breathe 3.6s" },
   /** Brasil: vestibulares e ENEM, comemorações nacionais. */

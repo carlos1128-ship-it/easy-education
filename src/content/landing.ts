@@ -30,7 +30,7 @@ export const landingNav = [
 ] as const;
 
 export const landingHeader = {
-  cta: "Começar grátis",
+  cta: "Testar grátis",
   login: "Entrar",
   loginHint: "Já tem conta?",
   openMenu: "Abrir menu",
@@ -43,14 +43,17 @@ export const landingHero = {
   titleKeyword: "treino",
   subtitle:
     "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
-  boxText: `7 dias grátis · planos a partir de ${priceBasic}/mês`,
-  cta: "Começar grátis",
+  // Espaço sem quebra: no celular "R$" não fica numa linha e o valor na outra.
+  boxText: `7 dias grátis · planos a partir de ${priceBasic.replace(" ", " ")}/mês`,
+  cta: "Testar 7 dias grátis",
+  // Fica embaixo da caixa do botão: tira o medo de cobrança antes de clicar.
+  reassurance: "A cobrança só começa depois dos 7 dias. Cancele antes e não paga nada.",
   highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
-    src: "/images/estudante-jeans-recorte.webp",
-    width: 792,
-    height: 1240,
-    alt: "Estudante de óculos e mochila, sorrindo e segurando cadernos",
+    src: "/mascote/coruja-v2-pulando.webp",
+    width: 1120,
+    height: 1037,
+    alt: "Coruja do Easy Education, de óculos e moletom azul, pulando entre livros, calculadora, globo e mochila",
   },
   floatingCard: { title: "12 flashcards para revisar hoje", note: "Exemplo ilustrativo" },
 } as const;
@@ -321,15 +324,15 @@ export const landingFaq = {
   items: [
     {
       q: "Preciso pagar para usar?",
-      a: "Os 7 primeiros dias são grátis. O cartão é pedido no início, mas a primeira cobrança só acontece no fim do teste, e você pode cancelar antes sem pagar nada. Depois do teste, o plano é pago.",
+      a: "Os 7 primeiros dias são grátis. O cartão é pedido no início, mas a primeira cobrança só acontece no fim do teste, e você pode cancelar antes sem pagar nada. Depois do teste, cobramos o plano que você escolheu.",
     },
     {
       q: "Como funcionam os limites de uso?",
-      a: "Cada plano pago tem um uso justo de IA, maior no Completo. Você acompanha quanto já usou em Assinatura, dentro do app. O uso do dia volta à meia-noite e o da semana, na segunda-feira.",
+      a: "Cada plano tem um uso justo de IA, maior no Completo. Você acompanha quanto já usou em Assinatura, dentro do app. O uso do dia volta à meia-noite e o da semana, na segunda-feira.",
     },
     {
       q: "Como funcionam os simulados?",
-      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe, nos planos pagos, simulados no estilo da banca, gerado por IA e marcado como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
+      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe simulados no estilo da banca, gerados por IA e marcado como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
     },
     {
       q: "A nota estimada do simulado é a nota do ENEM?",
@@ -341,7 +344,7 @@ export const landingFaq = {
     },
     {
       q: "Quais formas de pagamento?",
-      a: "O pagamento dos planos pagos é feito pelo Stripe, com cartão. Pix e boleto não estão disponíveis para assinatura por enquanto.",
+      a: "O pagamento dos planos é feito pelo Stripe, com cartão. Pix e boleto não estão disponíveis para assinatura por enquanto.",
     },
     {
       q: "Quanto custa o Easy Education?",
@@ -384,8 +387,8 @@ export const landingFaq = {
 
 export const landingFinalCta = {
   title: "Comece seu plano de estudos hoje",
-  text: "Crie sua conta, conte o que você está estudando e receba o plano da semana na hora. Os planos pagos começam com 7 dias grátis.",
-  cta: "Começar grátis",
+  text: "Conte o que você está estudando e receba o plano da semana na hora. Use tudo por 7 dias grátis e só pague se continuar.",
+  cta: "Testar 7 dias grátis",
   image: { src: "/images/formatura-azul.jpg" },
 } as const;
 
