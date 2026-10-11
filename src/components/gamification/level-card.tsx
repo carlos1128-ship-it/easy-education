@@ -41,7 +41,7 @@ export function LevelCard({ stats, className }: { stats: Gamification; className
               <span className="block font-extrabold tabular-nums">
                 {Math.min(stats.todayXp, stats.dailyGoalXp)}/{stats.dailyGoalXp} XP
               </span>
-              {goalDone ? "Meta de hoje feita" : "Meta de hoje"}
+              {goalDone ? "Bônus de hoje feito" : "Bônus de XP hoje"}
             </span>
           </div>
           <div className={cn("flex items-center gap-2 rounded-xl p-2.5", streakAtRisk ? "bg-warning-tint" : "bg-surface-muted")}>

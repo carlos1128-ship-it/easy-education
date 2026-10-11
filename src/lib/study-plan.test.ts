@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysFromToday, getTodayPlanBlocks, orderWeekFromToday, relativeDayLabel, todayWeekday } from "@/lib/study-plan";
+import { daysFromToday, getTodayPlanBlocks, getTomorrowPlanBlocks, orderWeekFromToday, relativeDayLabel, todayWeekday } from "@/lib/study-plan";
 
 const WEEK = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((dayOfWeek) => ({ dayOfWeek, blocks: [] }));
 
@@ -47,5 +47,24 @@ describe("semana a partir de hoje (horário de Brasília)", () => {
     const plan = { days: [{ dayOfWeek: "friday", blocks: [{ subject: "Física", topic: "", durationMinutes: 30, method: "", type: "estudo" as const }] }], weeklyGoals: [], tips: [] };
     expect(getTodayPlanBlocks(plan, new Date("2026-10-10T02:59:00Z"))).toHaveLength(1);
     expect(getTodayPlanBlocks(plan, new Date("2026-10-10T03:00:00Z"))).toHaveLength(0);
+  });
+});
+
+describe("gancho de amanhã", () => {
+  const plan = {
+    days: [
+      { dayOfWeek: "friday", blocks: [{ subject: "Matemática" }] },
+      { dayOfWeek: "saturday", blocks: [{ subject: "Química" }] },
+    ],
+  } as unknown as Parameters<typeof getTomorrowPlanBlocks>[0];
+
+  it("pega os blocos do dia seguinte no horário de Brasília", () => {
+    // Sexta 15:00 em Brasília: amanhã é sábado.
+    expect(getTomorrowPlanBlocks(plan, new Date("2026-10-09T18:00:00Z")).map((b) => b.subject)).toEqual(["Química"]);
+  });
+
+  it("devolve vazio sem plano ou em dia de descanso", () => {
+    expect(getTomorrowPlanBlocks(null)).toEqual([]);
+    expect(getTomorrowPlanBlocks(plan, new Date("2026-10-10T18:00:00Z"))).toEqual([]);
   });
 });

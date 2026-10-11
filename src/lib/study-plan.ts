@@ -31,6 +31,11 @@ export function getTodayPlanBlocks(plan: GeneratedStudyPlan | null, now: Date = 
   return plan.days.find((day) => day.dayOfWeek.toLowerCase() === today)?.blocks ?? [];
 }
 
+/** Blocos de amanhã (dia sem bloco no plano é descanso). Usado no gancho "Amanhã: ..." do início. */
+export function getTomorrowPlanBlocks(plan: GeneratedStudyPlan | null, now: Date = new Date()): StudyPlanBlock[] {
+  return getTodayPlanBlocks(plan, new Date(now.getTime() + 24 * 60 * 60 * 1000));
+}
+
 const WEEK = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 
 /** Quantos dias faltam de hoje até `dayOfWeek` (0 = hoje, 6 = daqui a 6 dias), no horário de Brasília. */

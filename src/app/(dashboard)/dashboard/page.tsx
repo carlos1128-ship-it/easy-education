@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Flame, Lock, PenTool, RotateCcw, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Lock, PenTool, RotateCcw, Sparkles, Target } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
 import { concursoTarget, isEnemStudent } from "@/lib/learner-profile";
@@ -7,14 +7,14 @@ import { getPrisma } from "@/lib/prisma";
 import { allowanceFor, PLANS } from "@/lib/plans";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { getTrailForUser } from "@/lib/study-trail";
-import { getTodayPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
+import { getTodayPlanBlocks, getTomorrowPlanBlocks, parseStudyPlan } from "@/lib/study-plan";
 import { StudySessionButton } from "@/components/study-plan/study-session-button";
 import { LevelCard } from "@/components/gamification/level-card";
 import { MenuIcon } from "@/components/layout/menu-icon";
 import { getGamification } from "@/lib/gamification";
 import { blockKey, blockStatus } from "@/lib/study-completion";
 import { getTodayRuns } from "@/lib/study-runs";
-import { calculateStreak, startOfToday, startOfWindow } from "@/lib/study-stats";
+import { startOfToday, startOfWindow } from "@/lib/study-stats";
 import { cn } from "@/lib/utils";
 import { OwlMascot, type OwlMood } from "@/components/mascot/owl-mascot";
 
@@ -76,9 +76,9 @@ export default async function DashboardPage() {
     ? Math.round(completedQuizzes.reduce((sum, quiz) => sum + (quiz.score ?? 0), 0) / completedQuizzes.length)
     : 0;
   const lastEssay = essays.find((essay) => essay.score !== null);
-  const streak = calculateStreak([...sessions.map((item) => item.date), ...completedQuizzes.map((item) => item.completedAt ?? item.createdAt)]);
   const plan = parseStudyPlan(latestPlan?.planData);
   const todayBlocks = getTodayPlanBlocks(plan);
+  const tomorrowBlocks = getTomorrowPlanBlocks(plan);
   const todayRuns = todayBlocks.length ? await getTodayRuns(user.id) : new Map();
   const gamification = await getGamification(user.id);
   const goalMinutes = profile?.dailyMinutes ?? 60;
@@ -117,7 +117,13 @@ export default async function DashboardPage() {
       ? `${plural(dueCards.length, "revisão de flashcards que vence", "revisões de flashcards que vencem")} hoje`
       : null,
   ].filter(Boolean);
-  const heroText = todayParts.length
+  // Gancho de volta: com a meta de hoje cumprida, mostra o que vem amanhã (uma tarefa já aberta chama o aluno de volta).
+  const todayDone = dailyProgress >= 100 || (todayBlocks.length > 0 && todayBlocks.every((block) => blockStatus(todayRuns.get(blockKey(block))) === "concluido"));
+  const tomorrowBlock = tomorrowBlocks[0];
+  const tomorrowMinutes = tomorrowBlocks.reduce((sum, block) => sum + block.durationMinutes, 0);
+  const heroText = todayDone
+    ? "Meta de hoje cumprida. Bom trabalho!"
+    : todayParts.length
     ? `Hoje você tem ${todayParts.join(" e ")}.${todayBlocks[0] ? ` Comece por ${todayBlocks[0].subject}.` : ""}`
     : hasAnyData
       ? "Seu painel acompanha progresso real, gerações da IA e revisões feitas na plataforma."
@@ -161,7 +167,6 @@ export default async function DashboardPage() {
     { label: "Horas esta semana", icon: Clock, value: formatMinutes(totalMinutes), empty: totalMinutes === 0, step: "Começar estudo de hoje", href: "/dashboard/plano" },
     { label: "Acerto nos quizzes", icon: Target, value: `${quizAverage}%`, empty: completedQuizzes.length === 0, step: "Gerar seu primeiro quiz", href: "/dashboard/quizzes" },
     { label: "Média em redações", icon: FileText, value: lastEssay?.score ? `${Math.round(lastEssay.score)} pts` : "0 pts", empty: !lastEssay?.score, step: "Enviar primeira redação", href: "/dashboard/redacao" },
-    { label: "Sequência de estudo", icon: Flame, value: `${streak} ${streak === 1 ? "dia" : "dias"}`, empty: streak === 0, step: "Estudar hoje para começar", href: "/dashboard/plano" },
   ];
 
   return (
@@ -183,6 +188,15 @@ export default async function DashboardPage() {
             {profile?.studyGoal ? `Foco em ${profile.studyGoal}` : "Seu painel de estudos"}
           </h1>
           <p className="m-0 max-w-[520px] text-base leading-[1.55] text-ink-muted [text-wrap:pretty]">{heroText}</p>
+          {todayDone && tomorrowBlock ? (
+            <p className="m-0 flex w-fit max-w-full items-center gap-2 rounded-full bg-brand-tint px-3 py-1.5 text-sm font-medium text-brand-strong">
+              <CalendarDays size={16} aria-hidden="true" className="flex-none" />
+              <span className="min-w-0">
+                Amanhã: {tomorrowBlock.subject} · {formatMinutes(tomorrowMinutes)}
+                {tomorrowBlocks.length > 1 ? ` (${plural(tomorrowBlocks.length, "tarefa", "tarefas")})` : ""}
+              </span>
+            </p>
+          ) : null}
           <div className="mt-2.5 flex flex-wrap gap-3">
             <Link
               href="/dashboard/plano"
@@ -378,7 +392,7 @@ export default async function DashboardPage() {
         </section>
       ) : null}
 
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {stats.map(({ label, icon: Icon, value, empty, step, href }) => (
           <div key={label} className={cn(card, "flex flex-col gap-3 p-4 lg:p-6")}>
             <div className="grid size-10 place-items-center rounded-lg bg-brand-tint text-brand-strong">
