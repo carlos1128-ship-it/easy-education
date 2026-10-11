@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { etecQuestionCount, parseEtecAnswerKey } from "@/lib/bank/etec";
+import { etecQuestionCount, parseEtecAnswerKey, parseKeyVersions } from "@/lib/bank/etec";
 import { isUltrasecret, ultrasecretLocked } from "@/lib/bank/ultrasecret";
 
 describe("gabarito do Vestibulinho ETEC", () => {
@@ -18,6 +18,34 @@ describe("gabarito do Vestibulinho ETEC", () => {
     expect(key.has(23)).toBe(false);
     expect(key.get(48)).toBe("C");
     expect(etecQuestionCount(text)).toBe(48);
+  });
+});
+
+describe("gabarito com várias versões", () => {
+  it("tabela com uma coluna por versão (FUVEST 2025)", () => {
+    const rows = Array.from({ length: 25 }, (_, index) => `${index + 1} \tE \t${index + 46} \tD \t${index + 1} \tA \t${index + 46} \tC`);
+    const text = `PROVA V1 PROVA V2\n${rows.join("\n")}`;
+    const versions = parseKeyVersions(text);
+    expect(versions).toHaveLength(2);
+    expect(versions[0].get(1)).toBe("E");
+    expect(versions[0].get(46)).toBe("D");
+    expect(versions[1].get(1)).toBe("A");
+  });
+
+  it("letra da prova na frente de cada par (FUVEST 2011-2017)", () => {
+    const rows = Array.from({ length: 45 }, (_, index) => `V ${String(index + 1).padStart(2, "0")}-B K ${String(index + 1).padStart(2, "0")}‐ E`).join("\n");
+    const versions = parseKeyVersions(rows);
+    expect(versions).toHaveLength(2);
+    expect(versions[0].get(10)).toBe("B");
+    expect(versions[1].get(10)).toBe("E");
+  });
+
+  it("blocos Versão N (UNESP)", () => {
+    // 3 linhas de 10, como na folha da Vunesp.
+    const lines = Array.from({ length: 3 }, (_, row) => Array.from({ length: 10 }, (_, column) => `${row * 10 + column + 1} - ${"ABCDE"[(row * 10 + column) % 5]}`).join(" \t"));
+    const versions = parseKeyVersions(`Versão 1\n${lines.join("\n")}`);
+    expect(versions).toHaveLength(1);
+    expect(versions[0].get(7)).toBe("B");
   });
 });
 

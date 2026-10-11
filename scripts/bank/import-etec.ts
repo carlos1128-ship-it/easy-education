@@ -1,5 +1,5 @@
 /**
- * Passo 2 da importação do Vestibulinho ETEC: junta a transcrição (extract-etec.ts) com o gabarito OFICIAL,
+ * Passo 2 da importação do Vestibulinho ETEC e do Vestibular FATEC (--exam fatec): junta a transcrição (extract-etec.ts) com o gabarito OFICIAL,
  * recorta as figuras das páginas do PDF, classifica a matéria e grava no banco. Fonte: docs/fontes-questoes.md.
  *
  *   npx tsx --env-file=.env.local scripts/bank/import-etec.ts --dir ./etec --json ./etec/json --publish
@@ -15,7 +15,7 @@ import { Type } from "@google/genai";
 import { PDFParse } from "pdf-parse";
 import sharp from "sharp";
 import { SEED_SUBJECTS, VESTIBULAR_SOURCES } from "@/lib/bank/constants";
-import { ETEC_EXAMS, etecEdition, parseEtecAnswerKey } from "@/lib/bank/etec";
+import { CPS_EXAMS, disciplineToSubject, etecEdition, parseAnswerKey, parseKeyVersions } from "@/lib/bank/etec";
 import { ensureCatalog } from "@/lib/bank/service";
 import { reflowPdfText } from "@/lib/bank/vestibular";
 import { getGemini } from "@/lib/gemini";
@@ -60,7 +60,7 @@ async function crop(page: Buffer, box: number[]) {
 /** A IA escolhe a matéria de cada questão numa lista fechada (só classificação; o texto não muda). */
 async function classify(questions: Extracted[]) {
   const allowed = SEED_SUBJECTS.map((subject) => subject.slug);
-  const prompt = `Classifique cada questão do Vestibulinho ETEC (ensino fundamental) em UMA matéria, usando só estes slugs: ${allowed.join(", ")}.
+  const prompt = `Classifique cada questão de prova em UMA matéria, usando só estes slugs: ${allowed.join(", ")}.
 Questões interdisciplinares: escolha a matéria do conhecimento que a questão cobra para ser resolvida.
 ${questions.map((question) => `#${question.number}: ${(question.statement + " " + question.supportText).replace(/\s+/g, " ").slice(0, 420)}`).join("\n")}`;
   for (const model of ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash"]) {
@@ -83,11 +83,43 @@ ${questions.map((question) => `#${question.number}: ${(question.statement + " " 
   return new Map<number, string>();
 }
 
+/** Escolhe a versão do gabarito: a IA resolve uma amostra só de texto (sem ver gabarito) e a versão que mais concorda vence. */
+async function chooseVersion(questions: Extracted[], versions: Array<Map<number, string>>) {
+  const sample = questions.filter((question) => !question.figures?.length && !question.optionFigures?.length).slice(0, 30);
+  if (sample.length < 8) return null;
+  const prompt = `Resolva cada questão e responda só com a letra correta de cada uma.\n${sample
+    .map((question) => `#${question.number}\n${question.supportText ?? ""}\n${question.statement}\n${question.options.map((option, index) => `(${LABELS[index]}) ${option}`).join("\n")}`)
+    .join("\n\n")}`;
+  for (const model of ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite", "gemini-2.5-flash-lite"]) {
+    try {
+      const response = await getGemini().models.generateContent({
+        model,
+        contents: prompt,
+        config: { temperature: 0, responseMimeType: "application/json", responseSchema: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { number: { type: Type.INTEGER }, answer: { type: Type.STRING } }, required: ["number", "answer"] } } },
+      });
+      const solved = new Map((JSON.parse(response.text ?? "[]") as Array<{ number: number; answer: string }>).map((row) => [row.number, row.answer.trim().toUpperCase().charAt(0)]));
+      const scored = versions.map((key) => ({ key, agreement: sample.filter((question) => solved.get(question.number) && solved.get(question.number) === key.get(question.number)).length / sample.length }));
+      scored.sort((a, b) => b.agreement - a.agreement);
+      // A versão certa concorda muito mais que as outras (as erradas ficam perto do acaso, ~20%).
+      if (scored[0].agreement >= 0.5 && scored[0].agreement - (scored[1]?.agreement ?? 0) >= 0.2) return scored[0];
+      console.warn(`  concordância insuficiente: ${scored.map((item) => Math.round(item.agreement * 100)).join("% / ")}%`);
+      return null;
+    } catch (error) {
+      console.warn(`  versão (${model}): ${error instanceof Error ? error.message.slice(0, 120) : error}`);
+    }
+  }
+  return null;
+}
+
 async function main() {
   const dir = arg("dir");
   const jsonDir = arg("json");
   if (!dir || !jsonDir) throw new Error("Use --dir <PDFs> --json <transcrições>.");
-  const batch = arg("batch") ?? "etec-vestibulinho";
+  // ETEC e FATEC têm ano e semestre por código; nas outras provas (UNESP, FUVEST, UNICAMP) o código é o ano.
+  const examSlug = (arg("exam") ?? "etec") as keyof typeof VESTIBULAR_SOURCES;
+  if (!VESTIBULAR_SOURCES[examSlug]) throw new Error(`Exame sem fonte cadastrada: ${examSlug}.`);
+  const editions = examSlug === "etec" || examSlug === "fatec" ? CPS_EXAMS[examSlug].editions : null;
+  const batch = arg("batch") ?? (examSlug === "etec" ? "etec-vestibulinho" : `${examSlug}-vestibular`);
 
   await ensureCatalog();
   const prisma = getPrisma();
@@ -96,23 +128,37 @@ async function main() {
     const { error } = await supabase.storage.createBucket(BUCKET, { public: true, fileSizeLimit: 5 * 1024 * 1024 });
     if (error) throw error;
   }
-  const exam = await prisma.exam.findUniqueOrThrow({ where: { slug: "etec" } });
+  const exam = await prisma.exam.findUniqueOrThrow({ where: { slug: examSlug } });
   const subjects = new Map((await prisma.bankSubject.findMany({ select: { id: true, slug: true, area: true } })).map((item) => [item.slug, item]));
-  const source = VESTIBULAR_SOURCES.etec;
+  const base = VESTIBULAR_SOURCES[examSlug];
+  // FUVEST e UNICAMP também vieram do BLUEX; aqui o texto é transcrito do PDF da prova.
+  const source = { ...base, license: base.license.replace(/ Transcrição: .*$/, " Transcrição do PDF da prova (acervo público github.com/diogopelaes/provas-vestibulares).") };
   const total = { imported: 0, existing: 0, rejected: {} as Record<string, number> };
   const reject = (reason: string) => (total.rejected[reason] = (total.rejected[reason] ?? 0) + 1);
 
   for (const file of fs.readdirSync(jsonDir).filter((name) => name.endsWith(".json")).sort()) {
     const code = file.replace(".json", "");
-    const info = ETEC_EXAMS[code];
+    const info = editions ? editions[code] : Number(code) > 1990 ? { year: Number(code), semester: 0 as const } : null;
     if (!info) {
-      console.warn(`Caderno ${code} sem ano/semestre cadastrado em ETEC_EXAMS; pulando.`);
+      console.warn(`Caderno ${code} sem ano/semestre cadastrado em CPS_EXAMS; pulando.`);
       continue;
     }
-    const edition = etecEdition(info.semester);
+    const edition = info.semester ? etecEdition(info.semester) : "";
     const questions = JSON.parse(fs.readFileSync(path.join(jsonDir, file), "utf8")) as Extracted[];
     const keyText = (await new PDFParse({ data: fs.readFileSync(path.join(dir, `${code}-gabarito.pdf`)) }).getText()).text;
-    const answers = parseEtecAnswerKey(keyText);
+    const key = parseAnswerKey(keyText);
+    let answers = new Map([...key].flatMap(([number, entry]) => (entry.answer ? [[number, entry.answer] as const] : [])));
+    // Gabarito com várias versões da prova: fica a versão que mais concorda com a resolução da IA.
+    const versions = parseKeyVersions(keyText);
+    if (versions.length > 1 || (versions.length === 1 && answers.size < 20)) {
+      const chosen = versions.length === 1 ? { key: versions[0], agreement: 1 } : await chooseVersion(questions, versions);
+      if (!chosen) {
+        console.warn(`Caderno ${code}: nenhuma versão do gabarito bate com o caderno; pulando.`);
+        continue;
+      }
+      console.log(`Caderno ${code}: versão do gabarito escolhida (${Math.round(chosen.agreement * 100)}% de concordância)`);
+      answers = chosen.key;
+    }
 
     const fresh: Extracted[] = [];
     for (const question of questions) {
@@ -128,14 +174,22 @@ async function main() {
       const shots = await new PDFParse({ data: fs.readFileSync(path.join(dir, `${code}-prova.pdf`)) }).getScreenshot({ partial: pages, scale: 2 });
       for (const shot of shots.pages) rendered.set(shot.pageNumber, Buffer.from(shot.data));
     }
-    const subjectOf = await classify(fresh);
+    // Matéria: a do gabarito oficial (a FATEC traz a disciplina); o resto (ETEC, "Multidisciplinar") a IA classifica.
+    const fromKey = new Map(
+      fresh.flatMap((question) => {
+        const slug = disciplineToSubject(key.get(question.number)?.discipline ?? null);
+        return slug ? [[question.number, slug] as const] : [];
+      }),
+    );
+    const toClassify = fresh.filter((question) => !fromKey.has(question.number));
+    const subjectOf = new Map([...(toClassify.length ? await classify(toClassify) : new Map<number, string>()), ...fromKey]);
 
     const upload = async (figure: Figure, name: string) => {
       const page = rendered.get(figure.page);
       if (!page || figure.box?.length !== 4) return null;
       const image = await crop(page, figure.box);
       if (!image) return null;
-      const target = `vestibular/etec/${code}/${name}.webp`;
+      const target = `vestibular/${examSlug}/${code}/${name}.webp`;
       const { error } = await supabase.storage.from(BUCKET).upload(target, image, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
       if (error) throw new Error(`Falha ao enviar ${target}: ${error.message}`);
       return supabase.storage.from(BUCKET).getPublicUrl(target).data.publicUrl;
@@ -148,8 +202,10 @@ async function main() {
         reject("anulada ou fora do gabarito oficial");
         continue;
       }
-      const optionFigures = question.optionFigures?.length === LABELS.length ? question.optionFigures : [];
-      if ((question.options ?? []).length !== LABELS.length && !optionFigures.length) {
+      // 5 alternativas (A a E) ou 4 (A a D, UNICAMP).
+      const labels = LABELS.slice(0, (question.options ?? []).length === 4 || question.optionFigures?.length === 4 ? 4 : 5);
+      const optionFigures = question.optionFigures?.length === labels.length ? question.optionFigures : [];
+      if ((question.options ?? []).length !== labels.length && !optionFigures.length) {
         reject("alternativas incompletas");
         continue;
       }
@@ -166,7 +222,7 @@ async function main() {
 
       const options = [];
       let broken = false;
-      for (const [index, label] of LABELS.entries()) {
+      for (const [index, label] of labels.entries()) {
         const text = reflowPdfText(question.options?.[index] ?? "");
         const imageUrl = optionFigures[index] ? await upload(optionFigures[index], `${question.number}-${label}`) : null;
         if (!text && !imageUrl) broken = true;
@@ -209,7 +265,7 @@ async function main() {
       importedHere += 1;
       total.imported += 1;
     }
-    console.log(`ETEC ${info.year} (${edition}): ${importedHere} importadas`);
+    console.log(`${examSlug.toUpperCase()} ${info.year} (${edition}): ${importedHere} importadas`);
   }
 
   console.log("\nResumo:", JSON.stringify(total, null, 2));

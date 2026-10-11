@@ -26,6 +26,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   const [difficulty, setDifficulty] = useState("medio");
   const [fileId, setFileId] = useState("none");
   const [subjects, setSubjects] = useState(["Matematica"]);
+  const [source, setSource] = useState<"ia" | "provas">("ia");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +44,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
           subject: selectedSubjects.join(", "),
           difficulty,
           questionCount: Number(formData.get("questionCount") ?? 10),
+          source: fileId === "none" ? source : "ia",
         }),
       });
     } catch {
@@ -85,8 +87,20 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
           <Input id="quiz-topic" name="topic" placeholder="Funcoes, citologia, revolucoes..." />
         </div>
         <div className="space-y-1.5">
+          <Label>Questões</Label>
+          <Select value={source} onValueChange={(value) => value && setSource(value as "ia" | "provas")}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ia">Criadas pela IA no seu estilo</SelectItem>
+              <SelectItem value="provas">De provas anteriores (ENEM, vestibulares, ETEC)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
           <Label>Arquivo processado</Label>
-          <Select value={fileId} onValueChange={(value) => value && setFileId(value)}>
+          <Select value={fileId} onValueChange={(value) => value && setFileId(value)} disabled={source === "provas"}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
@@ -113,7 +127,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="question-count">Questões</Label>
+            <Label htmlFor="question-count">Quantidade</Label>
             <Input id="question-count" name="questionCount" type="number" min={5} max={20} defaultValue={10} />
           </div>
         </div>

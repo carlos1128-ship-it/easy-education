@@ -13,7 +13,7 @@ import { getPrisma } from "@/lib/prisma";
 
 export const PRACTICE_SIZE = 10;
 /** Tempo da prova completa por exame (o oficial da 1ª fase). */
-export const FULL_EXAM_TIME_SEC: Record<string, number> = { fuvest: 5 * 3600, unicamp: 5 * 3600, etec: 4 * 3600, enem: 5 * 3600 + 30 * 60 };
+export const FULL_EXAM_TIME_SEC: Record<string, number> = { fuvest: 5 * 3600, unicamp: 5 * 3600, etec: 4 * 3600, fatec: 5 * 3600, unesp: 4 * 3600 + 30 * 60, enem: 5 * 3600 + 30 * 60 };
 
 export function isPastExam(slug: string): slug is PastExamSlug {
   return slug in PAST_EXAMS;

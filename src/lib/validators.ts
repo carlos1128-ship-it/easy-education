@@ -45,6 +45,8 @@ export const quizGenerateSchema = z.object({
   // Quiz vai até 20 questões; simulado até 90 (o limite do dia, em questões, é conferido em consumeFeature).
   questionCount: z.number().int().min(5).max(90),
   model: z.string().min(2).max(60).optional(),
+  /** "provas": questões de provas anteriores (sem IA). Padrão: IA. */
+  source: z.enum(["ia", "provas"]).optional(),
 }).refine((value) => value.difficulty === "simulado" || value.questionCount <= 20, { message: "Quiz tem no máximo 20 questões.", path: ["questionCount"] });
 
 export const flashcardGenerateSchema = z.object({

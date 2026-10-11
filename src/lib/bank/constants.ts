@@ -64,6 +64,8 @@ export const SEED_EXAMS = [
   { slug: "fuvest", name: "FUVEST", styleLabel: "FUVEST (USP)", sortOrder: 2 },
   { slug: "unicamp", name: "UNICAMP", styleLabel: "vestibular da UNICAMP", sortOrder: 3 },
   { slug: "etec", name: "Vestibulinho ETEC", styleLabel: "Vestibulinho ETEC", sortOrder: 4 },
+  { slug: "fatec", name: "FATEC", styleLabel: "vestibular da FATEC", sortOrder: 5 },
+  { slug: "unesp", name: "UNESP", styleLabel: "vestibular da UNESP", sortOrder: 6 },
 ] as const;
 
 /** Exames com provas anteriores na área "Provas anteriores" (ordem da tela). */
@@ -72,6 +74,8 @@ export const PAST_EXAMS = {
   fuvest: { name: "FUVEST", short: "FUVEST", tagline: "Vestibular da USP · 1ª fase" },
   unicamp: { name: "UNICAMP", short: "UNICAMP", tagline: "Vestibular da Unicamp · 1ª fase" },
   etec: { name: "Vestibulinho ETEC", short: "ETEC", tagline: "Ensino técnico e médio do Centro Paula Souza" },
+  fatec: { name: "FATEC", short: "FATEC", tagline: "Vestibular das Faculdades de Tecnologia de SP" },
+  unesp: { name: "UNESP", short: "UNESP", tagline: "Vestibular da Unesp (Vunesp) · 1ª fase" },
 } as const;
 export type PastExamSlug = keyof typeof PAST_EXAMS;
 
@@ -120,6 +124,16 @@ export const VESTIBULAR_SOURCES = {
     name: "Centro Paula Souza (Vestibulinho ETEC)",
     url: "https://vestibulinho.etec.sp.gov.br/provas-gabaritos/",
     license: "Prova pública do Vestibulinho, \"preservada pela Lei de Propriedade Intelectual\" (termos do site); uso educacional com citação da fonte",
+  },
+  fatec: {
+    name: "Centro Paula Souza (Vestibular FATEC)",
+    url: "https://vestibular.fatec.sp.gov.br/provas-gabaritos/",
+    license: "Prova pública do Vestibular FATEC (Centro Paula Souza / Fundação FAT), sem licença aberta declarada; uso educacional com citação da fonte",
+  },
+  unesp: {
+    name: "Vunesp (UNESP)",
+    url: "https://www.vunesp.com.br/",
+    license: "Prova pública do Vestibular UNESP (Vunesp), sem licença aberta declarada; uso educacional com citação da fonte",
   },
 } as const;
 

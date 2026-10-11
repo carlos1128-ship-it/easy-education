@@ -19,6 +19,8 @@ const EXAM_STYLE: Record<PastExamSlug, { stripe: string; chip: string }> = {
   fuvest: { stripe: "from-[#1d4ed8] to-[#f59e0b]", chip: "bg-warning-tint text-warning" },
   unicamp: { stripe: "from-[#dc2626] to-[#f97316]", chip: "bg-danger-tint text-danger" },
   etec: { stripe: "from-[#16a34a] to-[#22d3ee]", chip: "bg-success-tint text-success" },
+  fatec: { stripe: "from-[#b91c1c] to-[#7c3aed]", chip: "bg-brand-tint text-brand-strong" },
+  unesp: { stripe: "from-[#0e7490] to-[#22c55e]", chip: "bg-success-tint text-success" },
 };
 
 /** Qual exame mostrar primeiro, pelo objetivo da personalização. */
@@ -29,6 +31,7 @@ function recommendedExam(personalization: unknown): PastExamSlug | null {
   if (p.purpose !== "enem_vestibular") return null;
   if (p.exam === "Fuvest") return "fuvest";
   if (p.exam === "Unicamp") return "unicamp";
+  if (p.exam === "Unesp") return "unesp";
   return "enem";
 }
 

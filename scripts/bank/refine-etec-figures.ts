@@ -11,7 +11,7 @@ import path from "node:path";
 import { Type } from "@google/genai";
 import { PDFParse } from "pdf-parse";
 import sharp from "sharp";
-import { ETEC_EXAMS, etecEdition } from "@/lib/bank/etec";
+import { CPS_EXAMS, etecEdition } from "@/lib/bank/etec";
 import { getGemini } from "@/lib/gemini";
 import { getPrisma } from "@/lib/prisma";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -67,12 +67,14 @@ async function main() {
   if (!dir || !jsonDir) throw new Error("Use --dir <PDFs> --json <transcrições>.");
   const prisma = getPrisma();
   const supabase = createSupabaseAdminClient();
-  const exam = await prisma.exam.findUniqueOrThrow({ where: { slug: "etec" } });
+  const examSlug = arg("exam") ?? "etec";
+  const editions = examSlug === "etec" || examSlug === "fatec" ? CPS_EXAMS[examSlug].editions : null;
+  const exam = await prisma.exam.findUniqueOrThrow({ where: { slug: examSlug } });
   let refined = 0;
 
   for (const file of fs.readdirSync(jsonDir).filter((name) => name.endsWith(".json")).sort()) {
     const code = file.replace(".json", "");
-    const info = ETEC_EXAMS[code];
+    const info = editions ? editions[code] : Number(code) > 1990 ? { year: Number(code), semester: 0 as const } : null;
     if (!info) continue;
     const questions = (JSON.parse(fs.readFileSync(path.join(jsonDir, file), "utf8")) as Extracted[]).filter((question) => question.figures?.length || question.optionFigures?.length === 5);
     if (!questions.length) continue;
@@ -82,7 +84,7 @@ async function main() {
 
     for (const question of questions) {
       const row = await prisma.bankQuestion.findUnique({
-        where: { examId_year_edition_number_variant_origin_ownerUserId: { examId: exam.id, year: info.year, edition: etecEdition(info.semester), number: question.number, variant: "", origin: "prova_oficial", ownerUserId: "" } },
+        where: { examId_year_edition_number_variant_origin_ownerUserId: { examId: exam.id, year: info.year, edition: info.semester ? etecEdition(info.semester) : "", number: question.number, variant: "", origin: "prova_oficial", ownerUserId: "" } },
       });
       if (!row) continue;
       let supportText = row.supportText ?? "";
@@ -100,10 +102,10 @@ async function main() {
         const tight = region(outer.width, outer.height, inner, 6);
         if (tight.width < 30 || tight.height < 30) continue;
         const image = await sharp(wide).extract(tight).flatten({ background: "#ffffff" }).webp({ quality: 86 }).toBuffer();
-        const target = `vestibular/etec/${code}/${question.number}-${index}-r.webp`;
+        const target = `vestibular/${examSlug}/${code}/${question.number}-${index}-r.webp`;
         const { error } = await supabase.storage.from(BUCKET).upload(target, image, { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
         if (error) throw error;
-        const oldUrl = supabase.storage.from(BUCKET).getPublicUrl(`vestibular/etec/${code}/${question.number}-${index}.webp`).data.publicUrl;
+        const oldUrl = supabase.storage.from(BUCKET).getPublicUrl(`vestibular/${examSlug}/${code}/${question.number}-${index}.webp`).data.publicUrl;
         const newUrl = supabase.storage.from(BUCKET).getPublicUrl(target).data.publicUrl;
         supportText = supportText.split(oldUrl).join(newUrl);
         images = images.map((url) => (url === oldUrl ? newUrl : url));
