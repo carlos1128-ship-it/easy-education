@@ -373,8 +373,6 @@
 /* Mascote: animações do pacote "Corujas separadas e animadas" (mesmos keyframes, prefixo owl-). */
 @keyframes owl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
 @keyframes owl-float { 0%, 100% { transform: translate(0, 0) rotate(-2deg); } 50% { transform: translate(2%, -7%) rotate(2deg); } }
-/* Bem mais leve que owl-float: a imagem da capa é grande e não pode distrair do texto. */
-@keyframes owl-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.5%); } }
 @keyframes owl-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
 @keyframes owl-hop { 0%, 60%, 100% { transform: translateY(0) scale(1, 1); } 10% { transform: translateY(0) scale(1.06, 0.94); } 30% { transform: translateY(-12%) scale(0.97, 1.04); } 50% { transform: translateY(0) scale(1.04, 0.96); } }
 @keyframes owl-scoot { 0% { transform: translateX(-4%) rotate(0); } 25% { transform: translateX(3%) rotate(-1.5deg); } 50% { transform: translateX(5%) rotate(0); } 75% { transform: translateX(-2%) rotate(1.5deg); } 100% { transform: translateX(-4%) rotate(0); } }

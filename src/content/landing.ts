@@ -50,10 +50,10 @@ export const landingHero = {
   reassurance: "A cobrança só começa depois dos 7 dias. Cancele antes e não paga nada.",
   highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
-    src: "/mascote/coruja-v2-pulando.webp",
-    width: 1120,
-    height: 1037,
-    alt: "Coruja do Easy Education, de óculos e moletom azul, pulando entre livros, calculadora, globo e mochila",
+    src: "/images/estudante-jeans-recorte.webp",
+    width: 792,
+    height: 1240,
+    alt: "Estudante de óculos e mochila, sorrindo e segurando cadernos",
   },
   floatingCard: { title: "12 flashcards para revisar hoje", note: "Exemplo ilustrativo" },
 } as const;
@@ -332,7 +332,7 @@ export const landingFaq = {
     },
     {
       q: "Como funcionam os simulados?",
-      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe simulados no estilo da banca, gerados por IA e marcado como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
+      a: "Quem estuda para o ENEM faz provas anteriores com as questões oficiais do INEP: o 1º dia, o 2º dia (90 questões cada) ou a prova completa, com cronômetro e gabarito oficial. Quem estuda para concurso recebe simulados no estilo da banca, gerados por IA e marcados como \"Gerado por IA\". No fim de cada simulado você vê quanto acertou por área e por matéria.",
     },
     {
       q: "A nota estimada do simulado é a nota do ENEM?",
