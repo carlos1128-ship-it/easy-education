@@ -21,6 +21,7 @@ type QuizRunnerProps = {
   quizId: string;
   questions: QuizRunnerQuestion[];
   mode?: "quiz" | "simulado";
+  subject?: string;
   /** Quiz gerado de um vídeo do YouTube: os minutos citados na explicação viram links. */
   videoId?: string | null;
   /** Simulado no formato de uma prova (ex.: ETEC, 4 h): mostra o tempo de prova que resta. */
@@ -71,7 +72,7 @@ function SoundToggle() {
   );
 }
 
-export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, timeLimit = null }: QuizRunnerProps) {
+export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId = null, timeLimit = null }: QuizRunnerProps) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(
     Object.fromEntries(questions.filter((item) => item.userAnswer).map((item) => [item.id, item.userAnswer as string])),
@@ -211,7 +212,12 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
   let streak = 0;
   for (let k = index; k >= 0 && answers[questions[k].id] === questions[k].correctAnswer; k--) streak++;
 
-  let mood: OwlMood = "atenta";
+  const normalizedSubject = subject?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ?? "";
+  const subjectMatches = (["quimica", "fisica", "biologia", "historia", "matematica"] as const).filter((name) =>
+    new RegExp(`(^|[^a-z])${name}([^a-z]|$)`).test(normalizedSubject),
+  );
+  const subjectMood: OwlMood | null = subjectMatches.length === 1 ? subjectMatches[0] : null;
+  let mood: OwlMood = subjectMood ?? "atenta";
   let message = mode === "simulado" ? "Leia com calma e marque as alternativas." : "Leia com calma e escolha uma alternativa.";
   if (pageConfirmed.length && mode === "simulado") {
     const good = pageCorrect >= pageConfirmed.length - pageCorrect;
@@ -229,7 +235,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
       message = "Não foi dessa vez. Leia a explicação.";
     }
   } else if (hasDraft) {
-    mood = "piscando";
+    mood = subjectMood ?? "piscando";
     message = mode === "simulado" ? "Marque todas e confirme a página." : "Confirme quando tiver certeza.";
   } else if (sleepyAt === activity) {
     mood = "sonolenta";
