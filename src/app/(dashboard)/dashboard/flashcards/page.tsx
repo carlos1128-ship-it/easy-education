@@ -39,6 +39,18 @@ export default async function FlashcardsPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Decks de revisão</h1>
       </div>
 
+      {aiLocked ? (
+        <LockedNotice
+          feature="ai_flashcards"
+          title="Flashcards gerados por IA fazem parte dos planos pagos"
+          description="Para gerar decks de flashcards sobre qualquer assunto ou material seu, escolha um plano pago."
+        />
+      ) : (
+        <div className="space-y-3">
+          <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
+        </div>
+      )}
+
       {/* Baralhos prontos: revisão sem esperar a IA. */}
       <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6" aria-labelledby="baralhos-prontos">
         <div className="flex flex-col gap-1">
@@ -79,18 +91,6 @@ export default async function FlashcardsPage() {
           ))}
         </div>
       </section>
-
-      {aiLocked ? (
-        <LockedNotice
-          feature="ai_flashcards"
-          title="Flashcards gerados por IA fazem parte dos planos pagos"
-          description="Para gerar decks de flashcards sobre qualquer assunto ou material seu, escolha um plano pago."
-        />
-      ) : (
-        <div className="space-y-3">
-          <FlashcardCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
-        </div>
-      )}
 
       {decks.length === 0 ? (
         <EmptyState icon={BookOpen} owl="estudante" title="Nenhum deck criado ainda." description="Gere flashcards com IA e revise com repeticao espacada." />

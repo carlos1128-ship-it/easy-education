@@ -39,6 +39,8 @@ export const OWLS = {
   computador: { w: 1254, h: 1254, src: "/mascote/coruja-v2-computador.webp", anim: "owl-wiggle 2.8s" },
   /** Gabaritou, resultado excelente. */
   festa: { w: 1254, h: 1254, src: "/mascote/coruja-v2-escolar.webp", anim: "owl-hop 1.6s" },
+  /** Provas anteriores e personalização do conteúdo. */
+  escolar: { w: 1254, h: 1254, src: "/mascote/coruja-v2-escolar.webp", anim: "owl-bob 2.6s", origin: "50% 50%" },
   /** Flashcards, revisão. */
   estudante: { w: 1254, h: 1254, src: "/mascote/coruja-v2-livros.webp", anim: "owl-bob 2.2s" },
   /** Simulados, explicações. */

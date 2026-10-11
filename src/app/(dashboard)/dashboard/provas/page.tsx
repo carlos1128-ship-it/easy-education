@@ -47,7 +47,7 @@ export default async function ProvasPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6">
-      {/* Topo: a detetive e a coruja do Brasil apresentam o acervo */}
+      {/* A coruja escolar apresenta as provas anteriores. */}
       <section className="relative overflow-hidden rounded-3xl border border-border bg-hero-panel p-5 shadow-card lg:p-8">
         <div className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center">
@@ -64,9 +64,8 @@ export default async function ProvasPage() {
               Fique de olho nas <span className="font-bold text-brand-strong">ultrassecretas</span>: as dos assuntos que mais caem em cada prova.
             </p>
           </div>
-          <div className="flex flex-none items-end justify-center gap-2" aria-hidden="true">
-            <OwlMascot mood="brasil" size={150} priority />
-            <OwlMascot mood="detetive" size={190} priority />
+          <div className="flex flex-none items-end justify-center" aria-hidden="true">
+            <OwlMascot mood="escolar" size={260} priority />
           </div>
         </div>
       </section>
@@ -115,7 +114,7 @@ export default async function ProvasPage() {
 
       {access.tier !== "full" ? (
         <section className="flex flex-col gap-4 rounded-2xl border-2 border-brand/40 bg-brand-tint p-5 sm:flex-row sm:items-center lg:p-6">
-          <OwlMascot mood="heroi" size={120} className="flex-none self-center" />
+          <OwlMascot mood="escolar" size={120} className="flex-none self-center" />
           <div className="min-w-0 flex-1">
             <h2 className="m-0 flex items-center gap-2 text-lg font-extrabold text-ink">
               <Lock size={18} className="text-brand-strong" aria-hidden="true" /> Questões ultrassecretas

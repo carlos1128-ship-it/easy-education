@@ -31,6 +31,18 @@ export default async function QuizzesPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Seus quizzes</h1>
       </div>
 
+      {aiLocked ? (
+        <LockedNotice
+          feature="ai_quiz"
+          title="Quizzes gerados por IA fazem parte dos planos pagos"
+          description="Para gerar quizzes com explicação sobre qualquer assunto ou material seu, escolha um plano pago."
+        />
+      ) : (
+        <div className="space-y-3">
+          <QuizCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
+        </div>
+      )}
+
       {readySubjects.length ? (
         <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6" aria-labelledby="quizzes-prontos">
           <div className="flex flex-col gap-1">
@@ -53,18 +65,6 @@ export default async function QuizzesPage() {
           </ul>
         </section>
       ) : null}
-
-      {aiLocked ? (
-        <LockedNotice
-          feature="ai_quiz"
-          title="Quizzes gerados por IA fazem parte dos planos pagos"
-          description="Para gerar quizzes com explicação sobre qualquer assunto ou material seu, escolha um plano pago."
-        />
-      ) : (
-        <div className="space-y-3">
-          <QuizCreateForm files={files.map((file) => ({ id: file.id, name: file.name, processed: file.processed }))} />
-        </div>
-      )}
 
       {quizzes.length === 0 ? (
         <EmptyState icon={HelpCircle} owl="atenta" title="Você ainda não gerou nenhum quiz." description="Use a IA acima para criar questões e salvar seu progresso." />
