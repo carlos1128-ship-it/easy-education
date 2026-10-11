@@ -9,6 +9,7 @@ import { Logo } from "@/components/brand/logo";
 import { startProductTour } from "@/components/onboarding/product-tour";
 import { usePlanOptional } from "@/components/plan/plan-provider";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { MenuIcon, type MenuIconName } from "@/components/layout/menu-icon";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { navItems } from "@/lib/app-data";
 import type { FeatureKey } from "@/lib/plans";
@@ -76,7 +77,11 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
         data-tour={item.href}
         className={navLinkClass(active)}
       >
-        <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+        {typeof Icon === "string" ? (
+          <MenuIcon name={Icon} size={20} strokeWidth={1.75} aria-hidden="true" />
+        ) : (
+          <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+        )}
         <span>{item.label}</span>
         {locked ? (
           <>
@@ -194,8 +199,6 @@ export function MobileBottomNav() {
       <div className="mx-auto grid max-w-2xl grid-cols-5">
         {items.map((item) => {
           const active = isActive(pathname, item.href);
-          const Icon = item.icon;
-
           return (
             <Link
               key={item.href}
@@ -208,7 +211,7 @@ export function MobileBottomNav() {
                 active ? "font-medium text-brand-strong" : "text-ink-muted",
               )}
             >
-              <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
+              <MenuIcon name={item.icon as MenuIconName} size={22} strokeWidth={1.75} aria-hidden="true" />
               <span className="max-w-full truncate">{item.label}</span>
             </Link>
           );

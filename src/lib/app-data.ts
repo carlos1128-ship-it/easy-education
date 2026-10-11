@@ -1,26 +1,27 @@
-import { BarChart, BookOpen, Calendar, CalendarCheck, ClipboardCheck, CreditCard, FileEdit, Folder, Layers, LayoutDashboard, NotebookPen, PenTool, Route, Settings, Sparkles, Target, Upload, type LucideIcon, ScrollText } from "lucide-react";
+import { BookOpen, CalendarCheck, CreditCard, FileEdit, PenTool, Settings, Sparkles, Target, Upload, type LucideIcon } from "lucide-react";
+import type { MenuIconName } from "@/components/layout/menu-icon";
 
 type NavItem = {
   href: string;
   label: string;
-  icon: LucideIcon;
+  icon: MenuIconName | LucideIcon;
   group: "Menu Principal" | "Meus Estudos" | "Footer";
   accent?: string;
 };
 
 export const navItems: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: "Menu Principal" },
-  { href: "/dashboard/trilha", label: "Trilha", icon: Route, group: "Menu Principal" },
-  { href: "/dashboard/chat", label: "Chat IA", icon: Sparkles, group: "Menu Principal", accent: "#06B6D4" },
-  { href: "/dashboard/arquivos", label: "Arquivos", icon: Folder, group: "Menu Principal" },
-  { href: "/dashboard/quizzes", label: "Quizzes", icon: Target, group: "Menu Principal" },
-  { href: "/dashboard/flashcards", label: "Flashcards", icon: Layers, group: "Menu Principal" },
-  { href: "/dashboard/plano", label: "Plano de estudo", icon: Calendar, group: "Meus Estudos" },
-  { href: "/dashboard/redacao", label: "Redação", icon: PenTool, group: "Meus Estudos" },
-  { href: "/dashboard/simulados", label: "Simulados", icon: ClipboardCheck, group: "Meus Estudos" },
-  { href: "/dashboard/provas", label: "Provas anteriores", icon: ScrollText, group: "Meus Estudos" },
-  { href: "/dashboard/anotacoes", label: "Anotações", icon: NotebookPen, group: "Meus Estudos" },
-  { href: "/dashboard/desempenho", label: "Desempenho", icon: BarChart, group: "Meus Estudos" },
+  { href: "/dashboard", label: "Dashboard", icon: "dashboard", group: "Menu Principal" },
+  { href: "/dashboard/trilha", label: "Trilha", icon: "trilha", group: "Menu Principal" },
+  { href: "/dashboard/chat", label: "Chat IA", icon: "chat", group: "Menu Principal", accent: "#06B6D4" },
+  { href: "/dashboard/arquivos", label: "Arquivos", icon: "arquivos", group: "Menu Principal" },
+  { href: "/dashboard/quizzes", label: "Quizzes", icon: "quizzes", group: "Menu Principal" },
+  { href: "/dashboard/flashcards", label: "Flashcards", icon: "flashcards", group: "Menu Principal" },
+  { href: "/dashboard/plano", label: "Plano de estudo", icon: "plano", group: "Meus Estudos" },
+  { href: "/dashboard/redacao", label: "Redação", icon: "redacao", group: "Meus Estudos" },
+  { href: "/dashboard/simulados", label: "Simulados", icon: "simulados", group: "Meus Estudos" },
+  { href: "/dashboard/provas", label: "Provas anteriores", icon: "provas", group: "Meus Estudos" },
+  { href: "/dashboard/anotacoes", label: "Anotações", icon: "anotacoes", group: "Meus Estudos" },
+  { href: "/dashboard/desempenho", label: "Desempenho", icon: "desempenho", group: "Meus Estudos" },
   { href: "/dashboard/assinatura", label: "Assinatura", icon: CreditCard, group: "Footer" },
   { href: "/dashboard/configuracoes", label: "Configurações", icon: Settings, group: "Footer" },
 ] ;
