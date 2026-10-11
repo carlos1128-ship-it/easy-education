@@ -78,7 +78,7 @@ function SidebarContent({ onNavigate, profileName, studyGoal }: { onNavigate?: (
         className={navLinkClass(active)}
       >
         {typeof Icon === "string" ? (
-          <MenuIcon name={Icon} size={20} strokeWidth={1.75} aria-hidden="true" />
+          <MenuIcon name={Icon} size={24} />
         ) : (
           <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
         )}
@@ -211,7 +211,7 @@ export function MobileBottomNav() {
                 active ? "font-medium text-brand-strong" : "text-ink-muted",
               )}
             >
-              <MenuIcon name={item.icon as MenuIconName} size={22} strokeWidth={1.75} aria-hidden="true" />
+              <MenuIcon name={item.icon as MenuIconName} size={24} />
               <span className="max-w-full truncate">{item.label}</span>
             </Link>
           );
