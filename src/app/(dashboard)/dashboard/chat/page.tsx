@@ -2,6 +2,7 @@ import { ChatInterface } from "@/components/chat/chat-interface";
 import { LockedPage } from "@/components/plan/locked-page";
 import { allowanceFor } from "@/lib/plans";
 import { getStudentOrRedirect } from "@/lib/server-user";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 export default async function ChatPage() {
   const { access } = await getStudentOrRedirect();
@@ -18,9 +19,12 @@ export default async function ChatPage() {
   }
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-5">
+      <div className="flex items-center gap-4">
+        <OwlMascot mood="computador" size={84} priority className="flex-none" />
       <div>
         <p className="text-sm font-medium text-brand-strong">Chat IA</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Estude conversando</h1>
+      </div>
       </div>
       <ChatInterface />
     </div>

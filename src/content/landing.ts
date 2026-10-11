@@ -192,7 +192,7 @@ export const landingResources = {
     chat: {
       title: "Chat com IA",
       text: "Pergunte sobre a questão que errou ou peça “monta um simulado de matemática”. O chat cria e já te leva até ele.",
-      image: { src: "/images/robo-estudando-azul.jpg", alt: "Robô sentado num banco lendo um livro" },
+      image: { src: "/mascote/coruja-computador.webp", alt: "Coruja do Easy Education no computador", owl: "computador" },
       question: "Por que errei a de MRU?",
       answerPrefix: "Converta km/h para m/s antes:",
       formula: "Δs = v · t",
@@ -200,7 +200,7 @@ export const landingResources = {
     plan: {
       title: "Plano de estudos",
       text: "Diga quanto tempo você tem por dia e o plano divide as matérias. Clique em Iniciar e o cronômetro liga.",
-      image: { src: "/images/pilha-de-livros.jpg", alt: "Pessoa sentada sobre uma pilha de livros, lendo" },
+      image: { src: "/mascote/coruja-estudando.webp", alt: "Coruja do Easy Education estudando na mesa", owl: "estudando" },
       doneLabel: "Concluído",
       days: [
         { day: "Seg", subject: "Matemática", minutes: "40 min", done: true },

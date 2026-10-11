@@ -1,35 +1,20 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
+import { OWLS, owlAnimationStyle, owlSrc, type OwlMood } from "@/lib/owls";
 import { cn } from "@/lib/utils";
 
-export type OwlMood = "atenta" | "sonolenta" | "piscando" | "feliz" | "comemorando" | "determinada" | "apaixonada" | "cantando";
+export type { OwlMood };
 
-const QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribe(onChange: () => void) {
-  const media = window.matchMedia(QUERY);
-  media.addEventListener("change", onChange);
-  return () => media.removeEventListener("change", onChange);
-}
-
-function useReducedMotion() {
-  return useSyncExternalStore(subscribe, () => window.matchMedia(QUERY).matches, () => false);
-}
-
-function owlSrc(mood: OwlMood, still: boolean) {
-  return `/mascote/coruja-${mood}${still ? "-parada" : ""}.webp`;
-}
-
-/** Baixa as animações que vão aparecer em seguida, para a troca não piscar. */
+/** Baixa as poses que vão aparecer em seguida, para a troca não piscar. */
 export function usePreloadOwls(moods: OwlMood[]) {
   const key = moods.join(",");
   useEffect(() => {
     const ids = key.split(",").map((mood, index) =>
       window.setTimeout(() => {
         const image = new window.Image();
-        image.src = owlSrc(mood as OwlMood, false);
+        image.src = owlSrc(mood as OwlMood);
       }, 400 + index * 300),
     );
     return () => ids.forEach((id) => window.clearTimeout(id));
@@ -38,19 +23,40 @@ export function usePreloadOwls(moods: OwlMood[]) {
 
 type OwlMascotProps = {
   mood: OwlMood;
+  /** Largura em px (a altura segue a proporção da imagem). */
   size?: number;
   message?: string;
   className?: string;
+  /** Carregar já (acima da dobra). */
+  priority?: boolean;
 };
 
-/** Mascote animado. Com "reduzir movimento" ativo no sistema, mostra a pose parada. */
-export function OwlMascot({ mood, size = 96, message, className }: OwlMascotProps) {
-  const still = useReducedMotion();
+/**
+ * Coruja animada. As imagens têm fundo branco: no tema claro ele some no fundo (multiply);
+ * no escuro, a coruja fica num cartão branco arredondado. Com "reduzir movimento", fica parada.
+ */
+export function OwlMascot({ mood, size = 96, message, className, priority }: OwlMascotProps) {
+  const owl = OWLS[mood];
+  const height = Math.round((size * owl.h) / owl.w);
 
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <div key={`owl-${mood}`} className="flex-none animate-owl-pop" style={{ width: size, height: size }}>
-        <Image src={owlSrc(mood, still)} alt="" width={size} height={size} unoptimized loading="eager" draggable={false} className="size-full select-none" />
+      <div
+        key={`owl-${mood}`}
+        className="grid flex-none animate-owl-pop place-items-center overflow-hidden mix-blend-multiply dark:rounded-2xl dark:bg-white dark:mix-blend-normal"
+        style={{ width: size, height }}
+      >
+        <Image
+          src={owlSrc(mood)}
+          alt=""
+          width={owl.w}
+          height={owl.h}
+          unoptimized
+          loading={priority ? "eager" : "lazy"}
+          draggable={false}
+          className="owl-anim h-[92%] w-[92%] select-none object-contain"
+          style={owlAnimationStyle(mood)}
+        />
       </div>
       {message ? (
         <p
@@ -60,6 +66,15 @@ export function OwlMascot({ mood, size = 96, message, className }: OwlMascotProp
           {message}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+/** Coruja de patinete enquanto a IA gera (quiz, simulado, flashcards, plano). */
+export function OwlGenerating({ message = "Gerando com a IA. Pode levar até um minuto.", className }: { message?: string; className?: string }) {
+  return (
+    <div role="status" aria-live="polite" className={className}>
+      <OwlMascot mood="patinete" size={88} message={message} priority />
     </div>
   );
 }

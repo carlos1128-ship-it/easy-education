@@ -150,7 +150,7 @@ Painel com evolução geral, desempenho e evolução por matéria, histórico de
 - **Ofensiva:** dias seguidos com estudo ou quiz concluído.
 - **Meta diária** em minutos, definida no onboarding.
 - **Notificações no app** (sininho), calculadas com dados reais: ofensiva, meta, flashcards vencendo, simulado novo e quizzes não terminados. Há espaço pronto para promoções.
-- **Coruja mascote** que reage a acertos, erros, conclusão e inatividade, com sons de acerto.
+- **Coruja mascote** que reage a acertos, erros, conclusão e inatividade, com sons de acerto. Desde 10/10/2026 usa as 20 imagens e as animações do pacote "Corujas separadas e animadas" (`public/mascote`, dados em `src/lib/owls.ts`, keyframes `owl-*` em `globals.css`), distribuídas pelas telas conforme o Guia da Coruja: no máximo uma cena por tela (cadastro, login, planos, onboarding, plano, chat, simulados, desempenho, troféus, fechar o dia, anotações, telas vazias, erro, 404, modal de limite, "gerando com IA", tutorial e card de nível). As duas imagens do pacote com a coruja verde (owl13 e owl17) ficaram de fora por lembrarem o mascote do Duolingo.
 - Busca global por estudos, arquivos, quizzes e anotações.
 
 ---

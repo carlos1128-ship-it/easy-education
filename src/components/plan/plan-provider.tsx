@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Clock, Lock, ShieldAlert } from "lucide-react";
+import { OwlMascot, type OwlMood } from "@/components/mascot/owl-mascot";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { lockedInfo, type PlanLimitInfo } from "@/lib/plan-limits";
@@ -35,28 +35,28 @@ export function usePlanOptional() {
 }
 
 
-function dialogCopy(info: PlanLimitInfo) {
+/** Coruja do modal: no limite ela descansa na rede (volta amanhã); para planos, a do notebook. */
+function dialogCopy(info: PlanLimitInfo): { owl: OwlMood; title: string } {
   const featureLabel = info.feature ? FEATURES[info.feature].label : "Uso do dia";
   switch (info.code) {
     case "feature_locked":
-      return { icon: Lock, title: info.upgradeTo ? `${featureLabel} é do plano ${PLANS[info.upgradeTo].name}` : `${featureLabel} não está no seu plano` };
+      return { owl: "notebook", title: info.upgradeTo ? `${featureLabel} é do plano ${PLANS[info.upgradeTo].name}` : `${featureLabel} não está no seu plano` };
     case "subscription_required":
-      return { icon: Lock, title: "Escolha um plano para usar a IA" };
+      return { owl: "notebook", title: "Escolha um plano para usar a IA" };
     case "file_too_large":
-      return { icon: ShieldAlert, title: "Esse arquivo passou do tamanho do seu plano" };
+      return { owl: "pensando", title: "Esse arquivo passou do tamanho do seu plano" };
     case "daily_cap":
-      return { icon: Clock, title: "Você estudou bastante por hoje" };
+      return { owl: "rede", title: "Você estudou bastante por hoje" };
     case "monthly_cap":
-      return { icon: Clock, title: "Você usou bastante a IA neste mês" };
+      return { owl: "rede", title: "Você usou bastante a IA neste mês" };
     default:
-      return { icon: Clock, title: info.window === "week" ? "Seu limite da semana acabou" : "Seu limite de hoje acabou" };
+      return { owl: "rede", title: info.window === "week" ? "Seu limite da semana acabou" : "Seu limite de hoje acabou" };
   }
 }
 
 function UpgradeDialog({ info, onClose }: { info: PlanLimitInfo | null; onClose: () => void }) {
   const router = useRouter();
   const copy = info ? dialogCopy(info) : null;
-  const Icon = copy?.icon ?? Lock;
   const target = info?.upgradeTo ?? null;
   // O cartão do plano logo abaixo já diz o que o upgrade inclui; a frase final da mensagem só repetiria isso.
   const message = info && target ? info.message.replace(/ No plano S+ você (?:tem|libera) .*$/, "") : (info?.message ?? "");
@@ -67,9 +67,7 @@ function UpgradeDialog({ info, onClose }: { info: PlanLimitInfo | null; onClose:
         {info && copy ? (
           <>
             <DialogHeader className="items-start gap-3">
-              <span className="grid size-11 place-items-center rounded-full bg-brand-tint text-brand-strong">
-                <Icon size={22} aria-hidden="true" />
-              </span>
+              <OwlMascot mood={copy.owl} size={120} priority />
               <DialogTitle className="text-xl font-bold leading-snug text-ink">{copy.title}</DialogTitle>
               <DialogDescription className="text-[15px] leading-relaxed text-ink-muted">{message}</DialogDescription>
             </DialogHeader>

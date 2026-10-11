@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, Clock, FileText, Flame, Lock, PenTool, RotateCcw, Sparkles, Target } from "lucide-react";
-import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatMinutes, shortDate } from "@/lib/format";
 import { concursoTarget, isEnemStudent } from "@/lib/learner-profile";
@@ -217,7 +216,6 @@ export default async function DashboardPage() {
 
       {nextStep ? (
         <section className={cn(card, "flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:gap-6 lg:p-6")} aria-label="Primeiros passos">
-          <OwlMascot mood="piscando" size={88} className="hidden lg:flex" />
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
               <h2 className={h2}>Primeiros passos</h2>

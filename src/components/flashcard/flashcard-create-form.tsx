@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { SubjectSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
+import { OwlGenerating } from "@/components/mascot/owl-mascot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -108,6 +109,7 @@ export function FlashcardCreateForm({ files = [] }: { files?: FileOption[] }) {
         <Sparkles className="size-4" />
         {loading ? "Gerando..." : "Criar deck"}
       </Button>
+      {loading ? <OwlGenerating className="mt-4" message="Criando os cartões do seu deck." /> : null}
     </form>
   );
 }

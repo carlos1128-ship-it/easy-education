@@ -8,6 +8,7 @@ import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { dayKeySP } from "@/lib/study-completion";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 export const metadata: Metadata = { title: "Fechar o dia · Easy Education" };
 
@@ -27,7 +28,9 @@ export default async function FecharDiaPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[860px] flex-col gap-6">
-      <header>
+      <div className="flex items-center gap-4">
+        {!feedback ? <OwlMascot mood="cantando" size={84} priority className="flex-none" /> : null}
+      <header className="min-w-0">
         <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
           <Moon className="size-4" aria-hidden="true" /> Opcional · não mexe na sua ofensiva
         </p>
@@ -36,6 +39,7 @@ export default async function FecharDiaPage() {
           Explicar com as próprias palavras é um dos jeitos que mais fixam o conteúdo. Escreva o que você estudou hoje (de 200 a 5.000 caracteres) e a IA aponta o que está certo, o que corrigir e o que revisar amanhã.
         </p>
       </header>
+      </div>
 
       {studiedToday ? (
         <details className="rounded-2xl bg-surface-muted p-4 text-sm">

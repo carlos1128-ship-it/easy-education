@@ -31,7 +31,7 @@ export default async function AssinaturaSucessoPage({ searchParams }: { searchPa
   }
 
   return (
-    <AuthShell title="Pagamento em análise" subtitle="Assim que o pagamento for confirmado, seu acesso é liberado automaticamente.">
+    <AuthShell owl="piscando" title="Pagamento em análise" subtitle="Assim que o pagamento for confirmado, seu acesso é liberado automaticamente.">
       <div className="flex flex-col gap-4 text-center">
         <p className="m-0 text-sm text-ink-muted">
           Pagamentos por boleto ou Pix podem levar alguns minutos. Você também recebe o recibo por e-mail.

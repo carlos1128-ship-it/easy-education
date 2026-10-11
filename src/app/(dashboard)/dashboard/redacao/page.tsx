@@ -39,7 +39,7 @@ export default async function RedaçãoPage() {
         {lastEssay ? (
           <EssayResult title={lastEssay.title} score={lastEssay.score ?? 0} feedback={lastEssay.feedback} />
         ) : (
-          <EmptyState icon={FileEdit} title="Sua primeira redação está te esperando." description="Envie um texto e receba a nota de cada competência pela grade oficial do Enem." />
+          <EmptyState icon={FileEdit} owl="pensando" title="Sua primeira redação está te esperando." description="Envie um texto e receba a nota de cada competência pela grade oficial do Enem." />
         )}
         <div className="rounded-2xl border border-border bg-surface p-5 shadow-card">
           <h2 className="font-bold text-ink">Histórico</h2>

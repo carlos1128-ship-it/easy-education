@@ -111,7 +111,7 @@ export default async function ArquivosPage({ searchParams }: { searchParams: Pro
           })}
         </div>
       ) : (
-        <EmptyState icon={FileText} title="Nenhum material ainda." description="Envie um PDF, uma foto ou cole o link de uma aula do YouTube para gerar quizzes, flashcards e simulados com base no seu conteúdo." />
+        <EmptyState icon={FileText} owl="estudando" title="Nenhum material ainda." description="Envie um PDF, uma foto ou cole o link de uma aula do YouTube para gerar quizzes, flashcards e simulados com base no seu conteúdo." />
       )}
     </div>
   );

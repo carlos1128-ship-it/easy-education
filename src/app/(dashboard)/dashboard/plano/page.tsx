@@ -11,6 +11,7 @@ import { blockKey, blockStatus } from "@/lib/study-completion";
 import { getDayLabel, orderWeekFromToday, parseStudyPlan, relativeDayLabel, todayWeekday } from "@/lib/study-plan";
 import { getTodayRuns } from "@/lib/study-runs";
 import { cn } from "@/lib/utils";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 const UNLOCKS_ON: Record<string, string> = {
   sunday: "no domingo",
@@ -48,12 +49,15 @@ export default async function PlanoPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-8">
       <header className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex items-center gap-4">
+          <OwlMascot mood="estudando" size={84} priority className="flex-none" />
         <div>
           <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
             <Sparkles className="size-4" aria-hidden="true" />
             Plano de estudo gerado pela IA
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Plano semanal</h1>
+        </div>
         </div>
         <dl className="m-0 grid grid-cols-2 gap-x-10 gap-y-4 sm:grid-cols-4">
           {summary.map((item) => (

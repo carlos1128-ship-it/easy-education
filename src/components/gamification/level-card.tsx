@@ -1,7 +1,16 @@
 import { Flame, Target, Zap } from "lucide-react";
+import { OwlMascot, type OwlMood } from "@/components/mascot/owl-mascot";
 import type { Gamification } from "@/lib/gamification";
 import { XP_RULES } from "@/lib/xp";
 import { cn } from "@/lib/utils";
+
+/** A coruja do Início reage ao dia: meta feita, estudando, ofensiva em risco ou dia ainda em branco. */
+function levelOwl(stats: Gamification, goalDone: boolean): OwlMood {
+  if (goalDone) return "comemorando";
+  if (stats.todayXp > 0) return "brilhando";
+  if (stats.streak > 0) return "determinada";
+  return "feliz";
+}
 
 /** Card de progresso: nível com barra até o próximo, meta de XP do dia e o XP de cada dia da semana. */
 export function LevelCard({ stats, className }: { stats: Gamification; className?: string }) {
@@ -26,6 +35,7 @@ export function LevelCard({ stats, className }: { stats: Gamification; className
           </div>
           <p className="m-0 mt-1 text-xs text-ink-muted">Faltam {stats.toNext} XP para o nível {stats.level + 1}</p>
         </div>
+        <OwlMascot mood={levelOwl(stats, goalDone)} size={76} priority className="flex-none" />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2">

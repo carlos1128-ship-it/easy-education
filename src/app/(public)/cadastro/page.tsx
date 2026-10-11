@@ -5,7 +5,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function CadastroPage() {
   return (
-    <AuthShell title="Bem-vindo!" subtitle="Crie sua conta e tenha seu plano de estudos pronto em poucos minutos.">
+    <AuthShell owl="feliz" title="Bem-vindo!" subtitle="Crie sua conta e tenha seu plano de estudos pronto em poucos minutos.">
       <Suspense fallback={<LoadingSpinner />}>
         <SignUpForm />
       </Suspense>

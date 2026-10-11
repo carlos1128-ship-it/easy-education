@@ -4,6 +4,7 @@ import { BankPerformance } from "@/components/bank/bank-performance";
 import { dayKey, shortDate } from "@/lib/format";
 import { getPrisma } from "@/lib/prisma";
 import { getCurrentUserOrRedirect } from "@/lib/server-user";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 function lastWeeks() {
   return Array.from({ length: 8 }).map((_, index) => {
@@ -77,9 +78,12 @@ export default async function DesempenhoPage({ searchParams }: { searchParams: P
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
       <header className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <div className="flex items-center gap-4">
+        <OwlMascot mood="grecia" size={84} priority className="flex-none" />
       <div>
         <p className="text-sm font-medium text-brand-strong">Desempenho</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Evolução dos estudos</h1>
+      </div>
       </div>
 
       <form className="flex flex-col gap-3 sm:flex-row sm:items-end xl:w-[560px]">

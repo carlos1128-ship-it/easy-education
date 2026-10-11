@@ -369,3 +369,20 @@
     display: none;
   }
 }
+
+/* Mascote: animações do pacote "Corujas separadas e animadas" (mesmos keyframes, prefixo owl-). */
+@keyframes owl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6%); } }
+@keyframes owl-float { 0%, 100% { transform: translate(0, 0) rotate(-2deg); } 50% { transform: translate(2%, -7%) rotate(2deg); } }
+@keyframes owl-sway { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes owl-hop { 0%, 60%, 100% { transform: translateY(0) scale(1, 1); } 10% { transform: translateY(0) scale(1.06, 0.94); } 30% { transform: translateY(-12%) scale(0.97, 1.04); } 50% { transform: translateY(0) scale(1.04, 0.96); } }
+@keyframes owl-scoot { 0% { transform: translateX(-4%) rotate(0); } 25% { transform: translateX(3%) rotate(-1.5deg); } 50% { transform: translateX(5%) rotate(0); } 75% { transform: translateX(-2%) rotate(1.5deg); } 100% { transform: translateX(-4%) rotate(0); } }
+@keyframes owl-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes owl-wiggle { 0%, 70%, 100% { transform: rotate(0); } 75% { transform: rotate(-4deg); } 80% { transform: rotate(4deg); } 85% { transform: rotate(-3deg); } 90% { transform: rotate(2deg); } }
+@keyframes owl-heart { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.08); } 30% { transform: scale(0.98); } 45% { transform: scale(1.06); } 60% { transform: scale(1); } }
+@keyframes owl-pulse { 0%, 100% { transform: scale(0.97); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.05); } }
+@keyframes owl-nod { 0%, 100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(-2deg) translateY(-2%); } }
+@media (prefers-reduced-motion: reduce) {
+  .owl-anim {
+    animation: none !important;
+  }
+}

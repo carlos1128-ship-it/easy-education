@@ -38,6 +38,7 @@ import { SUPPORT_EMAIL, legalLinks, supportMailto } from "@/lib/site";
 import { EvidenceSection, TestimonialsSection } from "@/components/landing/landing-extras";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
+import { owlAnimationStyle } from "@/lib/owls";
 
 const container = "mx-auto max-w-[1520px] px-5 lg:px-12 2xl:px-16";
 const sectionTop = "pt-16 lg:pt-24";
@@ -604,8 +605,10 @@ function ChatCard() {
           src={chat.image.src}
           alt={chat.image.alt}
           fill
+          unoptimized
           sizes="(min-width: 1024px) 340px, 92vw"
-          className="rounded-3xl object-cover object-[50%_40%]"
+          className="owl-anim rounded-3xl bg-white object-contain object-top pb-14"
+          style={owlAnimationStyle(chat.image.owl)}
         />
         <div className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-1.5 rounded-2xl bg-surface p-2.5 shadow-pop">
           <span className="max-w-[85%] self-end rounded-[12px_12px_4px_12px] bg-brand px-2.5 py-1.5 text-[13px] leading-[19px] text-on-brand">
@@ -632,8 +635,10 @@ function PlanCard() {
           src={plan.image.src}
           alt={plan.image.alt}
           fill
+          unoptimized
           sizes="(min-width: 1024px) 340px, 92vw"
-          className="rounded-3xl object-cover object-[50%_30%]"
+          className="owl-anim rounded-3xl bg-white object-contain object-top pb-24"
+          style={owlAnimationStyle(plan.image.owl)}
         />
         <div className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-1 rounded-2xl bg-surface p-2 shadow-pop">
           {plan.days.map((d) => (

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { SubjectMultiSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
+import { OwlGenerating } from "@/components/mascot/owl-mascot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -121,6 +122,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
         <Sparkles className="size-4" />
         {loading ? "Gerando..." : "Criar quiz"}
       </Button>
+      {loading ? <OwlGenerating className="mt-4" message="Montando e conferindo as questões. Pode levar até um minuto." /> : null}
     </form>
   );
 }

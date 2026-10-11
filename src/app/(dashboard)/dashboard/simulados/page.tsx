@@ -12,6 +12,7 @@ import { allowanceFor } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { startOfDaySP } from "@/lib/time-window";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
 
@@ -77,9 +78,12 @@ export default async function SimuladosPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
+      <div className="flex items-center gap-4">
+        <OwlMascot mood="professora" size={84} priority className="flex-none" />
       <div>
         <p className="text-sm font-medium text-brand-strong">Simulados</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Prática em ritmo de prova</h1>
+      </div>
       </div>
 
       {enem ? (

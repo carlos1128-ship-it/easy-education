@@ -7,6 +7,7 @@ import { allowanceFor } from "@/lib/plans";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { DAYS_PER_SECTION, getTrailForUser } from "@/lib/study-trail";
 import { cn } from "@/lib/utils";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 export const metadata: Metadata = { title: "Sala de troféus · Easy Education" };
 
@@ -33,6 +34,8 @@ export default async function TrofeusPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1680px] flex-col gap-8">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-center gap-4">
+          <OwlMascot mood="apaixonada" size={84} priority className="flex-none" />
         <div className="flex flex-col gap-1.5">
           <Link href="/dashboard/trilha" className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-brand-strong no-underline hover:underline">
             <ArrowLeft className="size-4" aria-hidden="true" />
@@ -42,6 +45,7 @@ export default async function TrofeusPage() {
           <p className="m-0 max-w-[620px] text-[15px] leading-6 text-ink-muted">
             Um troféu para cada seção da trilha. Feche os {DAYS_PER_SECTION} dias de uma seção para colocar o próximo na estante.
           </p>
+        </div>
         </div>
         <p className="m-0 text-[15px] text-ink-muted">
           <span className="text-[28px] font-extrabold text-brand">{earned}</span> de {trail.trophies.length} conquistados

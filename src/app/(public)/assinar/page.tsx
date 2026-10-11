@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlanPicker } from "@/components/billing/plan-picker";
@@ -9,6 +8,7 @@ import { getPrisma } from "@/lib/prisma";
 import { ensureProfileForUser } from "@/lib/profile";
 import { planFromParam } from "@/lib/stripe";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 export const dynamic = "force-dynamic";
 
@@ -45,8 +45,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
     <main className="min-h-screen bg-bg px-4 py-10">
       <section className="mx-auto w-full max-w-[860px] rounded-3xl border border-border bg-surface px-5 py-9 shadow-pop sm:px-8">
         <div className="flex flex-col items-center text-center">
-          <Image src="/brand/icone-azul.svg" alt="" width={56} height={56} unoptimized preload className="size-14 dark:hidden" />
-          <Image src="/brand/icone-escuro.svg" alt="" width={56} height={56} unoptimized preload className="hidden size-14 dark:block" />
+          <OwlMascot mood="notebook" size={150} priority />
           <p className="m-0 mt-4 text-[13px] font-semibold text-brand-strong">Easy Education</p>
           <h1 className="m-0 mt-1 text-[28px] font-extrabold leading-tight tracking-[-0.02em] text-ink">Escolha seu plano</h1>
           <p className="m-0 mt-2 max-w-[520px] text-[15px] text-ink-muted [text-wrap:balance]">

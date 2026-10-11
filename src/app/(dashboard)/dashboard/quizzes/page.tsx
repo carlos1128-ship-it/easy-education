@@ -36,7 +36,7 @@ export default async function QuizzesPage() {
       )}
 
       {quizzes.length === 0 ? (
-        <EmptyState icon={HelpCircle} title="Você ainda não gerou nenhum quiz." description="Use a IA acima para criar questões e salvar seu progresso." />
+        <EmptyState icon={HelpCircle} owl="atenta" title="Você ainda não gerou nenhum quiz." description="Use a IA acima para criar questões e salvar seu progresso." />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {quizzes.map((quiz) => (

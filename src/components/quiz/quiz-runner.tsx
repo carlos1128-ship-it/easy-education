@@ -48,7 +48,7 @@ function ExamCountdown({ minutes, startedAt }: { minutes: number; startedAt: str
 const IDLE_MS = 30_000;
 
 function resultMood(percent: number): { mood: OwlMood; message: string } {
-  if (percent === 100) return { mood: "apaixonada", message: "Gabaritou! Todas certas." };
+  if (percent === 100) return { mood: "festa", message: "Gabaritou! Todas certas." };
   if (percent >= 70) return { mood: "comemorando", message: "Mandou muito bem!" };
   if (percent >= 50) return { mood: "feliz", message: "Bom resultado. Revise os erros para subir mais." };
   return { mood: "determinada", message: "Vamos revisar os erros e tentar de novo." };
@@ -90,7 +90,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", videoId = null, t
   const pageCount = Math.max(1, Math.ceil(questions.length / pageSize));
   const page = Math.floor(index / pageSize) + 1;
 
-  usePreloadOwls(isLastPage ? ["comemorando", "apaixonada", "determinada"] : ["piscando", "feliz", "determinada"]);
+  usePreloadOwls(isLastPage ? ["comemorando", "festa", "feliz", "determinada"] : ["piscando", "feliz", "comemorando", "determinada", "sonolenta"]);
 
   // Sem interação por um tempo, a coruja fica sonolenta.
   useEffect(() => {

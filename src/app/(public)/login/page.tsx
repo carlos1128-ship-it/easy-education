@@ -5,7 +5,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function LoginPage() {
   return (
-    <AuthShell title="Bem-vindo de volta!" subtitle="Entre com seus dados para continuar estudando.">
+    <AuthShell owl="estudante" title="Bem-vindo de volta!" subtitle="Entre com seus dados para continuar estudando.">
       <Suspense fallback={<LoadingSpinner />}>
         <LoginForm />
       </Suspense>

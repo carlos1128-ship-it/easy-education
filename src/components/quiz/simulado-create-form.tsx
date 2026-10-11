@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ClipboardCheck } from "lucide-react";
 import { SubjectMultiSelect } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
+import { OwlGenerating } from "@/components/mascot/owl-mascot";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { readApiJson } from "@/lib/client-response";
@@ -112,6 +113,7 @@ export function SimuladoCreateForm({ files = [], maxQuestions = 20 }: { files?: 
         <ClipboardCheck className="size-4" />
         {loading ? "Gerando..." : "Novo simulado"}
       </Button>
+      {loading ? <OwlGenerating className="lg:self-center" message="Montando o simulado e conferindo o gabarito. Simulados grandes levam alguns minutos." /> : null}
     </form>
   );
 }

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { SubjectChecklist } from "@/components/subjects/subject-fields";
 import { toast } from "sonner";
+import { OwlGenerating } from "@/components/mascot/owl-mascot";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,6 +97,7 @@ export function StudyPlanGenerator({ goal, dailyMinutes, method, targetDate }: G
         <Sparkles className="size-4" />
         {loading ? "Gerando..." : "Gerar novo plano"}
       </Button>
+      {loading ? <OwlGenerating className="md:col-span-4" message="Montando sua semana de estudos." /> : null}
     </form>
   );
 }

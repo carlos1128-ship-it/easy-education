@@ -7,6 +7,7 @@ import { noteContextLabel } from "@/lib/notes";
 import { getPrisma } from "@/lib/prisma";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { cn } from "@/lib/utils";
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 
 export const metadata: Metadata = { title: "Minhas anotações · Easy Education" };
 
@@ -32,12 +33,15 @@ export default async function AnotacoesPage({ searchParams }: { searchParams: Pr
   return (
     <div className="mx-auto flex w-full max-w-[960px] flex-col gap-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex items-center gap-4">
+          <OwlMascot mood="pensando" size={84} priority className="flex-none" />
         <div>
           <p className="m-0 flex items-center gap-2 text-sm font-medium text-brand-strong">
             <NotebookPen className="size-4" aria-hidden="true" /> Só você vê
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-ink">Minhas anotações</h1>
           <p className="m-0 mt-1 text-sm text-ink-muted">Escreva com suas palavras. Você também pode anotar dentro das questões e dos blocos do plano.</p>
+        </div>
         </div>
         <NoteButton label="Nova anotação" link={materia ? { subject: materia } : {}} />
       </header>

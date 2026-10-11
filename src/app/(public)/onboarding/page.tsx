@@ -1,3 +1,4 @@
+import { OwlMascot } from "@/components/mascot/owl-mascot";
 import { OnboardingForm, type OnboardingInitial } from "@/components/onboarding/onboarding-form";
 import { parsePersonalization } from "@/lib/learner-profile";
 import { getPrisma } from "@/lib/prisma";
@@ -33,6 +34,7 @@ export default async function OnboardingPage() {
   return (
     <main className="legacy-auth min-h-screen bg-[#F8FAFD] dark:bg-[#070A13] px-4 py-10">
       <div className="mx-auto max-w-3xl">
+        <OwlMascot mood="educacao" size={300} priority className="mb-4" />
         <p className="text-sm text-[#1B4FD8] dark:text-[#93C5FD]">{redo ? "Personalização" : "Último passo"}</p>
         <h1 className="mt-2 text-3xl font-medium text-slate-950 dark:text-[#F1F5F9]">
           {redo ? "Atualize o que você está estudando" : "Vamos montar um estudo do seu jeito"}

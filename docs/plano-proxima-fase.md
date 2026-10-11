@@ -140,6 +140,8 @@ O teto mensal de uso justo continua valendo mês a mês no anual, então o pior 
 
 ### Parte 3: mascote (só especificação)
 
+> **Atualização 10/10/2026:** a coruja passou a usar as imagens e as animações CSS do pacote "Corujas separadas e animadas" (20 poses e cenas, sem as poses `*-parada.webp` antigas). A troca por Rive abaixo continua como próxima etapa; quando vier, as WebP de `public/mascote` viram o fallback estático.
+
 **Componente novo `OwlRive`**, trocado dentro de `src/components/mascot/owl-mascot.tsx` mantendo a API (`mood`, `size`, `message`):
 
 1. Arquivo único `public/mascote/coruja.riv` (meta: menos de 150 KB), servido com cache longo.
