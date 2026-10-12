@@ -34,7 +34,7 @@ export default async function AssinaturaSucessoPage({ searchParams }: { searchPa
     <AuthShell owl="piscando" title="Pagamento em análise" subtitle="Assim que o pagamento for confirmado, seu acesso é liberado automaticamente.">
       <div className="flex flex-col gap-4 text-center">
         <p className="m-0 text-sm text-ink-muted">
-          Pagamentos por boleto ou Pix podem levar alguns minutos. Você também recebe o recibo por e-mail.
+          A confirmação do pagamento pode levar alguns minutos. Esta página consulta novamente as confirmações pendentes da sua conta.
         </p>
         <Link
           href={sessionId ? `/assinar/sucesso?session_id=${encodeURIComponent(sessionId)}` : callback ? `/assinar/sucesso?callback=${encodeURIComponent(callback)}` : "/assinar"}

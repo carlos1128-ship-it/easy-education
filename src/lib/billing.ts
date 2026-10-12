@@ -1,6 +1,6 @@
 import type Stripe from "stripe";
 import type { User } from "@supabase/supabase-js";
-import { TRIAL_DAYS, type PlanTier } from "@/lib/plans";
+import type { PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getPriceForPlan, getStripe, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
 import { caktoApiRequest } from "@/lib/cakto";
@@ -11,14 +11,8 @@ const ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
 /** Dias da garantia (direito de arrependimento) contados a partir do primeiro pagamento. */
 export const GUARANTEE_DAYS = 7;
 
-/** Teste grátis (src/lib/plans.ts), uma vez por aluno. Reexportado para quem já importava daqui. */
-export { TRIAL_DAYS };
-
-/** O aluno ainda pode usar o teste grátis? Só quem nunca teve assinatura (nem teste) no Stripe. */
-export async function isTrialEligible(userId: string) {
-  const subscription = await getSubscriptionForUser(userId);
-  return !subscription?.stripeSubscriptionId && !subscription?.caktoSubscriptionId && !subscription?.firstPaidAt;
-}
+/** Compatibilidade com importadores antigos; novas assinaturas nao oferecem trial. */
+export { TRIAL_DAYS } from "@/lib/plans";
 
 export class BillingError extends Error {
   constructor(
@@ -77,6 +71,14 @@ export type AccessState = PaidAccess | NoAccess;
 export async function getAccessState(user: Pick<User, "id" | "email">): Promise<AccessState> {
   if (!isBillingEnforced() || isExemptEmail(user.email)) {
     return { hasAccess: true, tier: "full", plan: "full", status: "exempt", isPaid: true, trialing: false };
+  }
+  if (process.env.BILLING_PROVIDER === "cakto") {
+    try {
+      const { retryCaktoDeliveries } = await import("@/lib/cakto-inbox");
+      await retryCaktoDeliveries(user.id);
+    } catch {
+      console.error("[billing] confirmacao Cakto pendente");
+    }
   }
   const subscription = await getSubscriptionForUser(user.id);
   const status = subscription?.status ?? "none";
@@ -187,7 +189,6 @@ export async function createCheckoutSession(
   origin: string,
 ) {
   const stripe = getStripe();
-  const trial = await isTrialEligible(user.id);
   const customer = await getOrCreateStripeCustomer(user);
   const price = await getPriceForPlan(plan);
   // Trava de segurança: o app nunca cobra um valor diferente do que mostra (plans.ts).
@@ -207,8 +208,6 @@ export async function createCheckoutSession(
     payment_method_collection: "always",
     subscription_data: {
       metadata: { userId: user.id, plan },
-      // 7 dias grátis na primeira assinatura; sem cartão válido no fim do teste, a assinatura é cancelada.
-      ...(trial ? { trial_period_days: TRIAL_DAYS, trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } } } : {}),
     },
     metadata: { userId: user.id, plan },
     success_url: `${origin}/assinar/sucesso?session_id={CHECKOUT_SESSION_ID}`,

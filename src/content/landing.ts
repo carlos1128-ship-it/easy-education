@@ -30,7 +30,7 @@ export const landingNav = [
 ] as const;
 
 export const landingHeader = {
-  cta: "Testar grátis",
+  cta: "Começar agora",
   login: "Entrar",
   loginHint: "Já tem conta?",
   openMenu: "Abrir menu",
@@ -44,10 +44,10 @@ export const landingHero = {
   subtitle:
     "Mande o PDF, a foto do caderno ou só o nome da matéria. Em minutos você tem quiz com explicação em cada alternativa, flashcards que voltam no dia certo e um plano para cada dia de estudo.",
   // Espaço sem quebra: no celular "R$" não fica numa linha e o valor na outra.
-  boxText: `7 dias grátis · planos a partir de ${priceBasic.replace(" ", " ")}/mês`,
-  cta: "Testar 7 dias grátis",
+  boxText: `7 dias de garantia · planos a partir de ${priceBasic.replace(" ", " ")}/mês`,
+  cta: "Começar agora",
   // Fica embaixo da caixa do botão: tira o medo de cobrança antes de clicar.
-  reassurance: "A cobrança só começa depois dos 7 dias. Cancele antes e não paga nada.",
+  reassurance: "Acesso após a confirmação do pagamento. Sete dias de garantia após a primeira cobrança.",
   highlights: ["Escola, faculdade, vestibular e concurso", "Questões com explicação", "PDF ou foto da matéria"],
   image: {
     src: "/images/estudante-jeans-recorte.webp",
@@ -110,7 +110,7 @@ export const illustrativeLabel = "Exemplo ilustrativo";
 export const landingMeta = {
   title: "Easy Education: estude com IA usando o seu próprio material",
   description:
-    `Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos, simulados e correção de redação. Para escola, faculdade, vestibular e concurso. Teste 7 dias grátis; planos a partir de ${priceBasic} por mês.`,
+    `Envie PDF ou foto da matéria e receba quiz com explicação, flashcards com revisão espaçada, plano de estudos, simulados e correção de redação. Para escola, faculdade, vestibular e concurso. Planos a partir de ${priceBasic} por mês, com sete dias de garantia.`,
 } as const;
 
 export const landingResources = {
@@ -232,21 +232,21 @@ export const landingSteps = {
 export const landingPlans = {
   enabled: true,
   eyebrow: "Planos",
-  title: "Teste 7 dias grátis e escolha quanto de IA você quer usar",
-  text: "Os dois planos começam com 7 dias grátis. Você cadastra o cartão, usa tudo por 7 dias e só paga se continuar. Cancele antes e não paga nada.",
+  title: "Escolha seu plano e comece a estudar",
+  text: "Todos os recursos de estudo nos dois planos. Escolha o uso de IA que acompanha seu ritmo. Pagamento no início, acesso após a confirmação e sete dias de garantia após a primeira cobrança.",
   basic: {
     name: PLANS.basic.name,
     description: "Para estudar com IA algumas vezes por semana.",
     price: priceBasic,
     period: "por mês",
-    cta: "Testar 7 dias grátis",
+    cta: "Começar com o Básico",
   },
   full: {
     name: PLANS.full.name,
     description: "Para quem estuda todo dia e usa muito a IA.",
     price: priceFull,
     period: "por mês",
-    cta: "Testar 7 dias grátis",
+    cta: "Começar com o Completo",
     badge: "Mais indicado",
   },
   includedTitle: "Nos dois planos",
@@ -256,7 +256,7 @@ export const landingPlans = {
     "Plano de estudos com roteiro, trilha e troféus",
     "Simulados com provas anteriores do ENEM e desempenho",
   ],
-  guarantee: "7 dias grátis para testar e, depois do primeiro pagamento, mais 7 dias de garantia. Cancele quando quiser.",
+  guarantee: "Sete dias de garantia após o primeiro pagamento. Cancele quando quiser.",
   images: [
     { src: "/images/estudante-xadrez-recorte.webp", width: 686, height: 1290, alt: "Estudante sorrindo, segurando cadernos" },
     { src: "/images/estudante-jeans-recorte.webp", width: 792, height: 1240, alt: "Estudante de mochila sorrindo, segurando cadernos" },
@@ -324,7 +324,7 @@ export const landingFaq = {
   items: [
     {
       q: "Preciso pagar para usar?",
-      a: "Os 7 primeiros dias são grátis. O cartão é pedido no início, mas a primeira cobrança só acontece no fim do teste, e você pode cancelar antes sem pagar nada. Depois do teste, cobramos o plano que você escolheu.",
+      a: "Sim. Escolha um plano e realize o pagamento para liberar o acesso. Não há teste grátis. Nos sete dias após o primeiro pagamento, você pode solicitar o reembolso integral em Assinatura.",
     },
     {
       q: "Como funcionam os limites de uso?",
@@ -340,15 +340,15 @@ export const landingFaq = {
     },
     {
       q: "Como cancelo?",
-      a: "Em Assinatura, dentro do app, você abre o portal do Stripe, cancela quando quiser e continua usando até o fim do período pago. Nos primeiros 7 dias após o primeiro pagamento, você também pode pedir o dinheiro de volta.",
+      a: "Em Assinatura, dentro do app, você pode cancelar a renovação. Confira o prazo de acesso indicado na sua assinatura. Nos sete dias após o primeiro pagamento, você também pode solicitar o reembolso integral.",
     },
     {
       q: "Quais formas de pagamento?",
-      a: "O pagamento dos planos é feito pelo Stripe, com cartão. Pix e boleto não estão disponíveis para assinatura por enquanto.",
+      a: "O checkout Cakto oferece cartão de crédito, Pix e Pix Automático. As opções disponíveis e o valor total, incluindo eventuais taxas, aparecem antes da confirmação. Pix comum não autoriza cobranças automáticas futuras.",
     },
     {
       q: "Quanto custa o Easy Education?",
-      a: `O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}, os dois com 7 dias grátis para testar. Você cancela quando quiser e, depois do primeiro pagamento, tem mais 7 dias de garantia.`,
+      a: `O Básico custa ${priceBasic} por mês e o Completo, ${priceFull}. O checkout informa eventuais taxas e o total antes do pagamento. Os dois planos têm sete dias de garantia após o primeiro pagamento.`,
     },
     {
       q: "Qual a diferença entre o Básico e o Completo?",
@@ -387,8 +387,8 @@ export const landingFaq = {
 
 export const landingFinalCta = {
   title: "Comece seu plano de estudos hoje",
-  text: "Conte o que você está estudando e receba o plano da semana na hora. Use tudo por 7 dias grátis e só pague se continuar.",
-  cta: "Testar 7 dias grátis",
+  text: "Transforme sua matéria em um plano de estudos, questões e revisões. Escolha seu plano e comece após a confirmação do pagamento, com sete dias de garantia.",
+  cta: "Começar agora",
   image: { src: "/images/formatura-azul.jpg" },
 } as const;
 

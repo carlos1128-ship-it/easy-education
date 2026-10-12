@@ -7,16 +7,13 @@ import { landingPlans } from "@/content/landing";
 import { readApiJson } from "@/lib/client-response";
 import { PAYMENT_METHODS, type PaymentMethodId } from "@/lib/payment-methods";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
-import { PLANS, TRIAL_DAYS, type PlanTier } from "@/lib/plans";
+import { PLANS, type PlanTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 const METHOD_ICON: Record<PaymentMethodId, typeof CreditCard> = { card: CreditCard, pix_automatico: QrCode };
 
-/**
- * Escolha do plano logo depois do cadastro. Não existe plano gratuito: os dois planos começam com 7 dias grátis
- * (uma vez por aluno), com o pagamento autorizado no início. Os números vêm de src/lib/plans.ts.
- */
-export function PlanPicker({ initialPlan, trial = false, provider = "stripe" }: { initialPlan: PlanTier; trial?: boolean; provider?: "stripe" | "cakto" }) {
+/** Escolha do plano com pagamento imediato e garantia após o primeiro pagamento. */
+export function PlanPicker({ initialPlan, provider = "stripe" }: { initialPlan: PlanTier; provider?: "stripe" | "cakto" }) {
   const [selected, setSelected] = useState<PlanTier>(initialPlan);
   const [method, setMethod] = useState<PaymentMethodId>("card");
   const [loading, setLoading] = useState(false);
@@ -74,7 +71,7 @@ export function PlanPicker({ initialPlan, trial = false, provider = "stripe" }: 
                 <span className="text-3xl font-black tracking-[-0.5px] text-ink">{plan.price}</span>
                 <span className="text-ink-muted">{plan.period}</span>
               </div>
-              <span className="text-sm font-medium text-brand-strong">{trial ? `${TRIAL_DAYS} dias grátis, depois ${pricePerDayLabel(tier) ?? `${plan.price}/mês`}` : pricePerDayLabel(tier)}</span>
+              <span className="text-sm font-medium text-brand-strong">{pricePerDayLabel(tier)}</span>
               <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
                 {planHighlights(tier).map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm text-ink">
@@ -150,15 +147,11 @@ export function PlanPicker({ initialPlan, trial = false, provider = "stripe" }: 
       >
         {loading
           ? "Abrindo pagamento..."
-          : trial
-            ? `Começar ${TRIAL_DAYS} dias grátis no ${PLANS[selected].name}`
-            : `Assinar o ${PLANS[selected].name} por ${p[selected].price}/mês`}
+          : `Começar agora com o ${PLANS[selected].name}`}
       </button>
       <p className="m-0 flex items-center justify-center gap-2 text-center text-sm text-ink-muted">
         <ShieldCheck size={16} className="flex-none" aria-hidden="true" />
-        {trial
-          ? `Depois dos ${TRIAL_DAYS} dias grátis, ${p[selected].price}/mês. Confira a autorização e as condições da forma de pagamento no checkout seguro ${provider === "cakto" ? "Cakto" : "Stripe"}.`
-          : <>Pagamento seguro {provider === "cakto" ? "Cakto" : "Stripe"}. {p.guarantee}</>}
+        Pagamento seguro {provider === "cakto" ? "Cakto" : "Stripe"}. {p.guarantee}
       </p>
       {provider === "cakto" ? <p className="m-0 text-center text-xs text-ink-muted">O checkout Cakto informa a taxa de serviço e o valor total antes da confirmação.</p> : null}
     </div>

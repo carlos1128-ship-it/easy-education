@@ -32,7 +32,7 @@ function validString(value: unknown): value is string {
 }
 
 /** Processa somente eventos assinados pelo provedor; o callback opaco liga a compra ao usuário autenticado. */
-export async function processCaktoWebhookEvent(event: string, rawData: unknown) {
+export async function processCaktoWebhookEvent(event: string, rawData: unknown, deliveryId?: string) {
   if (event === "checkout_abandonment") return { ignored: true };
   const prisma = getPrisma();
   let processed = 0;
@@ -54,23 +54,34 @@ export async function processCaktoWebhookEvent(event: string, rawData: unknown) 
       ? await prisma.subscription.findUnique({ where: { caktoSubscriptionId: subscriptionId } })
       : await prisma.subscription.findUnique({ where: { caktoOrderId: orderId } });
     const userId = attempt?.userId ?? existing?.userId;
-    if (!userId) continue;
+    if (!userId) throw new Error("Compra Cakto ainda sem vinculo com uma conta autenticada.");
     const current = existing ?? await prisma.subscription.findUnique({ where: { userId } });
+    if (current?.refundedAt && ACTIVE_EVENTS.has(event) &&
+      ((subscriptionId && current.caktoSubscriptionId === subscriptionId) || current.caktoOrderId === orderId || attempt?.completedAt)) continue;
     // Uma entrega atrasada nunca substitui outra assinatura que ja esta em uso.
-    if (current && subscriptionGivesAccess(current.status) && (current.provider !== "cakto" || (current.caktoSubscriptionId && subscriptionId && current.caktoSubscriptionId !== subscriptionId))) continue;
+    const currentHasAccess = current && subscriptionGivesAccess(current.status) &&
+      (current.provider !== "cakto" || !current.currentPeriodEnd || current.currentPeriodEnd > new Date());
+    if (currentHasAccess && (current.provider !== "cakto" || (current.caktoSubscriptionId && subscriptionId && current.caktoSubscriptionId !== subscriptionId))) continue;
 
     const remote = subscriptionId ? await getCaktoSubscription(subscriptionId) : null;
     const remoteStatuses: Record<string, string> = { active: "active", trial: "trialing", late: "past_due", paused: "paused", canceled: "canceled", expired: "canceled", inactive: "unpaid" };
-    const effectiveStatus = CANCELED_EVENTS.has(event) ? "canceled" : remote ? remoteStatuses[remote.status] : status;
+    const effectiveStatus = event === "refund" || event === "chargeback" ? "canceled" : remote ? remoteStatuses[remote.status] : status;
     if (!effectiveStatus) throw new Error("Status de assinatura Cakto desconhecido.");
+    if (order.status === "paid" && ACTIVE_EVENTS.has(event) && effectiveStatus === "unpaid") {
+      throw new Error("A API Cakto ainda nao confirmou a ativacao da assinatura paga.");
+    }
     const nextPayment = remote?.next_payment_date ? new Date(remote.next_payment_date) : null;
     const paymentDate = validString(order.paidAt) ? new Date(order.paidAt) : null;
     const paidAt = paymentDate && !Number.isNaN(paymentDate.getTime()) ? paymentDate : null;
     const currentPeriodEnd = nextPayment && !Number.isNaN(nextPayment.getTime())
       ? nextPayment
-      : existing?.currentPeriodEnd ?? (paidAt ? new Date(paidAt.getTime() + 30 * 24 * 60 * 60_000) : null);
+      : paidAt ? new Date(paidAt.getTime() + 30 * 24 * 60 * 60_000) : existing?.currentPeriodEnd ?? null;
 
-    const eventId = `${event}:${orderId}`;
+    if ((effectiveStatus === "active" || effectiveStatus === "trialing") && !currentPeriodEnd) {
+      throw new Error("Pagamento sem prazo de acesso confirmado.");
+    }
+
+    const eventId = deliveryId ?? `${event}:${orderId}`;
     try {
       await prisma.$transaction(async (tx) => {
         await tx.caktoEvent.create({ data: { id: eventId, type: event } });
@@ -90,6 +101,7 @@ export async function processCaktoWebhookEvent(event: string, rawData: unknown) 
             status: effectiveStatus,
             currentPeriodEnd,
             firstPaidAt: isPaidOrder ? paidAt : null,
+            ...(event === "refund" || event === "chargeback" ? { refundedAt: new Date() } : {}),
           },
           update: {
             provider: "cakto",
@@ -100,7 +112,9 @@ export async function processCaktoWebhookEvent(event: string, rawData: unknown) 
             status: effectiveStatus,
             currentPeriodEnd,
             ...(isPaidOrder ? { firstPaidAt: current?.firstPaidAt ?? paidAt } : {}),
+            ...(isPaidOrder && current?.refundedAt && attempt && !attempt.completedAt ? { refundedAt: null } : {}),
             cancelAtPeriodEnd: false,
+            ...(event === "refund" || event === "chargeback" ? { refundedAt: new Date() } : {}),
           },
         });
         if (attempt) {

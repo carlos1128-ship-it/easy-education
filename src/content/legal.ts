@@ -23,19 +23,19 @@ export const termsSections: LegalSection[] = [
     ],
   },
   {
-    title: "3. Planos, teste grátis e pagamento",
+    title: "3. Planos e pagamento",
     paragraphs: [
       "Há dois planos pagos (Básico e Completo), com assinatura mensal. Não há plano gratuito. Os preços e o que cada plano inclui aparecem na página de planos antes da contratação.",
-      "A primeira assinatura de cada pessoa começa com 7 dias grátis. Para começar o teste, você cadastra a forma de pagamento. Se não cancelar dentro desse prazo, a cobrança mensal começa no fim do teste e se renova a cada mês, até o cancelamento. Sem assinatura ou teste em vigor, o acesso ao app fica suspenso.",
-      "O pagamento com cartão é processado pelo Stripe. O Easy Education não recebe nem guarda o número completo do seu cartão.",
+      "A cobrança começa na contratação, sem teste gratuito. O acesso é liberado após a confirmação do pagamento. A assinatura se renova mensalmente até o cancelamento; Pix comum exige um novo pagamento, enquanto cartão e Pix Automático dependem da autorização do titular. Sem assinatura em vigor, o acesso fica suspenso.",
+      "Novas assinaturas são processadas pela Cakto; assinaturas anteriores podem continuar no Stripe. Os métodos disponíveis, eventuais taxas e o valor total são informados no checkout antes da confirmação. O Easy Education não recebe nem guarda o número completo do seu cartão.",
       "Cada plano tem limites de uso dos recursos de IA, por dia ou por semana, e um teto de uso justo por mês. Os limites existem para manter o custo do serviço e evitar abuso. Quando um limite acaba, ele volta no período seguinte.",
     ],
   },
   {
     title: "4. Cancelamento, arrependimento e reembolso",
     paragraphs: [
-      "Você pode cancelar a qualquer momento em Assinatura, sem multa. O acesso pago continua até o fim do período já pago.",
-      "Garantia de 7 dias: nos 7 primeiros dias depois da primeira cobrança, você pode pedir o reembolso integral pelo botão na página Assinatura. O dinheiro volta para o mesmo cartão e a assinatura é encerrada na hora. Isso cobre o direito de arrependimento do Código de Defesa do Consumidor (art. 49).",
+      "Você pode cancelar a renovação em Assinatura, sem multa. O prazo de acesso é informado conforme o estado confirmado pelo processador de pagamento.",
+      "Garantia de 7 dias: nos sete primeiros dias após o primeiro pagamento, você pode solicitar o reembolso integral pelo botão na página Assinatura. A devolução segue o meio de pagamento e os prazos do processador, e a assinatura é encerrada. A garantia não é um período gratuito antes da cobrança.",
     ],
   },
   {

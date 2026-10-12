@@ -1,9 +1,10 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
-import { processCaktoWebhookEvent } from "@/lib/cakto-events";
+import { enqueueCaktoWebhook, processCaktoDelivery } from "@/lib/cakto-inbox";
 import { verifyCaktoWebhookSignature, type CaktoWebhookPayload } from "@/lib/cakto-webhook";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const secret = process.env.CAKTO_WEBHOOK_SECRET;
@@ -35,8 +36,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await processCaktoWebhookEvent(payload.event, payload.data);
-    return NextResponse.json({ received: true, ...result });
+    const ids = await enqueueCaktoWebhook(payload.event, payload.data);
+    after(async () => {
+      for (const id of ids) await processCaktoDelivery(id);
+    });
+    return NextResponse.json({ received: true, queued: ids.length });
   } catch (error) {
     console.error("[cakto.webhook] falha ao processar evento", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Falha ao processar evento." }, { status: 503 });

@@ -1,0 +1,528 @@
+{
+  "desktop": {
+    "settings": {
+      "font": {
+        "family": "Inter"
+      },
+      "form": {
+        "background": {
+          "color": "#ffffff"
+        }
+      },
+      "icon": {
+        "color": "#2563eb"
+      },
+      "text": {
+        "color": {
+          "active": "#2563eb",
+          "primary": "#111827",
+          "secondary": "#4b5563"
+        }
+      },
+      "background": {
+        "color": "#f3f4f6",
+        "cover": false,
+        "fixed": false,
+        "image": null,
+        "repeat": false
+      },
+      "payButton": {
+        "text": {
+          "text": "COMEÇAR AGORA",
+          "color": "#ffffff"
+        },
+        "color": "#2563eb"
+      },
+      "paymentOptions": {
+        "button": {
+          "selected": {
+            "icon": {
+              "color": "#ffffff"
+            },
+            "text": {
+              "color": "#ffffff"
+            },
+            "background": {
+              "color": "#2563eb"
+            }
+          },
+          "unselected": {
+            "icon": {
+              "color": "#2563eb"
+            },
+            "text": {
+              "color": "#111827"
+            },
+            "background": {
+              "color": "#ffffff"
+            }
+          }
+        }
+      },
+      "box": {
+        "default": {
+          "text": {
+            "color": {
+              "primary": "#111827",
+              "secondary": "#4b5563"
+            }
+          },
+          "header": {
+            "text": {
+              "color": {
+                "primary": "#111827",
+                "secondary": "#4b5563"
+              }
+            },
+            "background": {
+              "color": "#eff6ff"
+            }
+          },
+          "background": {
+            "color": "#ffffff"
+          }
+        },
+        "selected": {
+          "text": {
+            "color": {
+              "primary": "#111827",
+              "secondary": "#4b5563"
+            }
+          },
+          "header": {
+            "text": {
+              "color": {
+                "primary": "#111827",
+                "secondary": "#4b5563"
+              }
+            },
+            "background": {
+              "color": "#eff6ff"
+            }
+          },
+          "background": {
+            "color": "#ffffff"
+          }
+        },
+        "unselected": {
+          "text": {
+            "color": {
+              "primary": "#111827",
+              "secondary": "#4b5563"
+            }
+          },
+          "header": {
+            "text": {
+              "color": {
+                "primary": "#111827",
+                "secondary": "#4b5563"
+              }
+            },
+            "background": {
+              "color": "#eff6ff"
+            }
+          },
+          "background": {
+            "color": "#ffffff"
+          }
+        }
+      }
+    },
+    "extra": {
+      "chat": {
+        "id": "chat",
+        "type": "chat",
+        "attributes": {
+          "enabled": false,
+          "provider": "whatsapp",
+          "accountId": ""
+        }
+      },
+      "exitPopup": {
+        "id": "exit",
+        "type": "exitPopup",
+        "attributes": {
+          "enabled": false,
+          "title": "",
+          "description": "",
+          "actionLabel": "",
+          "actionOnClick": "offer",
+          "textButtonColor": "#ffffff",
+          "backgroundButtonColor": "#2563eb"
+        }
+      },
+      "notification": {
+        "id": "notification",
+        "type": "notification",
+        "attributes": {
+          "enabled": false
+        }
+      }
+    },
+    "rows": [
+      {
+        "id": "intro",
+        "type": "row",
+        "layout": [
+          12
+        ],
+        "columns": [
+          {
+            "id": "intro-col-0",
+            "type": "column",
+            "components": [
+              {
+                "id": "brand-copy",
+                "type": "text",
+                "attributes": {
+                  "text": "Easy Education · Estude com um plano, pratique e revise.",
+                  "color": "#2563eb",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 8,
+                  "borderWidth": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "form",
+        "type": "row",
+        "layout": [
+          12
+        ],
+        "columns": [
+          {
+            "id": "form-col-0",
+            "type": "column",
+            "components": [
+              {
+                "id": "payment-form",
+                "type": "checkout",
+                "attributes": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "benefits",
+        "type": "row",
+        "layout": [
+          12
+        ],
+        "columns": [
+          {
+            "id": "benefits-col-0",
+            "type": "column",
+            "components": [
+              {
+                "id": "study-benefits",
+                "type": "list",
+                "attributes": {
+                  "title": "Seu plano de estudos, em um só lugar",
+                  "showTitle": true,
+                  "backgroundColor": "#ffffff",
+                  "textColor": "#111827",
+                  "iconColor": "#2563eb",
+                  "alignment": "left",
+                  "fontSize": 16,
+                  "items": [
+                    {
+                      "id": "quiz",
+                      "text": "Quizzes, flashcards e simulados"
+                    },
+                    {
+                      "id": "writing",
+                      "text": "Correção de redação e chat com IA"
+                    },
+                    {
+                      "id": "planning",
+                      "text": "Plano de estudos e revisão da matéria"
+                    },
+                    {
+                      "id": "limits",
+                      "text": "Uso de IA conforme o plano escolhido"
+                    },
+                    {
+                      "id": "payment",
+                      "text": "Acesso após a confirmação do pagamento"
+                    },
+                    {
+                      "id": "guarantee",
+                      "text": "Sete dias de garantia após o primeiro pagamento"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "mobile": {
+    "settings": {
+      "font": {
+        "family": "Inter"
+      },
+      "form": {
+        "background": {
+          "color": "#ffffff"
+        }
+      },
+      "icon": {
+        "color": "#2563eb"
+      },
+      "text": {
+        "color": {
+          "active": "#2563eb",
+          "primary": "#111827",
+          "secondary": "#4b5563"
+        }
+      },
+      "background": {
+        "color": "#f3f4f6",
+        "cover": false,
+        "fixed": false,
+        "image": null,
+        "repeat": false
+      },
+      "payButton": {
+        "text": {
+          "text": "COMEÇAR AGORA",
+          "color": "#ffffff"
+        },
+        "color": "#2563eb"
+      },
+      "paymentOptions": {
+        "button": {
+          "selected": {
+            "icon": {
+              "color": "#ffffff"
+            },
+            "text": {
+              "color": "#ffffff"
+            },
+            "background": {
+              "color": "#2563eb"
+            }
+          },
+          "unselected": {
+            "icon": {
+              "color": "#2563eb"
+            },
+            "text": {
+              "color": "#111827"
+            },
+            "background": {
+              "color": "#ffffff"
+            }
+          }
+        }
+      },
+      "box": {
+        "default": {
+          "text": {
+            "color": {
+              "primary": "#111827",
+              "secondary": "#4b5563"
+            }
+          },
+          "header": {
+            "text": {
+              "color": {
+                "primary": "#111827",
+                "secondary": "#4b5563"
+              }
+            },
+            "background": {
+              "color": "#eff6ff"
+            }
+          },
+          "background": {
+            "color": "#ffffff"
+          }
+        },
+        "selected": {
+          "text": {
+            "color": {
+              "primary": "#111827",
+              "secondary": "#4b5563"
+            }
+          },
+          "header": {
+            "text": {
+              "color": {
+                "primary": "#111827",
+                "secondary": "#4b5563"
+              }
+            },
+            "background": {
+              "color": "#eff6ff"
+            }
+          },
+          "background": {
+            "color": "#ffffff"
+          }
+        },
+        "unselected": {
+          "text": {
+            "color": {
+              "primary": "#111827",
+              "secondary": "#4b5563"
+            }
+          },
+          "header": {
+            "text": {
+              "color": {
+                "primary": "#111827",
+                "secondary": "#4b5563"
+              }
+            },
+            "background": {
+              "color": "#eff6ff"
+            }
+          },
+          "background": {
+            "color": "#ffffff"
+          }
+        }
+      }
+    },
+    "extra": {
+      "chat": {
+        "id": "chat",
+        "type": "chat",
+        "attributes": {
+          "enabled": false,
+          "provider": "whatsapp",
+          "accountId": ""
+        }
+      },
+      "exitPopup": {
+        "id": "exit",
+        "type": "exitPopup",
+        "attributes": {
+          "enabled": false,
+          "title": "",
+          "description": "",
+          "actionLabel": "",
+          "actionOnClick": "offer",
+          "textButtonColor": "#ffffff",
+          "backgroundButtonColor": "#2563eb"
+        }
+      },
+      "notification": {
+        "id": "notification",
+        "type": "notification",
+        "attributes": {
+          "enabled": false
+        }
+      }
+    },
+    "rows": [
+      {
+        "id": "intro",
+        "type": "row",
+        "layout": [
+          12
+        ],
+        "columns": [
+          {
+            "id": "intro-col-0",
+            "type": "column",
+            "components": [
+              {
+                "id": "brand-copy",
+                "type": "text",
+                "attributes": {
+                  "text": "Easy Education · Estude com um plano, pratique e revise.",
+                  "color": "#2563eb",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 8,
+                  "borderWidth": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "form",
+        "type": "row",
+        "layout": [
+          12
+        ],
+        "columns": [
+          {
+            "id": "form-col-0",
+            "type": "column",
+            "components": [
+              {
+                "id": "payment-form",
+                "type": "checkout",
+                "attributes": {}
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "benefits",
+        "type": "row",
+        "layout": [
+          12
+        ],
+        "columns": [
+          {
+            "id": "benefits-col-0",
+            "type": "column",
+            "components": [
+              {
+                "id": "study-benefits",
+                "type": "list",
+                "attributes": {
+                  "title": "Seu plano de estudos, em um só lugar",
+                  "showTitle": true,
+                  "backgroundColor": "#ffffff",
+                  "textColor": "#111827",
+                  "iconColor": "#2563eb",
+                  "alignment": "left",
+                  "fontSize": 16,
+                  "items": [
+                    {
+                      "id": "quiz",
+                      "text": "Quizzes, flashcards e simulados"
+                    },
+                    {
+                      "id": "writing",
+                      "text": "Correção de redação e chat com IA"
+                    },
+                    {
+                      "id": "planning",
+                      "text": "Plano de estudos e revisão da matéria"
+                    },
+                    {
+                      "id": "limits",
+                      "text": "Uso de IA conforme o plano escolhido"
+                    },
+                    {
+                      "id": "payment",
+                      "text": "Acesso após a confirmação do pagamento"
+                    },
+                    {
+                      "id": "guarantee",
+                      "text": "Sete dias de garantia após o primeiro pagamento"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

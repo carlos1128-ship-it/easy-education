@@ -14,14 +14,14 @@ o deploy e o webhook antes de considerar a integracao validada.
 | Variavel | Oferta | Trial |
 | --- | --- | --- |
 | `CAKTO_OFFER_BASIC_ID` | `oz3c55k` | 0 dias |
-| `CAKTO_OFFER_BASIC_TRIAL_ID` | `rpjnv4m` | 7 dias |
 | `CAKTO_OFFER_FULL_ID` | `p2bcyet` | 0 dias |
-| `CAKTO_OFFER_FULL_TRIAL_ID` | `wxdw7fp` | 7 dias |
 
-Todas as ofertas estao `active`, em BRL, com `type=subscription`,
+As duas ofertas sem trial estao `active`, em BRL, com `type=subscription`,
 `intervalType=month`, `interval=1`, `recurrence_period=30` e
-`quantity_recurrences=-1`. O servidor seleciona a oferta de trial apenas para
-quem ainda nao teve assinatura ou pagamento registrado.
+`quantity_recurrences=-1`. Novas assinaturas exigem pagamento imediato.
+As antigas ofertas `rpjnv4m` e `wxdw7fp` deixam de ser usadas e devem ficar inativas
+apos a publicacao. Trials ja concedidos permanecem compativeis ate o vencimento.
+Garantia de sete dias e contada do primeiro pagamento, nao e teste gratuito.
 
 Webhook `73690`, nome **Easy Education - Assinaturas**, estado `active`:
 
@@ -61,8 +61,32 @@ mensal mostra apenas uma parcela; nao afirmar que o plano mensal e parcelavel.
 O checkout acrescenta R$ 0,99 de taxa de servico ao preco-base de R$ 19,90.
 O app informa que o total e as taxas sao exibidos antes da confirmacao.
 
-As ofertas de trial possuem `trial_days=7` na API. A cobranca efetiva e a
-autorizacao bancaria ainda exigem um teste financeiro real para validacao.
+Uma solicitacao dos demais metodos brasileiros foi aceita pela API, mas os
+produtos de assinatura continuaram expondo apenas Pix, Pix Automatico e cartao.
+Nao anunciar wallets, boleto ou parcelamento sem disponibilizacao efetiva.
+O tema usa coluna unica em desktop e mobile, azul e texto de garantia.
+O checkout publico exige os tres blocos `extra` mesmo desativados; imagens em
+string aceitas pela API nao renderizaram corretamente. A configuracao aplicada
+nao inclui imagens quebradas, urgencia artificial nem notificacoes de vendas.
+
+## Confirmacao e recuperacao
+
+O endpoint valida HMAC, timestamp e segredo antes de persistir cada evento em
+`cakto_webhook_deliveries`. O processamento roda apos a resposta com `after`.
+Falhas ficam pendentes com backoff e lease; eventos processados tem dados pessoais
+limpos. O registro idempotente e a atualizacao do acesso ocorrem na mesma transacao.
+Nao associar compra pelo email: o callback opaco ou a assinatura previamente
+vinculada determina a conta, independentemente do email preenchido no checkout.
+
+Novas tentativas acontecem ao consultar o acesso do aluno e pelo cron diario
+`/api/cakto/reconcile`, protegido por `CRON_SECRET`. O cron diario e compativel
+com Hobby; nao oferece recuperacao automatica em poucos minutos durante falhas
+persistentes. A inbox recupera eventos recebidos, mas nao substitui uma auditoria
+de pedidos que nunca chegaram ao endpoint. Pagamento e mandato bancario reais
+ainda exigem teste financeiro acompanhado do titular, nao realizado pelo agente.
+
+Aplicar somente o SQL aditivo `000015_cakto_webhook_inbox` antes do deploy.
+Nao rodar todo o historico de migracoes sem baseline.
 
 ## Retorno apos pagamento
 

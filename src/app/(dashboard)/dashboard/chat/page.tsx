@@ -12,7 +12,7 @@ export default async function ChatPage() {
         feature="chat_message"
         tier={access.tier}
         title="Chat com IA"
-        description="Tire dúvidas, mande a foto de um exercício e peça quizzes e simulados para a IA. O chat faz parte dos planos pagos, e você pode testar grátis por 7 dias."
+        description="Tire dúvidas, mande a foto de um exercício e peça quizzes e simulados para a IA. O chat faz parte dos planos pagos, com sete dias de garantia após o primeiro pagamento."
         bullets={["Explicações no seu ritmo, do jeito que você aprende", "Foto de exercício ou do caderno", "Cria quiz, flashcards e simulado na conversa"]}
       />
     );

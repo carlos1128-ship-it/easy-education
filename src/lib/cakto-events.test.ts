@@ -26,6 +26,42 @@ beforeEach(() => {
 });
 
 describe("concessao de acesso Cakto", () => {
+  it("nao reativa uma compra estornada ao receber aprovacao atrasada", async () => {
+    findSubscription.mockResolvedValue({ userId: "user-1", caktoSubscriptionId: "sub-1", refundedAt: new Date(), status: "canceled" });
+    await processCaktoWebhookEvent("purchase_approved", order);
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
+  it("aguarda consistencia da API antes de concluir um pagamento aprovado", async () => {
+    vi.mocked(getCaktoSubscription).mockResolvedValue({ id: "sub-1", status: "inactive", next_payment_date: null });
+    await expect(processCaktoWebhookEvent("purchase_approved", order)).rejects.toThrow("ativacao");
+    expect(upsert).not.toHaveBeenCalled();
+  });
+  it("mantem eventos sem conta vinculada pendentes em vez de descarta-los", async () => {
+    findAttempt.mockResolvedValue(null);
+    await expect(processCaktoWebhookEvent("purchase_approved", order)).rejects.toThrow("vinculo");
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
+  it("renovacao sem callback encontra o assinante e atualiza o vencimento", async () => {
+    findAttempt.mockResolvedValue(null);
+    findSubscription.mockResolvedValue({ userId: "user-1", provider: "cakto", caktoSubscriptionId: "sub-1", status: "active", plan: "basic", firstPaidAt: new Date(order.paidAt) });
+    await processCaktoWebhookEvent("subscription_renewed", { ...order, id: "renewal-2", callback: null });
+    expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: "user-1" }, update: expect.objectContaining({ status: "active", currentPeriodEnd: new Date("2026-11-11T12:00:00Z"), firstPaidAt: new Date(order.paidAt) }) }));
+  });
+
+  it("recusa de renovacao registra a pendencia sem inventar um pagamento", async () => {
+    vi.mocked(getCaktoSubscription).mockResolvedValue({ id: "sub-1", status: "late", next_payment_date: "2026-10-12T12:00:00Z" });
+    await processCaktoWebhookEvent("subscription_renewal_refused", { ...order, status: "refused", paidAt: null });
+    expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ create: expect.objectContaining({ status: "past_due", firstPaidAt: null }) }));
+  });
+
+  it("estorno e chargeback revogam acesso mesmo que a assinatura ainda apareca ativa", async () => {
+    for (const event of ["refund", "chargeback"]) {
+      await processCaktoWebhookEvent(event, order);
+      expect(upsert).toHaveBeenLastCalledWith(expect.objectContaining({ update: expect.objectContaining({ status: "canceled" }) }));
+    }
+  });
   it("grava o plano, o primeiro pagamento e a proxima cobranca confirmada pela API", async () => {
     expect(await processCaktoWebhookEvent("purchase_approved", order)).toEqual({ processed: 1 });
     expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ create: expect.objectContaining({ provider: "cakto", plan: "basic", status: "active", firstPaidAt: new Date(order.paidAt), currentPeriodEnd: new Date("2026-11-11T12:00:00Z") }) }));

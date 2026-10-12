@@ -676,3 +676,21 @@ model CaktoEvent {
 
   @@map("cakto_events")
 }
+
+
+model CaktoWebhookDelivery {
+  id             String    @id
+  event          String
+  data           Json
+  callback       String?
+  subscriptionId String?   @map("subscription_id")
+  orderId        String?   @map("order_id")
+  attempts       Int       @default(0)
+  processedAt    DateTime? @map("processed_at")
+  nextAttemptAt  DateTime  @default(now()) @map("next_attempt_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([processedAt, nextAttemptAt])
+  @@index([callback])
+  @@map("cakto_webhook_deliveries")
+}

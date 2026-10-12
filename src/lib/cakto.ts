@@ -9,18 +9,16 @@ let tokenCache: { value: string; expiresAt: number } | null = null;
 export function isCaktoConfigured() {
   return Boolean(
     process.env.CAKTO_OFFER_BASIC_ID?.trim() &&
-      process.env.CAKTO_OFFER_BASIC_TRIAL_ID?.trim() &&
       process.env.CAKTO_OFFER_FULL_ID?.trim() &&
-      process.env.CAKTO_OFFER_FULL_TRIAL_ID?.trim() &&
       process.env.CAKTO_WEBHOOK_SECRET?.trim() &&
       process.env.CAKTO_CLIENT_ID?.trim() &&
       process.env.CAKTO_CLIENT_SECRET?.trim(),
   );
 }
 
-export function caktoOfferId(plan: PlanId, trial: boolean) {
+export function caktoOfferId(plan: PlanId) {
   const suffix = plan === "basic" ? "BASIC" : "FULL";
-  const value = process.env[`CAKTO_OFFER_${suffix}${trial ? "_TRIAL" : ""}_ID`]?.trim();
+  const value = process.env[`CAKTO_OFFER_${suffix}_ID`]?.trim();
   if (!value) throw new Error(`Oferta Cakto do plano ${plan} não configurada.`);
   return value;
 }

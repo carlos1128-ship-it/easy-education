@@ -94,7 +94,7 @@ export function limitInfo(tier: PlanTier, feature: FeatureKey, status: Extract<A
   };
 }
 
-/** Sem assinatura nem teste em vigor: nada de IA. O modal leva para /assinar (7 dias grátis na 1ª vez). */
+/** Sem assinatura em vigor: nada de IA. O modal leva para /assinar. */
 export function subscriptionRequiredInfo(feature: FeatureKey | null = null): PlanLimitInfo {
   return {
     code: "subscription_required",
@@ -102,7 +102,7 @@ export function subscriptionRequiredInfo(feature: FeatureKey | null = null): Pla
     tier: null,
     upgradeTo: "basic",
     upgradeOffer: feature ? FEATURES[feature].unlocks : undefined,
-    message: "Para usar a IA, escolha um plano. A primeira assinatura começa com 7 dias grátis.",
+    message: "Para usar a IA, escolha um plano. Seu acesso é liberado após a confirmação do pagamento, com sete dias de garantia.",
   };
 }
 

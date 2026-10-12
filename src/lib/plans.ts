@@ -3,8 +3,7 @@
  * preços leem daqui. Para ajustar um limite, mude só o valor abaixo.
  *
  * Regras de produto:
- * - Não existe plano gratuito (desde 10/10/2026): o aluno começa com TRIAL_DAYS dias grátis de um plano pago,
- *   autorizando o pagamento no início (cartão hoje; Pix Automático quando houver gateway, ver payment-methods.ts).
+ * - Não existe plano gratuito: novas assinaturas exigem pagamento imediato, com sete dias de garantia.
  *   Sem assinatura ou teste em vigor, o app manda para /assinar e as rotas de IA recusam.
  * - Todo limite é aplicado no servidor (`consumeFeature` em src/lib/usage.ts), nunca só na interface.
  * - Nunca escrever "ilimitado" na interface se existir qualquer teto.
@@ -15,8 +14,8 @@ export type PlanTier = "basic" | "full";
 
 export const PLAN_ORDER: readonly PlanTier[] = ["basic", "full"];
 
-/** Teste grátis, uma vez por aluno. O pagamento é autorizado no início e a 1ª cobrança vem no fim do teste. */
-export const TRIAL_DAYS = 7;
+/** Novas assinaturas não têm teste gratuito; estados antigos de trial continuam compatíveis. */
+export const TRIAL_DAYS = 0;
 
 export type LimitWindow = "day" | "week";
 
@@ -191,7 +190,7 @@ export const PLANS: Record<PlanTier, PlanConfig> = {
     id: "basic",
     name: "Básico",
     priceCents: 1990,
-    tagline: "Para estudar com IA todo dia, no seu ritmo. Começa com 7 dias grátis.",
+    tagline: "Para estudar com IA todo dia, no seu ritmo. Sete dias de garantia.",
     limits: {
       chat_message: perDay(12),
       essay_correction: perWeek(3),

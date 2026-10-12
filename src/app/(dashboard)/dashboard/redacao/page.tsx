@@ -26,7 +26,7 @@ export default async function RedaçãoPage() {
           <LockedNotice
             feature="essay_correction"
             title="Correção de redação faz parte dos planos pagos"
-            description="Digite ou fotografe sua redação e receba a nota de cada competência pela grade do Enem. Teste grátis por 7 dias."
+            description="Digite ou fotografe sua redação e receba a nota de cada competência pela grade do Enem. Planos com sete dias de garantia após o primeiro pagamento."
           />
         ) : (
           <section className="rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-7">

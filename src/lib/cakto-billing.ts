@@ -1,6 +1,4 @@
 import type { User } from "@supabase/supabase-js";
-import { isTrialEligible } from "@/lib/billing";
-import { TRIAL_DAYS } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { PLANS, type PlanId } from "@/lib/stripe";
 import { caktoCheckoutUrl, caktoOfferId, createCaktoCallbackToken, getCaktoOffer } from "@/lib/cakto";
@@ -8,8 +6,7 @@ import { BillingError } from "@/lib/billing";
 import { caktoApiRequest } from "@/lib/cakto";
 
 export async function createCaktoCheckout(user: Pick<User, "id">, plan: PlanId) {
-  const trial = await isTrialEligible(user.id);
-  const offerId = caktoOfferId(plan, trial);
+  const offerId = caktoOfferId(plan);
   let offer;
   try {
     offer = await getCaktoOffer(offerId);
@@ -26,9 +23,9 @@ export async function createCaktoCheckout(user: Pick<User, "id">, plan: PlanId) 
     offer.recurrence_period !== 30 ||
     offer.quantity_recurrences !== -1 ||
     Math.round(offer.price * 100) !== PLANS[plan].priceCents ||
-    offer.trial_days !== (trial ? TRIAL_DAYS : 0)
+    offer.trial_days !== 0
   ) {
-    throw new BillingError("A oferta Cakto não corresponde ao preço, recorrência ou teste grátis configurado no app.", 503);
+    throw new BillingError("A oferta Cakto não corresponde ao preço e à cobrança imediata configurados no app.", 503);
   }
 
   const callback = createCaktoCallbackToken();

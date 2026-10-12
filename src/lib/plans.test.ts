@@ -21,10 +21,10 @@ describe("planos e limites (valores combinados com o produto)", () => {
     expect(formatPriceBRL(PLANS.full.priceCents)).toBe("R$ 34,90");
   });
 
-  it("não existe plano gratuito: só Básico e Completo, com 7 dias grátis (10/10/2026)", () => {
+  it("não existe plano gratuito: só Básico e Completo, sem trial", () => {
     expect(PLAN_ORDER).toEqual(["basic", "full"]);
     expect(Object.keys(PLANS)).toEqual(["basic", "full"]);
-    expect(TRIAL_DAYS).toBe(7);
+    expect(TRIAL_DAYS).toBe(0);
   });
 
   it("chat: 12 e 30 mensagens por dia", () => {
@@ -199,7 +199,7 @@ describe("interface sem números de limite", () => {
 });
 
 describe("limites combinados em 09/10/2026 (tarde)", () => {
-  it("sem assinatura: a IA pede um plano, com 7 dias grátis", async () => {
+  it("sem assinatura: a IA pede um plano pago", async () => {
     const { subscriptionRequiredInfo } = await import("@/lib/plan-limits");
     const info = subscriptionRequiredInfo("chat_message");
     expect(info.code).toBe("subscription_required");

@@ -4,7 +4,7 @@ import { termsSections } from "@/content/legal";
 
 export const metadata: Metadata = {
   title: "Termos de Uso · Easy Education",
-  description: "Regras de uso do Easy Education: planos, teste grátis, cancelamento, garantia de 7 dias e uso da inteligência artificial.",
+  description: "Regras de uso do Easy Education: planos, pagamento, cancelamento, garantia de 7 dias e uso da inteligência artificial.",
 };
 
 export default function TermosPage() {

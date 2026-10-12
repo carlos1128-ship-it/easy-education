@@ -65,7 +65,7 @@ export default async function AssinaturaPage() {
           ) : null}
           {access.status === "past_due" ? (
             <p className="mt-3 rounded-xl bg-warning-tint px-4 py-3 text-sm text-ink">
-              Não conseguimos cobrar seu cartão. Atualize a forma de pagamento para não perder o acesso.
+              A renovação não foi confirmada. Verifique a forma de pagamento para não perder o acesso.
             </p>
           ) : null}
 
@@ -112,7 +112,7 @@ export default async function AssinaturaPage() {
               <p className="text-sm text-ink-muted">
                 {subscription?.refundedAt
                   ? "O reembolso da garantia já foi feito nesta conta."
-                  : "Nos planos pagos, a garantia vale nos 7 primeiros dias após o primeiro pagamento. Depois disso, você pode cancelar quando quiser e usa até o fim do período pago."}
+                  : "A garantia vale nos sete dias após o primeiro pagamento. Não há teste gratuito. Depois desse prazo, você pode cancelar a renovação; confira o prazo de acesso indicado na assinatura."}
               </p>
             )}
           </section>
