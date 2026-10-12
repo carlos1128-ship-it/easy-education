@@ -47,7 +47,7 @@ export async function getCaktoAccessToken() {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret }),
     cache: "no-store",
-    signal: AbortSignal.timeout(5000),
+    signal: AbortSignal.timeout(10000),
   });
   const payload = (await response.json().catch(() => null)) as TokenResponse | null;
   if (!response.ok || !payload?.access_token || !payload.expires_in) {
@@ -68,7 +68,7 @@ export async function caktoApiRequest<T>(path: string, init: RequestInit = {}): 
       ...init.headers,
     },
     cache: "no-store",
-    signal: init.signal ?? AbortSignal.timeout(5000),
+    signal: init.signal ?? AbortSignal.timeout(10000),
   });
   if (!response.ok) throw new Error(`A API Cakto respondeu com status ${response.status}.`);
   if (response.status === 204) return undefined as T;
