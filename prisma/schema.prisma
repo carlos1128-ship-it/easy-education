@@ -39,6 +39,7 @@ model Profile {
   bookmarks       QuestionBookmark[]
   questionReviews QuestionReview[]
   questionReports QuestionReport[]
+  quizQuestionReports QuizQuestionReport[]
   caktoCheckoutAttempts CaktoCheckoutAttempt[]
   studyBlockRuns  StudyBlockRun[]
   notes           Note[]
@@ -148,8 +149,29 @@ model QuizQuestion {
 
   quiz       Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
   flashcards Flashcard[]
+  reports    QuizQuestionReport[]
 
   @@map("quiz_questions")
+}
+
+/// "Avisar erro" numa questão de quiz ou simulado (questões geradas por IA ou copiadas do banco). Vai para a equipe.
+model QuizQuestionReport {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  quizQuestionId String   @map("quiz_question_id")
+  /// enunciado_errado | gabarito_errado | imagem_quebrada | outro
+  kind           String
+  note           String?  @db.Text
+  /// aberto | resolvido | descartado
+  status         String   @default("aberto")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  profile      Profile      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  quizQuestion QuizQuestion @relation(fields: [quizQuestionId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([quizQuestionId])
+  @@map("quiz_question_reports")
 }
 
 model FlashcardDeck {

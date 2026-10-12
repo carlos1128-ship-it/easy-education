@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { DictateButton } from "@/components/audio/dictate-button";
 import { notifyStudyRunChanged } from "@/components/study-plan/study-run-provider";
 import { readApiJson } from "@/lib/client-response";
 import { NOTE_MAX_CHARS, type NoteLink } from "@/lib/notes";
@@ -96,7 +95,6 @@ export function NoteButton({ link, label = "Anotar", className, compact = false 
             className="min-h-32"
           />
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <DictateButton onText={(spoken) => setText((current) => (current.trim() ? `${current.trimEnd()} ${spoken}` : spoken).slice(0, NOTE_MAX_CHARS))} />
             <span className="text-xs text-ink-muted">
               {text.length}/{NOTE_MAX_CHARS}
             </span>

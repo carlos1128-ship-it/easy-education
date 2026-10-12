@@ -57,7 +57,7 @@ export default async function ProvasPage() {
               Treine com as questões que já caíram de verdade
             </h1>
             <p className="m-0 max-w-[560px] text-base leading-[1.55] text-ink-muted">
-              {total.toLocaleString("pt-BR")} questões oficiais do ENEM, da FUVEST, da UNICAMP e do Vestibulinho ETEC, com o gabarito oficial. Escolha a prova, a matéria e faça treinos de 10 questões, ou a prova inteira no tempo oficial.
+              {total.toLocaleString("pt-BR")} questões oficiais do ENEM, com o gabarito oficial. Escolha a prova, a matéria e faça treinos de 10 questões, ou a prova inteira no tempo oficial.
             </p>
             <p className="m-0 inline-flex items-center gap-2 text-sm font-medium text-ink">
               <Sparkles size={16} className="text-brand-strong" aria-hidden="true" />
@@ -130,7 +130,7 @@ export default async function ProvasPage() {
       ) : null}
 
       <p className="m-0 pb-8 text-xs text-ink-muted">
-        Fontes: ENEM (INEP), FUVEST, Comvest/UNICAMP e Centro Paula Souza. Cada questão mostra a prova, o ano e o número. O texto das questões é o da prova oficial.
+        Fonte: ENEM (INEP, licença CC BY-ND 3.0). Cada questão mostra a prova, o ano e o número. O texto das questões é o da prova oficial.
       </p>
     </div>
   );

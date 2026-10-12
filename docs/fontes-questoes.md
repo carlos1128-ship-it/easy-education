@@ -41,6 +41,8 @@ O que o app faz para respeitar isso:
    where exam_id in (select id from exams where slug in ('fuvest', 'unicamp', 'etec', 'fatec', 'unesp'));
    ```
 
+> **12/10/2026: a pedido do dono, as 2.808 questões sem licença aberta (FUVEST 621, UNICAMP 484, ETEC 703, FATEC 821, UNESP 179) foram DESPUBLICADAS**, sem apagar nada, com `scripts/bank/unpublish-non-open.ts --apply`. Hoje só o ENEM (INEP, CC BY-ND 3.0) está no ar, com 2.705 questões. Para voltar atrás: `unpublish-non-open.ts --republish --apply`. O simulado da ETEC continua, mas é gerado por IA com questões originais. As seções abaixo descrevem o que foi importado e continuam valendo como histórico.
+
 ## Provas anteriores: FUVEST, UNICAMP e ETEC (11/10/2026)
 
 | Exame | Origem do texto | Gabarito | Imagens | Matéria | Publicadas |

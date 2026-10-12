@@ -9,7 +9,7 @@ import { QuizOption, type QuizOptionState } from "@/components/ui/quiz-option";
 import { ExplanationText } from "@/components/quiz/explanation-text";
 import { QuizFlashcardsOffer } from "@/components/quiz/quiz-flashcards-offer";
 import { NoteButton } from "@/components/notes/note-button";
-import { SpeakButton } from "@/components/audio/speak-button";
+import { ReportButton } from "@/components/bank/question-tools";
 import { OwlMascot, usePreloadOwls, type OwlMood } from "@/components/mascot/owl-mascot";
 import { Check, Volume2, VolumeX, X, Zap } from "lucide-react";
 import { XP_RULES } from "@/lib/xp";
@@ -357,8 +357,8 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
                   </p>
                   <p className="mt-2 text-ink-muted"><ExplanationText text={question.explanation} videoId={videoId} /></p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <SpeakButton text={question.explanation} label="Ouvir a explicação" className="min-h-8 px-2.5 text-xs" />
                     <NoteButton compact link={{ quizId, questionId: question.id, questionKind: "quiz" }} />
+                    <ReportButton compact label="Avisar erro" questionId={question.id} endpoint={`/api/quiz/${quizId}/report`} extraBody={{ questionId: question.id }} />
                   </div>
                 </div>
               ) : null}

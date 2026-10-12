@@ -49,7 +49,7 @@ export default async function QuizzesPage() {
             <h2 id="quizzes-prontos" className="m-0 flex items-center gap-2 text-xl font-bold text-ink">
               <ListChecks className="size-5 text-brand-strong" aria-hidden="true" /> Quizzes prontos
             </h2>
-            <p className="m-0 max-w-[760px] text-sm text-ink-muted">10 questões que já caíram em provas (ENEM, vestibulares e ETEC), com o gabarito oficial. Cada quiz vem com questões diferentes.</p>
+            <p className="m-0 max-w-[760px] text-sm text-ink-muted">10 questões que já caíram no ENEM, com o gabarito oficial. Cada quiz vem com questões diferentes.</p>
           </div>
           <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {readySubjects.map((subject) => (

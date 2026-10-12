@@ -4,7 +4,7 @@
  * Sem ele, as telas mostram o caminho alternativo (Configurações) em vez de um e-mail inventado.
  */
 
-export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || "";
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || "suporteeasyeducation@gmail.com";
 
 /** Quem responde pelos dados (controlador, na LGPD). Preencha a razão social e o CNPJ em NEXT_PUBLIC_LEGAL_ENTITY. */
 export const LEGAL_ENTITY = process.env.NEXT_PUBLIC_LEGAL_ENTITY?.trim() || "Easy Education";

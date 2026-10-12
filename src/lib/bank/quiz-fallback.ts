@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { ORIGIN, SEED_SUBJECTS } from "@/lib/bank/constants";
+import { explainOfficialQuestions } from "@/lib/bank/ai";
 import { pickPreferringUnseen } from "@/lib/bank/enem-simulado";
 import { sourceLabel } from "@/lib/bank/labels";
 import { parsePersonalization } from "@/lib/learner-profile";
@@ -112,6 +113,31 @@ export async function createQuizFromBank(input: { userId: string; subject: strin
   const fresh = ranked.filter((row) => !seen.has(row.id));
   const chosen = [...fresh, ...ranked.filter((row) => seen.has(row.id))].slice(0, input.count);
 
+  // Questões oficiais sem comentário: a IA explica (uma chamada só) e a explicação fica guardada no banco.
+  const generated = new Map<string, string>();
+  const missing = chosen.filter((row) => !row.explanation?.trim());
+  if (missing.length) {
+    try {
+      const explained = await explainOfficialQuestions(
+        missing.map((row) => ({
+          text: quizTextFor(row),
+          options: (row.options as Array<{ label: string; text: string }>).map((option) => `${option.label}) ${option.text}`),
+          correctLabel: row.correctLabel,
+        })),
+      );
+      const saved: Array<Promise<unknown>> = [];
+      missing.forEach((row, index) => {
+        const text = explained[index];
+        if (!text) return;
+        generated.set(row.id, text);
+        saved.push(prisma.bankQuestion.update({ where: { id: row.id }, data: { explanation: text } }));
+      });
+      await Promise.allSettled(saved);
+    } catch (error) {
+      console.error("[quiz-fallback.explain]", error instanceof Error ? error.message : error);
+    }
+  }
+
   return prisma.quiz.create({
     data: {
       userId: input.userId,
@@ -126,7 +152,7 @@ export async function createQuizFromBank(input: { userId: string; subject: strin
             question: quizTextFor(row),
             options,
             correctAnswer: row.correctLabel,
-            explanation: row.explanation?.trim() || `Gabarito oficial da prova: alternativa ${row.correctLabel}.`,
+            explanation: row.explanation?.trim() || generated.get(row.id) || `Gabarito oficial da prova: alternativa ${row.correctLabel}.`,
             order,
           };
         }),

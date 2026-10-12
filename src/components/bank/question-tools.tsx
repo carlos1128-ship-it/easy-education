@@ -9,10 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { NoteButton } from "@/components/notes/note-button";
 import { REPORT_KINDS, REPORT_KIND_LABEL, type ReportKind } from "@/lib/bank/constants";
 import { readApiJson } from "@/lib/client-response";
+import { SUPPORT_EMAIL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 /** Contato de suporte (defina NEXT_PUBLIC_SUPPORT_EMAIL ou NEXT_PUBLIC_SUPPORT_URL). Sem isso, o link não aparece. */
-const SUPPORT_URL = process.env.NEXT_PUBLIC_SUPPORT_URL || (process.env.NEXT_PUBLIC_SUPPORT_EMAIL ? `mailto:${process.env.NEXT_PUBLIC_SUPPORT_EMAIL}` : "");
+const SUPPORT_URL = process.env.NEXT_PUBLIC_SUPPORT_URL || (SUPPORT_EMAIL ? `mailto:${SUPPORT_EMAIL}` : "");
 
 export function BookmarkButton({ questionId, initial }: { questionId: string; initial: boolean }) {
   const [on, setOn] = useState(initial);
@@ -52,7 +53,11 @@ export function BookmarkButton({ questionId, initial }: { questionId: string; in
   );
 }
 
-export function ReportButton({ questionId }: { questionId: string }) {
+/**
+ * `endpoint` troca para onde o aviso vai (padrão: questão do banco). No quiz, a rota recebe também o id da questão
+ * no corpo. `compact` deixa o botão menor, para caber ao lado de "Anotar".
+ */
+export function ReportButton({ questionId, endpoint, extraBody, compact = false, label = "Reportar questão" }: { questionId: string; endpoint?: string; extraBody?: Record<string, string>; compact?: boolean; label?: string }) {
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<ReportKind>("enunciado_errado");
   const [note, setNote] = useState("");
@@ -62,7 +67,7 @@ export function ReportButton({ questionId }: { questionId: string }) {
     if (busy) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/bank/questions/${questionId}/report`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, note: note.trim() || undefined }) });
+      const response = await fetch(endpoint ?? `/api/bank/questions/${questionId}/report`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind, note: note.trim() || undefined, ...extraBody }) });
       const data = await readApiJson(response, "Não foi possível enviar o aviso.");
       if (!response.ok) throw new Error(data.error ?? "Não foi possível enviar o aviso.");
       toast.success("Obrigado! A equipe vai analisar esta questão.");
@@ -77,8 +82,8 @@ export function ReportButton({ questionId }: { questionId: string }) {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-border-strong px-3 text-sm font-medium text-ink transition-colors hover:bg-surface-muted">
-        <Flag size={16} aria-hidden="true" /> Reportar questão
+      <button type="button" onClick={() => setOpen(true)} className={cn("inline-flex items-center gap-1.5 rounded-lg border border-border-strong font-medium text-ink transition-colors hover:bg-surface-muted", compact ? "min-h-8 px-2.5 text-xs" : "min-h-10 px-3 text-sm")}>
+        <Flag size={compact ? 14 : 16} aria-hidden="true" /> {label}
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">

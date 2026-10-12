@@ -101,6 +101,25 @@ Faça o seguinte, nesta ordem:
   });
 }
 
+/**
+ * Explicações para questões oficiais que chegaram sem comentário. O gabarito é dado: a IA só justifica a alternativa
+ * correta e diz por que as outras estão erradas. Devolve só as que vieram preenchidas, na ordem de `items`.
+ */
+export async function explainOfficialQuestions(items: Array<{ text: string; options: string[]; correctLabel: string }>): Promise<Array<string | null>> {
+  if (!items.length) return [];
+  const prompt = `Você é professor experiente de cursinho. Para cada questão abaixo, o gabarito oficial já é conhecido. Escreva em "explanation" uma resolução comentada em português do Brasil, em até 6 frases: mostre o raciocínio que leva à alternativa correta e diga em uma frase curta por que cada uma das outras está errada. Texto simples, sem markdown, sem emojis. Não mencione "gabarito" nem que você é uma IA.
+
+${items.map((item, index) => `QUESTÃO ${index + 1}\n${item.text.slice(0, 3500)}\n${item.options.join("\n")}\nALTERNATIVA CORRETA: ${item.correctLabel}`).join("\n\n---\n\n")}
+
+Retorne um array JSON com exatamente ${items.length} objetos, na mesma ordem, cada um com "explanation".`;
+  const schema: Schema = {
+    type: Type.ARRAY,
+    items: { type: Type.OBJECT, properties: { explanation: { type: Type.STRING } }, required: ["explanation"] },
+  };
+  const result = await generateJSON<Array<{ explanation?: string }>>(prompt, { schema, thinkingBudget: 2048, temperature: 0.2, attemptTimeoutMs: 90_000 });
+  return items.map((_, index) => result[index]?.explanation?.trim() || null);
+}
+
 export type GeneratedQuestion = {
   statement: string;
   supportText: string;

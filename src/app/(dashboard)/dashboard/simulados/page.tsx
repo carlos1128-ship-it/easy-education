@@ -89,7 +89,7 @@ export default async function SimuladosPage() {
       <Link href="/dashboard/provas" className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-sm no-underline shadow-card transition-colors hover:border-brand/50">
         <ScrollText className="size-5 flex-none text-brand-strong" aria-hidden="true" />
         <span className="flex-1 text-ink">
-          <span className="font-bold">Provas anteriores:</span> ENEM, FUVEST, UNICAMP e Vestibulinho ETEC, com treino por matéria e a prova completa de cada ano.
+          <span className="font-bold">Provas anteriores:</span> ENEM, com treino por matéria e a prova completa de cada ano.
         </span>
         <span className="font-semibold text-brand-strong">Abrir</span>
       </Link>
