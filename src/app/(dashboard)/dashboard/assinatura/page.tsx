@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CalendarClock, CreditCard, Lock, ShieldCheck } from "lucide-react";
-import { GuaranteeRefundButton, ManageSubscriptionButton } from "@/components/billing/subscription-actions";
+import { CancelCaktoSubscriptionButton, GuaranteeRefundButton, ManageSubscriptionButton } from "@/components/billing/subscription-actions";
 import { PlanComparisonTable } from "@/components/plan/plan-comparison-table";
 import { getSubscriptionForUser, guaranteeDeadline, isGuaranteeEligible } from "@/lib/billing";
 import { FEATURES, FEATURE_KEYS, PLANS, nextTier, planPriceLabel } from "@/lib/plans";
@@ -26,7 +26,8 @@ export default async function AssinaturaPage() {
   const status = STATUS_LABEL[access.isPaid ? access.status : "none"] ?? { label: access.status, tone: "bg-surface-muted text-ink" };
   const plan = PLANS[access.tier];
   const deadline = guaranteeDeadline(subscription?.firstPaidAt ?? null);
-  const hasStripe = Boolean(subscription?.stripeSubscriptionId) && access.isPaid && access.status !== "exempt";
+  const hasStripe = subscription?.provider === "stripe" && Boolean(subscription.stripeSubscriptionId) && access.isPaid && access.status !== "exempt";
+  const hasCakto = Boolean(subscription?.caktoSubscriptionId) && subscription?.provider === "cakto" && access.isPaid;
   const upgrade = nextTier(access.tier);
   const features = FEATURE_KEYS.map((feature) => usage.features[feature]);
   const limited = features.filter((item) => item.state === "limit");
@@ -76,6 +77,11 @@ export default async function AssinaturaPage() {
               </div>
               <p className="mt-4 text-sm text-ink-muted">No portal seguro do Stripe você troca o cartão, muda de plano, cancela e baixa as faturas.</p>
             </>
+          ) : hasCakto ? (
+            <div className="mt-6 space-y-3">
+              <CancelCaktoSubscriptionButton />
+              <p className="text-sm text-ink-muted">Para alterar o plano, cancele a assinatura atual e escolha o novo plano após o encerramento.</p>
+            </div>
           ) : access.status === "exempt" ? (
             <p className="mt-6 text-sm text-ink-muted">Sua conta tem acesso liberado pela equipe Easy Education.</p>
           ) : (
@@ -86,7 +92,7 @@ export default async function AssinaturaPage() {
               >
                 Ver o plano {upgrade ? PLANS[upgrade].name : ""}
               </Link>
-              <span className="text-sm text-ink-muted">Pagamento seguro pelo Stripe. Cancele quando quiser.</span>
+              <span className="text-sm text-ink-muted">Pagamento seguro. Cancele quando quiser.</span>
             </div>
           )}
         </section>

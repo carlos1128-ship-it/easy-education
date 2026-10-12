@@ -16,7 +16,7 @@ const METHOD_ICON: Record<PaymentMethodId, typeof CreditCard> = { card: CreditCa
  * Escolha do plano logo depois do cadastro. Não existe plano gratuito: os dois planos começam com 7 dias grátis
  * (uma vez por aluno), com o pagamento autorizado no início. Os números vêm de src/lib/plans.ts.
  */
-export function PlanPicker({ initialPlan, trial = false }: { initialPlan: PlanTier; trial?: boolean }) {
+export function PlanPicker({ initialPlan, trial = false, provider = "stripe" }: { initialPlan: PlanTier; trial?: boolean; provider?: "stripe" | "cakto" }) {
   const [selected, setSelected] = useState<PlanTier>(initialPlan);
   const [method, setMethod] = useState<PaymentMethodId>("card");
   const [loading, setLoading] = useState(false);
@@ -89,7 +89,13 @@ export function PlanPicker({ initialPlan, trial = false }: { initialPlan: PlanTi
         })}
       </div>
 
-      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+      {provider === "cakto" ? (
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-ink-muted" aria-label="Formas de pagamento no checkout Cakto">
+          <span className="inline-flex items-center gap-2"><CreditCard size={16} aria-hidden="true" />Cartão de crédito</span>
+          <span className="inline-flex items-center gap-2"><QrCode size={16} aria-hidden="true" />Pix</span>
+          <span className="inline-flex items-center gap-2"><QrCode size={16} aria-hidden="true" />Pix Automático</span>
+        </div>
+      ) : <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
         <legend className="mb-2 text-sm font-semibold text-ink">Forma de pagamento</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {PAYMENT_METHODS.map((item) => {
@@ -122,7 +128,7 @@ export function PlanPicker({ initialPlan, trial = false }: { initialPlan: PlanTi
             );
           })}
         </div>
-      </fieldset>
+      </fieldset>}
 
       <div className="rounded-2xl bg-surface-muted p-4">
         <p className="m-0 text-[13px] font-medium uppercase tracking-[0.4px] text-ink-muted">{p.includedTitle}</p>
@@ -151,9 +157,10 @@ export function PlanPicker({ initialPlan, trial = false }: { initialPlan: PlanTi
       <p className="m-0 flex items-center justify-center gap-2 text-center text-sm text-ink-muted">
         <ShieldCheck size={16} className="flex-none" aria-hidden="true" />
         {trial
-          ? `Hoje você não paga nada. Depois dos ${TRIAL_DAYS} dias, ${p[selected].price}/mês. Cancele antes do fim e não paga nada. Pagamento seguro pelo Stripe.`
-          : <>Pagamento seguro pelo Stripe. {p.guarantee}</>}
+          ? `Depois dos ${TRIAL_DAYS} dias grátis, ${p[selected].price}/mês. Confira a autorização e as condições da forma de pagamento no checkout seguro ${provider === "cakto" ? "Cakto" : "Stripe"}.`
+          : <>Pagamento seguro {provider === "cakto" ? "Cakto" : "Stripe"}. {p.guarantee}</>}
       </p>
+      {provider === "cakto" ? <p className="m-0 text-center text-xs text-ink-muted">O checkout Cakto informa a taxa de serviço e o valor total antes da confirmação.</p> : null}
     </div>
   );
 }

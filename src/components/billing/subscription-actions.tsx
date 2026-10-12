@@ -34,6 +34,42 @@ export function ManageSubscriptionButton({ label = "Gerenciar assinatura", varia
   );
 }
 
+export function CancelCaktoSubscriptionButton() {
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function cancel() {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/billing/cancel", { method: "POST" });
+      const data = await readApiJson<{ ok?: boolean; error?: string }>(response, "Não foi possível cancelar a assinatura.");
+      if (!response.ok || !data.ok) throw new Error(data.error ?? "Não foi possível cancelar a assinatura.");
+      toast.success("Assinatura cancelada.");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível cancelar a assinatura.");
+    } finally {
+      setLoading(false);
+      setConfirming(false);
+    }
+  }
+
+  if (!confirming) {
+    return <button type="button" onClick={() => setConfirming(true)} className={secondary}>Cancelar assinatura</button>;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-surface-muted p-4">
+      <p className="m-0 flex-1 text-sm text-ink">O cancelamento encerra a assinatura e as próximas cobranças. Confirmar?</p>
+      <button type="button" onClick={cancel} disabled={loading} className="h-11 rounded-xl bg-danger px-5 text-[15px] font-semibold text-white disabled:opacity-60">
+        {loading ? "Cancelando..." : "Confirmar cancelamento"}
+      </button>
+      <button type="button" onClick={() => setConfirming(false)} disabled={loading} className={secondary}>Manter assinatura</button>
+    </div>
+  );
+}
+
 /** Garantia de 7 dias: confirma duas vezes antes de reembolsar e encerrar. */
 export function GuaranteeRefundButton({ deadline }: { deadline: string }) {
   const router = useRouter();

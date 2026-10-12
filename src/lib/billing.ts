@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { TRIAL_DAYS, type PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
 import { getPriceForPlan, getStripe, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
+import { caktoApiRequest } from "@/lib/cakto";
 
 /** Status do Stripe que dão direito ao plano pago. `past_due`: o Stripe ainda está tentando cobrar de novo. */
 const ACCESS_STATUSES = new Set(["active", "trialing", "past_due"]);
@@ -16,7 +17,7 @@ export { TRIAL_DAYS };
 /** O aluno ainda pode usar o teste grátis? Só quem nunca teve assinatura (nem teste) no Stripe. */
 export async function isTrialEligible(userId: string) {
   const subscription = await getSubscriptionForUser(userId);
-  return !subscription?.stripeSubscriptionId && !subscription?.firstPaidAt;
+  return !subscription?.stripeSubscriptionId && !subscription?.caktoSubscriptionId && !subscription?.firstPaidAt;
 }
 
 export class BillingError extends Error {
@@ -80,6 +81,9 @@ export async function getAccessState(user: Pick<User, "id" | "email">): Promise<
   const subscription = await getSubscriptionForUser(user.id);
   const status = subscription?.status ?? "none";
   const plan = subscription?.plan === "basic" || subscription?.plan === "full" ? subscription.plan : null;
+  if (subscription?.provider === "cakto" && subscription.currentPeriodEnd && subscription.currentPeriodEnd <= new Date()) {
+    return { hasAccess: false, tier: null, plan: null, status: "unpaid", isPaid: false, trialing: false };
+  }
   if (plan && subscriptionGivesAccess(status)) return { hasAccess: true, tier: plan, plan, status, isPaid: true, trialing: status === "trialing" };
   return { hasAccess: false, tier: null, plan: null, status, isPaid: false, trialing: false };
 }
@@ -88,7 +92,10 @@ export async function getAccessState(user: Pick<User, "id" | "email">): Promise<
 export async function getOrCreateStripeCustomer(user: Pick<User, "id" | "email" | "user_metadata">) {
   const prisma = getPrisma();
   const existing = await prisma.subscription.findUnique({ where: { userId: user.id } });
-  if (existing) return existing.stripeCustomerId;
+  if (existing?.provider === "cakto") {
+    throw new BillingError("Esta conta já possui uma assinatura Cakto.", 409);
+  }
+  if (existing?.stripeCustomerId) return existing.stripeCustomerId;
 
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
   const name = profile?.name ?? (typeof user.user_metadata?.name === "string" ? user.user_metadata.name : undefined);
@@ -104,9 +111,10 @@ export async function getOrCreateStripeCustomer(user: Pick<User, "id" | "email" 
 
   const row = await prisma.subscription.upsert({
     where: { userId: user.id },
-    update: {},
+    update: { stripeCustomerId: existing?.stripeCustomerId ?? customer.id },
     create: { userId: user.id, stripeCustomerId: customer.id },
   });
+  if (!row.stripeCustomerId) throw new BillingError("Não foi possível criar o cliente Stripe.", 503);
   return row.stripeCustomerId;
 }
 
@@ -137,6 +145,7 @@ export async function syncSubscription(subscriptionOrId: string | Stripe.Subscri
     }
   }
   if (!row) return null;
+  if (row.provider === "cakto") return row;
 
   // Assinatura antiga encerrada não pode sobrescrever uma nova que já está ativa.
   if (
@@ -166,7 +175,7 @@ export async function syncSubscription(subscriptionOrId: string | Stripe.Subscri
 /** Marca a data do primeiro pagamento (início da garantia de 7 dias). */
 export async function markFirstPayment(stripeCustomerId: string, paidAt: Date) {
   await getPrisma().subscription.updateMany({
-    where: { stripeCustomerId, firstPaidAt: null },
+    where: { stripeCustomerId, firstPaidAt: null, provider: "stripe" },
     data: { firstPaidAt: paidAt },
   });
 }
@@ -210,7 +219,8 @@ export async function createCheckoutSession(
 /** Portal do Stripe: trocar cartão, mudar de plano, cancelar e ver faturas. */
 export async function createPortalSession(userId: string, origin: string) {
   const subscription = await getSubscriptionForUser(userId);
-  if (!subscription) throw new BillingError("Você ainda não tem uma assinatura.", 404);
+  if (!subscription?.stripeCustomerId) throw new BillingError("Você ainda não tem uma assinatura Stripe.", 404);
+  if (subscription.provider !== "stripe") throw new BillingError("O portal de gerenciamento da Cakto ainda não está disponível.", 409);
   return getStripe().billingPortal.sessions.create({
     customer: subscription.stripeCustomerId,
     return_url: `${origin}/dashboard/assinatura`,
@@ -247,11 +257,25 @@ export function isGuaranteeEligible(subscription: { firstPaidAt: Date | null; re
  */
 export async function refundWithinGuarantee(userId: string) {
   const prisma = getPrisma();
-  const stripe = getStripe();
   const subscription = await getSubscriptionForUser(userId);
-  if (!subscription?.stripeSubscriptionId || !isGuaranteeEligible(subscription)) {
+  if (!subscription || !isGuaranteeEligible(subscription)) {
     throw new BillingError(`O reembolso da garantia vale só nos ${GUARANTEE_DAYS} primeiros dias após o primeiro pagamento.`, 400);
   }
+
+  if (subscription.provider === "cakto") {
+    if (!subscription.caktoSubscriptionId || !subscription.caktoOrderId) {
+      throw new BillingError("Não foi possível localizar a compra Cakto para cancelar e reembolsar.", 409);
+    }
+    await caktoApiRequest(`/subscriptions/${encodeURIComponent(subscription.caktoSubscriptionId)}/cancel/`, { method: "POST" });
+    await caktoApiRequest(`/orders/${encodeURIComponent(subscription.caktoOrderId)}/refund/`, { method: "POST" });
+    await prisma.subscription.update({ where: { userId }, data: { status: "canceled", refundedAt: new Date() } });
+    return { refunded: 1 };
+  }
+
+  if (!subscription.stripeSubscriptionId) {
+    throw new BillingError("Não foi possível localizar a assinatura para o reembolso.", 409);
+  }
+  const stripe = getStripe();
 
   const invoices = await stripe.invoices.list({
     subscription: subscription.stripeSubscriptionId,

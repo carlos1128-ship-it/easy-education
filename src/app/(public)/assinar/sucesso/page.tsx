@@ -8,8 +8,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 /** Volta do Stripe Checkout: confirma o pagamento na hora (sem esperar o webhook) e segue para o app. */
-export default async function AssinaturaSucessoPage({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
-  const { session_id: sessionId } = await searchParams;
+export default async function AssinaturaSucessoPage({ searchParams }: { searchParams: Promise<{ session_id?: string; callback?: string }> }) {
+  const { session_id: sessionId, callback } = await searchParams;
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -37,7 +37,7 @@ export default async function AssinaturaSucessoPage({ searchParams }: { searchPa
           Pagamentos por boleto ou Pix podem levar alguns minutos. Você também recebe o recibo por e-mail.
         </p>
         <Link
-          href={sessionId ? `/assinar/sucesso?session_id=${encodeURIComponent(sessionId)}` : "/assinar"}
+          href={sessionId ? `/assinar/sucesso?session_id=${encodeURIComponent(sessionId)}` : callback ? `/assinar/sucesso?callback=${encodeURIComponent(callback)}` : "/assinar"}
           className="grid h-12 place-items-center rounded-xl bg-brand text-[15px] font-semibold text-on-brand no-underline transition-colors hover:bg-brand-strong"
         >
           Verificar de novo

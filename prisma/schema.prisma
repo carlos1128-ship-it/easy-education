@@ -39,6 +39,7 @@ model Profile {
   bookmarks       QuestionBookmark[]
   questionReviews QuestionReview[]
   questionReports QuestionReport[]
+  caktoCheckoutAttempts CaktoCheckoutAttempt[]
   studyBlockRuns  StudyBlockRun[]
   notes           Note[]
   daySummaries    DaySummary[]
@@ -254,15 +255,18 @@ model AiCallLog {
 model Subscription {
   id                   String    @id @default(uuid())
   userId               String    @unique @map("user_id")
-  stripeCustomerId     String    @unique @map("stripe_customer_id")
+  stripeCustomerId     String?   @unique @map("stripe_customer_id")
   stripeSubscriptionId String?   @unique @map("stripe_subscription_id")
   stripePriceId        String?   @map("stripe_price_id")
+  caktoCustomerId      String?   @unique @map("cakto_customer_id")
+  caktoSubscriptionId  String?   @unique @map("cakto_subscription_id")
+  caktoOrderId         String?   @unique @map("cakto_order_id")
   plan                 String?
   status               String    @default("none")
   currentPeriodEnd     DateTime? @map("current_period_end")
   cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
   firstPaidAt          DateTime? @map("first_paid_at")
-  /// Gateway da assinatura: "stripe" (cartão) ou, no futuro, o gateway do Pix Automático (src/lib/payment-methods.ts).
+  /// Gateway responsável pela assinatura. Stripe segue como padrão até a configuração da Cakto ser validada.
   provider             String    @default("stripe")
   refundedAt           DateTime? @map("refunded_at")
   createdAt            DateTime  @default(now()) @map("created_at")
@@ -647,4 +651,28 @@ model AiQualityScore {
 
   @@index([scope, kind, createdAt])
   @@map("ai_quality_scores")
+}
+
+model CaktoCheckoutAttempt {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  plan      String
+  offerId   String    @map("offer_id")
+  orderId   String?   @unique @map("order_id")
+  expiresAt DateTime  @map("expires_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("cakto_checkout_attempts")
+}
+
+model CaktoEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("cakto_events")
 }

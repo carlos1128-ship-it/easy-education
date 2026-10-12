@@ -60,7 +60,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           </p>
         ) : null}
         <div className="mt-8">
-          <PlanPicker initialPlan={plan ?? "full"} trial={trial} />
+          <PlanPicker initialPlan={plan ?? "full"} trial={trial} provider={process.env.BILLING_PROVIDER?.trim().toLowerCase() === "cakto" ? "cakto" : "stripe"} />
         </div>
         <div className="mt-10">
           <h2 className="m-0 mb-3 text-lg font-bold text-ink">Compare os planos</h2>
