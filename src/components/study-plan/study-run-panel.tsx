@@ -213,7 +213,7 @@ export function StudyRunAside() {
   const { run, elapsed, busy, act, dismiss, toggleStep } = usePanel();
   if (!run) return null;
   return (
-    <aside aria-label="Roteiro do bloco" className="hidden w-[340px] flex-none flex-col gap-4 overflow-y-auto border-l border-border bg-surface p-5 lg:flex">
+    <aside aria-label="Roteiro do bloco" className="hidden w-[340px] flex-none flex-col gap-4 overflow-y-auto border-l border-border bg-surface p-5 xl:flex">
       <div className="flex items-start justify-between gap-3">
         <Header run={run} elapsed={elapsed} />
         <Controls run={run} busy={busy} act={act} dismiss={dismiss} />
@@ -248,7 +248,7 @@ export function StudyRunBar() {
   if (!run) return null;
   const next = run.steps.find((_, index) => !run.checks[index]);
   return (
-    <section aria-label="Roteiro do bloco" className="border-b border-border bg-surface px-4 py-2.5 lg:hidden">
+    <section aria-label="Roteiro do bloco" className="border-b border-border bg-surface px-4 py-2.5 xl:hidden">
       <div className="flex items-center gap-3">
         <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-2 text-left">
           <div className="min-w-0 flex-1">

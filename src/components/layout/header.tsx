@@ -34,13 +34,13 @@ export function Header({ profileName, studyGoal, stats }: { profileName: string;
         {/* Com ofensiva e nível no topo, o celular mostra só o símbolo (cabe tudo em 320 px). */}
         <Logo size="sm" variant={stats ? "symbol" : "horizontal"} />
       </Link>
-      {/* Ofensiva e nível sempre à vista; no celular ficam no lugar da busca. */}
-      {stats ? <StatsChips stats={stats} className="lg:hidden" /> : null}
+      {/* Em telas estreitas, a busca ocupa o espaço das métricas para preservar o cabeçalho. */}
+      {stats ? <StatsChips stats={stats} className="hidden sm:flex lg:hidden" /> : null}
       <Link
         href="/dashboard/busca"
         prefetch={false}
         aria-label="Buscar"
-        className={stats ? "hidden" : "grid size-11 place-items-center rounded-lg text-ink-muted transition-colors hover:text-ink lg:hidden"}
+        className="grid size-10 flex-none place-items-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink sm:hidden lg:hidden"
       >
         <Search size={20} strokeWidth={1.75} aria-hidden="true" />
       </Link>

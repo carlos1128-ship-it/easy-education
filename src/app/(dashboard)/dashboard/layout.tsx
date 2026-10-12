@@ -19,16 +19,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <PlanProvider tier={access.tier} usage={usage.features}>
     <StudyRunProvider>
-    <div className="flex h-[100dvh] overflow-hidden bg-background text-foreground">
+    <div className="flex min-h-dvh overflow-x-hidden bg-background text-foreground lg:h-dvh lg:overflow-hidden">
       <RealtimeRefresh userId={user.id} />
       <div className="hidden lg:block">
         <Sidebar profileName={profile.name} studyGoal={profile.studyGoal} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <Header profileName={profile.name} studyGoal={profile.studyGoal} stats={stats} />
-        {/* Roteiro do bloco em andamento: barra recolhível no celular, coluna fixa no computador. */}
+        {/* Roteiro recolhível até telas largas; em monitores amplos, ocupa uma coluna própria. */}
         <StudyRunBar />
-        <main className="flex-1 overflow-y-auto p-4 pb-28 md:p-8 md:pb-32 lg:pb-8">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden p-4 pb-28 sm:p-5 sm:pb-32 md:p-8 md:pb-32 lg:overflow-y-auto lg:pb-8">{children}</main>
       </div>
       <StudyRunAside />
       <MobileBottomNav />
