@@ -17,6 +17,7 @@
 - APIs: acesso bloqueado antes do pagamento; criação do link exige autenticação; token inválido recusado; link sem e-mail ou ID do aluno; checkout repetido reutiliza a sessão aberta.
 - Cartão ETEC: criação, salvamento de resposta, pausa, retomada e finalização sem inventar percentual ou erros quando não existe chave revisada.
 - Quiz: resposta retorna explicação previamente salva e também gera uma explicação real quando ela está ausente.
+- Dois testes adicionais verificam o envio de gráficos à IA e a recusa de gerar uma resolução quando uma imagem não carrega.
 - A migração aditiva e a sincronização do catálogo foram aplicadas sem baixar PDFs ou alterar respostas existentes.
 
 ## Limite editorial do catálogo

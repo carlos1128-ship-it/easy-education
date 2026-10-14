@@ -91,7 +91,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
           <Label>Questões</Label>
           <Select value={source} onValueChange={(value) => { if (value === "ia" || value === "provas") { setSource(value); if (value === "provas") setFileId("none"); } }}>
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue>{source === "ia" ? "Criadas por IA" : "De provas anteriores"}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="provas">De provas anteriores</SelectItem>
@@ -103,7 +103,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
           <Label>Arquivo processado</Label>
           <Select value={fileId} onValueChange={(value) => value && setFileId(value)} disabled={source === "provas"}>
             <SelectTrigger className="w-full">
-              <SelectValue />
+              <SelectValue>{fileId === "none" ? "Sem arquivo" : files.find((file) => file.id === fileId)?.name ?? "Selecione um arquivo"}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Sem arquivo</SelectItem>
@@ -118,7 +118,7 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
             <Label>Dificuldade</Label>
             <Select value={difficulty} onValueChange={(value) => value && setDifficulty(value)}>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue>{difficulty === "facil" ? "Fácil" : difficulty === "dificil" ? "Difícil" : "Médio"}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="facil">Fácil</SelectItem>

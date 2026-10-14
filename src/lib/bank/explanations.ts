@@ -18,6 +18,7 @@ type ExplainableQuestion = {
   options: unknown;
   correctLabel: string;
   explanation: string | null;
+  images?: unknown;
 };
 
 /** Preenche explicações ausentes em lotes limitados, respeitando o teto de custo do aluno. */
@@ -32,7 +33,7 @@ export async function ensureOfficialQuestionExplanations(input: {
   const prisma = getPrisma();
   const rows = (await prisma.bankQuestion.findMany({
     where: { id: { in: [...new Set(input.questionIds)] }, origin: "prova_oficial" },
-    select: { id: true, supportText: true, statement: true, options: true, correctLabel: true, explanation: true },
+    select: { id: true, supportText: true, statement: true, options: true, correctLabel: true, explanation: true, images: true },
   })) as ExplainableQuestion[];
   const missing = rows.filter((row) => needsOfficialExplanation(row.explanation, row.correctLabel));
   if (!missing.length) return generated;
@@ -53,6 +54,10 @@ export async function ensureOfficialQuestionExplanations(input: {
             ? (row.options as Array<{ label?: string; text?: string }>).map((option) => `${option.label ?? ""}) ${option.text ?? ""}`)
             : [],
           correctLabel: row.correctLabel,
+          images: [
+            ...(Array.isArray(row.images) ? row.images.filter((image): image is string => typeof image === "string") : []),
+            ...(Array.isArray(row.options) ? (row.options as Array<{ imageUrl?: string }>).map((option) => option.imageUrl).filter((image): image is string => !!image) : []),
+          ],
         }))),
       );
 
