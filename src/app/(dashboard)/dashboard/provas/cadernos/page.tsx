@@ -5,5 +5,5 @@ import { isAdminEmail } from "@/lib/admin";
 export const metadata = { title: "Cadernos de prova · Easy Education" };
 export default async function Page() {
   const { user } = await getStudentOrRedirect();
-  return <ExamCatalog institutions={await getCatalog()} admin={isAdminEmail(user.email)} />;
+  return <ExamCatalog institutions={await getCatalog(user.id)} admin={isAdminEmail(user.email)} />;
 }

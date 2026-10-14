@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { getPrisma } from "@/lib/prisma";
+import { isPublicExamPdf } from "./public-document";
 import {
   canReproduce,
   elapsedSeconds,
@@ -21,12 +22,13 @@ export const attemptInclude = {
 type Attempt = Prisma.ExamAttemptGetPayload<{ include: typeof attemptInclude }>;
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
-export async function getCatalog() {
+export async function getCatalog(userId: string) {
   return getPrisma().examInstitution.findMany({
+    where: { OR: [{ exams: { none: {} } }, { exams: { some: { isDemo: false } } }] },
     orderBy: { name: "asc" },
     include: {
       exams: {
-        where: { status: { in: ["published", "catalogued"] } },
+        where: { isDemo: false, status: { in: ["published", "catalogued"] } },
         orderBy: [{ year: "desc" }, { title: "asc" }],
         select: {
           id: true,
@@ -40,10 +42,14 @@ export async function getCatalog() {
           durationMinutes: true,
           isDemo: true,
           status: true,
+          attempts: {
+            where: { userId }, orderBy: { startedAt: "desc" }, take: 1,
+            select: { id: true, status: true, answers: { where: { value: { not: "" } }, select: { number: true } } },
+          },
           documents: {
             where: { kind: { in: ["exam", "key"] } },
             orderBy: { kind: "asc" },
-            select: { sourceUrl: true, rightsStatus: true },
+            select: { id: true, kind: true, sourceUrl: true, rightsStatus: true, storagePath: true },
           },
         },
       },
@@ -298,7 +304,7 @@ export function serializeAttempt(attempt: Attempt) {
           id: doc.id,
           sourceUrl: doc.sourceUrl,
           attribution: doc.attributionRequired,
-          internal:
+          internal: isPublicExamPdf(doc.sourceUrl) ||
             canReproduce({
               ...doc,
               rightsStatus: doc.rightsStatus as "pending",

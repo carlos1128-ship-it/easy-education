@@ -1,3 +1,4 @@
+import { fetchPublicExamPdf, isPublicExamPdf } from "@/lib/past-exams/public-document";
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { requireTier } from "@/lib/usage";
@@ -7,7 +8,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { canReproduce, ExamError } from "@/lib/past-exams/domain";
 import { examError } from "@/lib/past-exams/http";
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -31,12 +32,26 @@ export async function GET(
     });
     if (
       !doc ||
-      doc.kind !== "exam" ||
+      !(["exam", "key"].includes(doc.kind)) ||
       (!isAdminEmail(user.email) &&
-        doc.exam.status !== "published" &&
+        !["published", "catalogued"].includes(doc.exam.status) &&
         !doc.exam.attempts.length)
     )
       throw new ExamError("Documento não encontrado.", 404);
+    if (isPublicExamPdf(doc.sourceUrl)) {
+      if (new URL(request.url).searchParams.has("file")) {
+        const bytes = await fetchPublicExamPdf(doc.sourceUrl);
+        return new Response(new Blob([bytes as BlobPart], { type: "application/pdf" }), {
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `${new URL(request.url).searchParams.has("download") ? "attachment" : "inline"}; filename="prova-${doc.id}.pdf"`,
+            "Cache-Control": "private, max-age=3600",
+            "X-Content-Type-Options": "nosniff",
+          },
+        });
+      }
+      return NextResponse.json({ url: `/api/past-exams/documents/${doc.id}?file=1` }, { headers: { "Cache-Control": "private, no-store" } });
+    }
     if (
       !doc.storagePath ||
       !canReproduce({

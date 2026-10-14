@@ -8,5 +8,5 @@ export const dynamic = "force-dynamic";
 
 export default async function ProvasPage() {
   const { user } = await getStudentOrRedirect();
-  return <ExamCatalog institutions={await getCatalog()} admin={isAdminEmail(user.email)} />;
+  return <ExamCatalog institutions={await getCatalog(user.id)} admin={isAdminEmail(user.email)} />;
 }
