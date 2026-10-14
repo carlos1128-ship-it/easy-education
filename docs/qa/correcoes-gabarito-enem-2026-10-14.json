@@ -1,0 +1,110 @@
+[
+  {
+    "id": "df37ae74-f0ae-42b1-b734-efac66359de4",
+    "year": 2022,
+    "number": 143,
+    "before": "A",
+    "after": "D",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "5712e490-24a7-4ce5-9476-7701da0606d5",
+    "year": 2021,
+    "number": 15,
+    "before": "E",
+    "after": "D",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "c4af3a98-5bc0-4b37-8876-aa6decb5d5aa",
+    "year": 2021,
+    "number": 25,
+    "before": "E",
+    "after": "B",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "b0e4433f-1e30-4e79-8d38-f29be2675f98",
+    "year": 2021,
+    "number": 38,
+    "before": "A",
+    "after": "C",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "61ddf0f2-0dbd-4a16-baa4-bf353bb4bc0b",
+    "year": 2021,
+    "number": 53,
+    "before": "A",
+    "after": "B",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "a792d594-1381-4183-a587-a98ea3d90f6b",
+    "year": 2021,
+    "number": 139,
+    "before": "A",
+    "after": "E",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "c5a055fc-8f31-4995-a4d9-3e1cb4fedbb5",
+    "year": 2021,
+    "number": 145,
+    "before": "A",
+    "after": "C",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "6e60c976-1da3-4753-9ec3-b1335d520004",
+    "year": 2021,
+    "number": 152,
+    "before": "D",
+    "after": "E",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "195d17bc-5bfa-4da6-8141-88c33584fd8d",
+    "year": 2018,
+    "number": 15,
+    "before": "C",
+    "after": "D",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "08bad106-544c-4bee-9146-d10fa098824e",
+    "year": 2012,
+    "number": 165,
+    "before": "E",
+    "after": "C",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "f223051e-08c6-487a-9859-3878f739d545",
+    "year": 2011,
+    "number": 81,
+    "before": "B",
+    "after": "D",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  },
+  {
+    "id": "12444e74-8e4d-4bc5-8a0c-22c1dcf5d6e5",
+    "year": 2011,
+    "number": 95,
+    "before": "A",
+    "after": "D",
+    "explanationBefore": null,
+    "explanationStatusBefore": "pendente"
+  }
+]

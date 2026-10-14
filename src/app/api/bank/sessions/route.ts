@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         const ids = await editionQuestionIds(payload.exam, payload.year, payload.edition, day);
         const edition = payload.edition ? ` (${payload.edition})` : "";
         const label = day ? `prova completa · ${day}º dia` : "prova completa";
-        const session = await createSession({ userId: user.id, kind: "simulado", title: `${exam.name} ${payload.year}${edition} · ${label}`, questionIds: ids, examSlug: payload.exam, timeLimitSec: fullExamTimeSec(payload.exam, day) });
+        const session = await createSession({ userId: user.id, kind: "simulado", title: `${exam.name} ${payload.year}${edition} · ${label}`, questionIds: ids, examSlug: payload.exam, timeLimitSec: fullExamTimeSec(payload.exam, day, payload.year) });
         return NextResponse.json({ sessionId: session.id, total: ids.length });
       }
       const subject = payload.subject ? await getPrisma().bankSubject.findUnique({ where: { slug: payload.subject }, select: { name: true } }) : null;

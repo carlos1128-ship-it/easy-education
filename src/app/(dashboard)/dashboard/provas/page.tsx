@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock } from "lucide-react";
 import { StartSessionButton } from "@/components/bank/start-session-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { examHref } from "@/lib/bank/paths";
+import examCovers from "@/lib/bank/exam-covers.json";
 import { fullExamTimeSec, getExamBooklets, type Booklet } from "@/lib/bank/past-exams";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { cn } from "@/lib/utils";
@@ -29,8 +31,25 @@ function hours(seconds: number | null) {
   return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
-/** Capa desenhada do caderno (sem imagem de terceiros): exame, ano e dia. */
+/**
+ * Capas oficiais (1ª página do caderno, só reduzida), geradas por scripts/bank/enem-official.ts. Hoje só o ENEM,
+ * cuja licença (INEP, CC BY-ND) permite reproduzir com crédito. Chave: "exame|ano|edição|dia".
+ */
+const OFFICIAL_COVERS = examCovers as Record<string, { cover: string; source: string }>;
+
+/** Capa do caderno: a oficial quando há (com o crédito); senão, uma desenhada com exame, ano e dia. */
 function Cover({ exam, booklet }: { exam: { slug: string; short: string }; booklet: Booklet }) {
+  const official = OFFICIAL_COVERS[`${exam.slug}|${booklet.year}|${booklet.edition}|${booklet.day ?? ""}`];
+  if (official) {
+    return (
+      <figure className="m-0 flex w-[84px] flex-none flex-col gap-0.5">
+        <a href={official.source} target="_blank" rel="noopener noreferrer" title="Abrir o caderno oficial (INEP)" className="block overflow-hidden rounded-md shadow-md ring-1 ring-black/10">
+          <Image src={official.cover} alt={`Capa do caderno oficial do ${exam.short} ${booklet.year}${booklet.day ? `, ${booklet.day}º dia` : ""}`} width={84} height={119} className="block h-auto w-full" />
+        </a>
+        <figcaption className="text-center text-[10px] text-ink-muted">Capa: INEP</figcaption>
+      </figure>
+    );
+  }
   const tone = EXAM_TONE[exam.slug] ?? DEFAULT_TONE;
   return (
     <div
@@ -127,7 +146,7 @@ export default async function ProvasPage({ searchParams }: { searchParams: Promi
             <ul className="m-0 grid list-none gap-4 p-0 md:grid-cols-2">
               {booklets.map((booklet) => {
                 const done = booklet.answered >= booklet.total;
-                const time = hours(fullExamTimeSec(selected.slug, booklet.day ?? undefined));
+                const time = hours(fullExamTimeSec(selected.slug, booklet.day ?? undefined, booklet.year));
                 return (
                   <li key={`${booklet.edition}-${booklet.day ?? 0}`} className="flex gap-4 rounded-2xl border border-border bg-surface p-3 shadow-card">
                     <Cover exam={selected} booklet={booklet} />

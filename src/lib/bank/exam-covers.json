@@ -1,0 +1,122 @@
+{
+  "enem|2023||1": {
+    "cover": "/exam-covers/enem-2023-d1.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2023_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2023||2": {
+    "cover": "/exam-covers/enem-2023-d2.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2023_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2022||2": {
+    "cover": "/exam-covers/enem-2022-d2.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2022_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2021||1": {
+    "cover": "/exam-covers/enem-2021-d1.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2021||2": {
+    "cover": "/exam-covers/enem-2021-d2.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2021_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2020||1": {
+    "cover": "/exam-covers/enem-2020-d1.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2020||2": {
+    "cover": "/exam-covers/enem-2020-d2.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2020_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2019||1": {
+    "cover": "/exam-covers/enem-2019-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/2019_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2019||2": {
+    "cover": "/exam-covers/enem-2019-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2019/2019_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2018||1": {
+    "cover": "/exam-covers/enem-2018-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2018/2018_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2018||2": {
+    "cover": "/exam-covers/enem-2018-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2018/2DIA_05_AMARELO_BAIXA.pdf"
+  },
+  "enem|2017||1": {
+    "cover": "/exam-covers/enem-2017-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2017/2017_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2017||2": {
+    "cover": "/exam-covers/enem-2017-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2017/2017_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2016||1": {
+    "cover": "/exam-covers/enem-2016-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2016/2016_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2016||2": {
+    "cover": "/exam-covers/enem-2016-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2016/2016_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2015||1": {
+    "cover": "/exam-covers/enem-2015-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2015/2015_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2015||2": {
+    "cover": "/exam-covers/enem-2015-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2015/2015_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2014||1": {
+    "cover": "/exam-covers/enem-2014-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2014/2014_PV_impresso_D1_CD1.pdf"
+  },
+  "enem|2014||2": {
+    "cover": "/exam-covers/enem-2014-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2014/2014_PV_impresso_D2_CD5.pdf"
+  },
+  "enem|2013||1": {
+    "cover": "/exam-covers/enem-2013-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2013/dia1_caderno1_azul.pdf"
+  },
+  "enem|2013||2": {
+    "cover": "/exam-covers/enem-2013-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2013/dia2_caderno5_amarelo.pdf"
+  },
+  "enem|2012||1": {
+    "cover": "/exam-covers/enem-2012-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2012/dia1_caderno1_azul.pdf"
+  },
+  "enem|2012||2": {
+    "cover": "/exam-covers/enem-2012-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2012/dia2_caderno5_amarelo.pdf"
+  },
+  "enem|2011||1": {
+    "cover": "/exam-covers/enem-2011-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2011/dia1_caderno1_azul.pdf"
+  },
+  "enem|2011||2": {
+    "cover": "/exam-covers/enem-2011-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2011/dia2_caderno5_amarelo.pdf"
+  },
+  "enem|2010||1": {
+    "cover": "/exam-covers/enem-2010-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2010/dia1_caderno1_azul.pdf"
+  },
+  "enem|2010||2": {
+    "cover": "/exam-covers/enem-2010-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2010/dia2_caderno5_amarelo.pdf"
+  },
+  "enem|2009||1": {
+    "cover": "/exam-covers/enem-2009-d1.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2009/dia1_caderno1_azul.pdf"
+  },
+  "enem|2009||2": {
+    "cover": "/exam-covers/enem-2009-d2.webp",
+    "source": "https://download.inep.gov.br/educacao_basica/enem/provas/2009/dia2_caderno5_amarelo.pdf"
+  },
+  "enem|2022||1": {
+    "cover": "/exam-covers/enem-2022-d1.webp",
+    "source": "https://download.inep.gov.br/enem/provas_e_gabaritos/2022_PV_impresso_D1_CD1.pdf"
+  }
+}

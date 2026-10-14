@@ -92,13 +92,26 @@ export async function getExamDetail(userId: string, examSlug: PastExamSlug) {
   return { subjects: subjectRows, unclassified, editions: editionRows };
 }
 
-/** ENEM em dois dias, como na prova: 1º dia Linguagens e Humanas; 2º dia Natureza e Matemática. */
-export const ENEM_DAY_AREAS: Record<1 | 2, string[]> = { 1: ["linguagens", "ciencias-humanas"], 2: ["ciencias-natureza", "matematica"] };
-const ENEM_DAY_TIME_SEC: Record<1 | 2, number> = { 1: 5 * 3600 + 30 * 60, 2: 5 * 3600 };
+/**
+ * ENEM em dois dias, como na prova: questões 1 a 90 no 1º dia e 91 a 180 no 2º, em todos os anos (a numeração
+ * oficial é mais confiável que a área gravada na importação). Desde 2017: 1º dia Linguagens e Humanas (5h30),
+ * 2º dia Natureza e Matemática (5h). De 2009 a 2016: 1º dia Humanas e Natureza (4h30), 2º dia Linguagens e
+ * Matemática (5h30).
+ */
+export function enemDayOf(number: number): 1 | 2 {
+  return number <= 90 ? 1 : 2;
+}
+export function enemDayNumbers(day: 1 | 2) {
+  return day === 1 ? { gte: 1, lte: 90 } : { gte: 91, lte: 180 };
+}
+function enemDayTimeSec(year: number, day: 1 | 2) {
+  if (year >= 2017) return day === 1 ? 5 * 3600 + 30 * 60 : 5 * 3600;
+  return day === 1 ? 4 * 3600 + 30 * 60 : 5 * 3600 + 30 * 60;
+}
 
-/** Tempo da prova completa: no ENEM, o do dia escolhido. */
-export function fullExamTimeSec(examSlug: string, day?: 1 | 2) {
-  if (examSlug === "enem" && day) return ENEM_DAY_TIME_SEC[day];
+/** Tempo da prova completa: no ENEM, o do dia escolhido naquele ano. */
+export function fullExamTimeSec(examSlug: string, day?: 1 | 2, year?: number) {
+  if (examSlug === "enem" && day) return enemDayTimeSec(year ?? 2017, day);
   return FULL_EXAM_TIME_SEC[examSlug] ?? null;
 }
 
@@ -106,17 +119,18 @@ export function fullExamTimeSec(examSlug: string, day?: 1 | 2) {
 export type Booklet = { year: number; edition: string; day: 1 | 2 | null; title: string; tag: string | null; total: number; answered: number };
 export type ExamBooklets = { slug: PastExamSlug; name: string; short: string; tagline: string; total: number; years: Array<{ year: number; booklets: Booklet[] }> };
 
-type BookletRow = { exam_slug: string; year: number; edition: string; area: string | null; total: number; answered: number };
+type BookletRow = { exam_slug: string; year: number; edition: string; day: number; total: number; answered: number };
 
 /** Cadernos de todos os exames com questões publicadas, do ano mais novo para o mais antigo, com o progresso do aluno. */
 export async function getExamBooklets(userId: string): Promise<ExamBooklets[]> {
   const rows = await getPrisma().$queryRaw<BookletRow[]>`
-    SELECT e."slug" AS exam_slug, q."year", q."edition", q."area",
+    SELECT e."slug" AS exam_slug, q."year", q."edition",
+           CASE WHEN e."slug" = 'enem' THEN (CASE WHEN q."number" <= 90 THEN 1 ELSE 2 END) ELSE 0 END AS day,
            COUNT(*)::int AS total,
            COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM "bank_answers" a WHERE a."question_id" = q."id" AND a."user_id" = ${userId}))::int AS answered
     FROM "bank_questions" q JOIN "exams" e ON e."id" = q."exam_id"
     WHERE q."is_published" = true AND q."origin" = 'prova_oficial' AND (q."variant" = '' OR q."variant" = 'ingles')
-    GROUP BY e."slug", q."year", q."edition", q."area"`;
+    GROUP BY 1, 2, 3, 4`;
 
   const result: ExamBooklets[] = [];
   for (const slug of Object.keys(PAST_EXAMS) as PastExamSlug[]) {
@@ -124,8 +138,8 @@ export async function getExamBooklets(userId: string): Promise<ExamBooklets[]> {
     if (!mine.length) continue;
     const booklets = new Map<string, Booklet>();
     for (const row of mine) {
-      // ENEM: cada área cai num dos dois dias; os outros exames têm um caderno por edição.
-      const day = slug === "enem" ? ((Object.entries(ENEM_DAY_AREAS).find(([, areas]) => areas.includes(row.area ?? ""))?.[0] ?? "1") === "2" ? 2 : 1) : null;
+      // ENEM: um caderno por dia (pela numeração); os outros exames têm um caderno por edição.
+      const day = slug === "enem" ? (Number(row.day) === 2 ? 2 : 1) : null;
       const key = `${row.year}|${row.edition}|${day ?? ""}`;
       const current = booklets.get(key) ?? {
         year: row.year,
@@ -183,7 +197,7 @@ export async function pickPracticeQuestions(userId: string, examSlug: PastExamSl
 /** Prova completa de uma edição, na ordem original. No ENEM, `day` limita às áreas daquele dia. */
 export async function editionQuestionIds(examSlug: PastExamSlug, year: number, edition: string, day?: 1 | 2) {
   const rows = await getPrisma().bankQuestion.findMany({
-    where: { isPublished: true, origin: ORIGIN.official, exam: { slug: examSlug }, year, edition, ...(examSlug === "enem" && day ? { area: { in: ENEM_DAY_AREAS[day] } } : {}) },
+    where: { isPublished: true, origin: ORIGIN.official, exam: { slug: examSlug }, year, edition, ...(examSlug === "enem" && day ? { number: enemDayNumbers(day) } : {}) },
     orderBy: [{ number: "asc" }, { variant: "asc" }],
     select: { id: true, variant: true },
   });
