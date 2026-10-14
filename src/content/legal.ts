@@ -27,7 +27,7 @@ export const termsSections: LegalSection[] = [
     paragraphs: [
       "Há dois planos pagos (Básico e Completo), com assinatura mensal. Não há plano gratuito. Os preços e o que cada plano inclui aparecem na página de planos antes da contratação.",
       "A cobrança começa na contratação, sem teste gratuito. O acesso é liberado após a confirmação do pagamento. A assinatura se renova mensalmente até o cancelamento; Pix comum exige um novo pagamento, enquanto cartão e Pix Automático dependem da autorização do titular. Sem assinatura em vigor, o acesso fica suspenso.",
-      "Novas assinaturas são processadas pela Cakto; assinaturas anteriores podem continuar no Stripe. Os métodos disponíveis, eventuais taxas e o valor total são informados no checkout antes da confirmação. O Easy Education não recebe nem guarda o número completo do seu cartão.",
+      "Novas assinaturas são processadas pelo Stripe. O checkout está em modo de teste, sem cobrança real. Os métodos disponíveis e o valor total são informados antes da confirmação. Assinaturas anteriores de outro provedor mantêm seu histórico. O Easy Education não recebe nem guarda o número completo do cartão.",
       "Cada plano tem limites de uso dos recursos de IA, por dia ou por semana, e um teto de uso justo por mês. Os limites existem para manter o custo do serviço e evitar abuso. Quando um limite acaba, ele volta no período seguinte.",
     ],
   },

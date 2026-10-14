@@ -254,7 +254,7 @@ export const landingPlans = {
     "Chat com IA, quizzes, flashcards e simulados com IA",
     "Correção de redação, também por foto",
     "Plano de estudos com roteiro, trilha e troféus",
-    "Simulados com provas anteriores do ENEM e desempenho",
+    "Simulados, provas anteriores e acompanhamento do desempenho",
   ],
   guarantee: "Sete dias de garantia após o primeiro pagamento. Cancele quando quiser.",
   images: [
@@ -344,7 +344,7 @@ export const landingFaq = {
     },
     {
       q: "Quais formas de pagamento?",
-      a: "O checkout Cakto oferece cartão de crédito, Pix e Pix Automático. As opções disponíveis e o valor total, incluindo eventuais taxas, aparecem antes da confirmação. Pix comum não autoriza cobranças automáticas futuras.",
+      a: "O pagamento é feito com segurança no Stripe, por cartão. O plano e o valor aparecem antes da confirmação. O checkout está em modo de teste, sem cobranças reais. Pix recorrente ainda não está disponível.",
     },
     {
       q: "Quanto custa o Easy Education?",

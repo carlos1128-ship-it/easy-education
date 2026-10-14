@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
-import { answerQuestion } from "@/lib/bank/service";
+import { answerQuestion, BankError } from "@/lib/bank/service";
 import { ensureOfficialQuestionExplanations } from "@/lib/bank/explanations";
 import { needsOfficialExplanation } from "@/lib/bank/explanation-quality";
 import { getQuestionPeerStats } from "@/lib/bank/peer-stats";
@@ -25,15 +25,17 @@ export async function POST(request: Request) {
     const payload = schema.parse(await request.json());
     // O plano decide se a questão ultrassecreta pode ser respondida (só no Completo).
     const access = await getAccessState(user);
-    const result = await answerQuestion({ userId: user.id, ...payload, tier: access.tier });
+    const result = await answerQuestion({ userId: user.id, ...payload, tier: access.tier, prepareExplanation: async (question) => {
+      if (!needsOfficialExplanation(question.explanation, question.correctLabel)) return question.explanation!.trim();
+      const explanations = await ensureOfficialQuestionExplanations({ questionIds: [question.id], user, feature: "ai_quiz" });
+      const explanation = explanations.get(question.id);
+      if (!explanation) throw new BankError("Não foi possível preparar a explicação. Sua resposta ainda não foi confirmada; tente novamente.", 503);
+      return explanation;
+    } });
     if (!("correctLabel" in result) || !result.correctLabel) return NextResponse.json(result);
     // Na prática, junto com o gabarito: quantos % dos outros alunos acertaram (só com amostra mínima).
     const peers = await getQuestionPeerStats([payload.questionId], user.id);
     const peerCorrectPct = peers.get(payload.questionId)?.correctPct ?? null;
-    if (needsOfficialExplanation(result.explanation, result.correctLabel)) {
-      const explanations = await ensureOfficialQuestionExplanations({ questionIds: [payload.questionId], user, feature: "ai_quiz" });
-      return NextResponse.json({ ...result, peerCorrectPct, explanation: explanations.get(payload.questionId) ?? null });
-    }
     return NextResponse.json({ ...result, peerCorrectPct });
   } catch (error) {
     return apiErrorResponse(error, { scope: "bank.answer", fallback: "Não foi possível salvar a resposta." });

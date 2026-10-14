@@ -330,8 +330,8 @@ export default async function DashboardPage() {
         </span>
         <span className="relative flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-[13px] font-bold uppercase tracking-[0.06em] text-brand-strong">Provas anteriores</span>
-          <span className="text-lg font-extrabold leading-tight text-ink">ENEM: treine com questões que já caíram</span>
-          <span className="text-sm text-ink-muted">Treinos de 10 questões por matéria, a prova completa de cada ano e as ultrassecretas, dos assuntos que mais caem.</span>
+          <span className="text-lg font-extrabold leading-tight text-ink">ENEM, FUVEST, UNESP, UNICAMP, ITA e ETEC</span>
+          <span className="text-sm text-ink-muted">Cadernos originais, cartão-resposta e acesso aos acervos de outros vestibulares.</span>
         </span>
         <ArrowRight size={22} className="relative hidden flex-none text-brand-strong transition-transform group-hover:translate-x-1 sm:block" aria-hidden="true" />
       </Link>

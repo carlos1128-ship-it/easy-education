@@ -155,7 +155,7 @@ export function grade(items: ExamItemData[], answers: StudentAnswer[]) {
       ? "annulled"
       : !answer
         ? "unanswered"
-        : q.format === "written"
+        : q.format === "written" || !q.correct.trim()
           ? "pending"
           : answer === q.correct
             ? "correct"
@@ -178,7 +178,7 @@ export function grade(items: ExamItemData[], answers: StudentAnswer[]) {
     annulled = count("annulled"),
     pending = count("pending");
   const objectiveCount = items.filter(
-    (q) => q.format !== "written" && !q.annulled,
+    (q) => q.format !== "written" && !q.annulled && !!q.correct.trim(),
   ).length;
   const subjects = [...new Set(items.map((q) => q.subject))].map((subject) => ({
     subject,

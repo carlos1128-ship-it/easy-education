@@ -51,9 +51,11 @@ export function ExamCatalog({
           >
             Provas anteriores
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold">Cadernos de prova</h1>
+          <h1 className="mt-2 text-2xl font-semibold">Provas anteriores</h1>
+          <p className="mt-2 max-w-2xl text-sm text-ink-muted">Escolha a instituição e a prova. Consulte o caderno original e responda no seu cartão-resposta.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href="/dashboard/provas/questoes" className={styles.button}>Treinar por questões</Link>
           <Link href="/dashboard/provas/historico" className={styles.button}>
             <History size={16} />
             Histórico
@@ -133,7 +135,7 @@ export function ExamCatalog({
                         {e.day ? ` · ${e.day}` : ""}
                         {e.language ? ` · ${e.language}` : ""}
                         <br />
-                        {e.questionCount} questões · {e.durationMinutes} min
+                        {e.durationMinutes} min
                       </p>
                       {e.isDemo && (
                         <p className="mt-3 text-xs text-[var(--warning)]">
@@ -152,8 +154,11 @@ export function ExamCatalog({
                       ) : (
                         <>
                           <p className="mt-3 text-xs text-[var(--warning)]">
-                            Gabarito em revisão
+                            Confira as respostas com o gabarito oficial. A correção automática será liberada após a revisão.
                           </p>
+                          <button className={`${styles.button} ${styles.primary} mt-4 w-full`} disabled={!!busy} onClick={() => void start(e.id)}>
+                            <Play size={16} />{busy === e.id ? "Abrindo…" : "Praticar com cartão-resposta"}
+                          </button>
                           {e.documents[0] && (
                             <a
                               className={`${styles.button} mt-5 w-full`}
@@ -178,8 +183,7 @@ export function ExamCatalog({
                 </div>
               ) : (
                 <p className="py-3 text-sm text-[var(--ink-muted)]">
-                  Nenhum caderno com gabarito revisado disponível
-                  {year ? ` em ${year}` : ""}.
+                  Consulte as provas e os gabaritos no acervo oficial{year ? ` de ${year}` : ""}.
                 </p>
               )}
             </section>

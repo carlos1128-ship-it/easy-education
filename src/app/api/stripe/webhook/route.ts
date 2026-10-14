@@ -4,6 +4,8 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { markFirstPayment, syncSubscription } from "@/lib/billing";
 import { getPrisma } from "@/lib/prisma";
 import { getStripe, isStripeConfigured } from "@/lib/stripe";
+import { isStripeTestMode } from "@/lib/stripe";
+import { completeParentPayment } from "@/lib/parent-payments";
 
 function idOf(value: string | { id: string } | null | undefined) {
   if (!value) return null;
@@ -21,6 +23,7 @@ async function handleEvent(event: Stripe.Event) {
     case "checkout.session.async_payment_succeeded":
     case "checkout.session.async_payment_failed": {
       const session = event.data.object;
+      if (session.metadata?.parentRequestId) { await completeParentPayment(session); return; }
       const subscriptionId = idOf(session.subscription);
       if (subscriptionId) await syncSubscription(subscriptionId);
       return;
@@ -70,6 +73,7 @@ export async function POST(request: Request) {
   }
 
   const prisma = getPrisma();
+  if (event.livemode === isStripeTestMode()) return NextResponse.json({ error: "Modo de pagamento inválido." }, { status: 400 });
   // O Stripe pode reenviar o mesmo evento: processa cada um uma vez só.
   try {
     await prisma.stripeEvent.create({ data: { id: event.id, type: event.type } });

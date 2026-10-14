@@ -284,7 +284,7 @@ function Footer({ answer, choice, busy, onConfirm, onNext, isLast, streak }: { a
               {!answer.isCorrect ? <p className="m-0 text-sm font-medium text-ink">Resposta certa: alternativa {answer.reveal.correctLabel}. Ela volta na sua revisão.</p> : null}
               {typeof answer.peerCorrectPct === "number" ?<p className="m-0 text-sm text-ink-muted">{answer.peerCorrectPct}% dos alunos acertaram esta questão.</p> : null}
               {answer.reveal.explanation ? (
-                <details className="mt-1 text-sm text-ink">
+                <details open className="mt-1 text-sm text-ink">
                   <summary className="cursor-pointer font-semibold text-brand-strong">Ver resolução</summary>
                   <div className="mt-2 max-h-48 overflow-y-auto pr-2"><ExplanationText text={answer.reveal.explanation} /></div>
                 </details>

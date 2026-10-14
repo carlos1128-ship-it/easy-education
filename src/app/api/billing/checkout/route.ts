@@ -3,8 +3,6 @@ import { z } from "zod";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { createCheckoutSession, createPortalSession, getAccessState, getSubscriptionForUser } from "@/lib/billing";
-import { createCaktoCheckout } from "@/lib/cakto-billing";
-import { isCaktoConfigured } from "@/lib/cakto";
 import { ensureProfileForUser } from "@/lib/profile";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { availablePaymentMethod } from "@/lib/payment-methods";
@@ -16,15 +14,8 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) return response;
-    const provider = process.env.BILLING_PROVIDER?.trim().toLowerCase() || "stripe";
-    if (provider !== "stripe" && provider !== "cakto") {
-      return NextResponse.json({ error: "Provedor de pagamento inválido." }, { status: 503 });
-    }
-    if (provider === "stripe" && !isStripeConfigured()) {
+    if (!isStripeConfigured()) {
       return NextResponse.json({ error: "Pagamentos temporariamente indisponíveis." }, { status: 503 });
-    }
-    if (provider === "cakto" && !isCaktoConfigured()) {
-      return NextResponse.json({ error: "A integração Cakto ainda não está configurada." }, { status: 503 });
     }
     if (!checkRateLimit(`checkout:${user.id}`, 10, 60_000).ok) {
       return NextResponse.json({ error: "Muitas tentativas. Aguarde um minuto." }, { status: 429 });
@@ -32,7 +23,7 @@ export async function POST(request: Request) {
 
     const { plan, method } = checkoutSchema.parse(await request.json());
     // A Cakto coleta a escolha do método no checkout hospedado.
-    if (provider === "stripe" && !availablePaymentMethod(method)) {
+    if (!availablePaymentMethod(method)) {
       return NextResponse.json({ error: "Esta forma de pagamento não está disponível neste checkout." }, { status: 400 });
     }
     const origin = new URL(request.url).origin;
@@ -47,11 +38,6 @@ export async function POST(request: Request) {
       }
       const portal = await createPortalSession(user.id, origin);
       return NextResponse.json({ url: portal.url });
-    }
-
-    if (provider === "cakto") {
-      const checkout = await createCaktoCheckout(user, plan);
-      return NextResponse.json(checkout);
     }
 
     const session = await createCheckoutSession(user, plan, origin);

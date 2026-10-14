@@ -38,7 +38,10 @@ for (const routeFile of routeFiles) {
   const hasHandler = /export\s+async\s+function\s+(GET|POST|DELETE|PUT|PATCH)/.test(source);
   if (!hasHandler) continue;
 
-  if (!explicitSafeRoutes.has(routeFile) && !source.includes("apiErrorResponse(")) {
+  const delegatesExamErrors = source.includes('from "@/lib/past-exams/http"')
+    && source.includes("examError(error)")
+    && read("src/lib/past-exams/http.ts").includes("return apiErrorResponse(error,");
+  if (!explicitSafeRoutes.has(routeFile) && !source.includes("apiErrorResponse(") && !delegatesExamErrors) {
     fail(`${routeFile} does not use apiErrorResponse for unexpected failures.`);
   }
 }

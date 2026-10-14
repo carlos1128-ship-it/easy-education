@@ -41,7 +41,8 @@ export async function getCatalog() {
           isDemo: true,
           status: true,
           documents: {
-            where: { kind: "exam" },
+            where: { kind: { in: ["exam", "key"] } },
+            orderBy: { kind: "asc" },
             select: { sourceUrl: true, rightsStatus: true },
           },
         },
@@ -243,18 +244,20 @@ export async function startAttempt(
   });
   if (previous) return { id: previous.id };
   const exam = await prisma.pastExam.findFirst({
-    where: { id: examId, status: "published" },
+    where: { id: examId, status: { in: ["published", "catalogued"] } },
   });
-  if (!exam?.publishedKeyId)
+  if (!exam)
     throw new ExamError("Esta prova ainda não foi revisada e publicada.", 404);
+  const graded = exam.status === "published";
   const key = await prisma.examAnswerKey.findFirst({
-    where: { id: exam.publishedKeyId, examId, status: "reviewed" },
+    where: graded ? { id: exam.publishedKeyId ?? "", examId, status: "reviewed" } : { examId },
+    orderBy: { revision: "desc" },
   });
   if (!key) throw new ExamError("Gabarito ainda em revisão.", 409);
   const attempt = await prisma.examAttempt.upsert({
     where: { userId_requestId: { userId, requestId } },
     update: {},
-    create: { userId, examId, keyId: key.id, requestId },
+    create: { userId, examId, keyId: key.id, requestId, mode: graded ? "graded" : "self_review" },
   });
   return { id: attempt.id };
 }
@@ -267,6 +270,8 @@ export function serializeAttempt(attempt: Attempt) {
     id: attempt.id,
     version: attempt.version,
     status: attempt.status,
+    mode: attempt.mode ?? "graded",
+    keyUrl: attempt.exam.documents.find((d) => d.kind === "key")?.sourceUrl ?? null,
     elapsedSeconds: Math.min(
       snapshot.durationMinutes * 60,
       elapsedSeconds(attempt),
@@ -379,7 +384,7 @@ export async function updateAttempt(
               finishedAt: new Date(),
               activeSince: null,
               elapsedSeconds: Math.min(elapsed, snapshot.durationMinutes * 60),
-              result: json(grade(snapshot.items, saved)),
+              result: json(grade(attempt.mode === "self_review" ? snapshot.items.map((item) => ({ ...item, correct: "", explanation: "", explanationReviewed: false, annulled: false })) : snapshot.items, saved)),
             }
           : action === "pause"
             ? { status: "paused", activeSince: null, elapsedSeconds: elapsed }

@@ -2,6 +2,18 @@
 // None of these entries grants reproduction or commercial-use rights.
 export const EXAM_SOURCES = [
   {
+    slug: "etec",
+    name: "ETEC",
+    archiveUrl: "https://vestibulinho.etec.sp.gov.br/provas-gabaritos/2025-1sem.asp?m=1",
+    sourceNotes: "Ensino Técnico, 1º semestre de 2025. Links para caderno e gabarito publicados no portal oficial. Consulta externa; reprodução não autorizada.",
+  },
+  {
+    slug: "fatec",
+    name: "FATEC",
+    archiveUrl: "https://vestibular.fatec.sp.gov.br/provas-gabaritos/",
+    sourceNotes: "Consultar caderno, semestre e gabarito no portal oficial. Reprodução não autorizada.",
+  },
+  {
     slug: "enem",
     name: "ENEM",
     archiveUrl:
@@ -98,6 +110,13 @@ export const EXAM_SOURCES = [
 ];
 export const PRIORITY_BOOKLETS = [
   {
+    slug: "etec", year: 2025, title: "ETEC 2025 · 1º semestre · Ensino Técnico",
+    phase: "Ensino Técnico", booklet: "Único", day: "", language: "",
+    questionCount: 50, durationMinutes: 240, format: "mcq5" as const,
+    sourceUrl: "https://fatweb.s3.amazonaws.com/vestibulinhoetec/gabarito/20251468190/Prova.pdf",
+    keyUrl: "https://fatweb.s3.amazonaws.com/vestibulinhoetec/gabarito/20251468190/Gabarito.pdf",
+  },
+  {
     slug: "unesp",
     year: 2025,
     title: "UNESP 2025 · 1ª fase",
@@ -109,9 +128,9 @@ export const PRIORITY_BOOKLETS = [
     durationMinutes: 300,
     format: "mcq5" as const,
     sourceUrl:
-      "https://s5.static.brasilescola.uol.com.br/vestibular/2024/11/prova-primeira-fase-da-unesp-2025.pdf",
+      "https://www.vunesp.com.br/VNSP2404/",
     keyUrl:
-      "https://www2.curso-objetivo.br/vestibular/resolucao-comentada/unesp/2025/1fase/UNESP2025_1fase_gabarito.pdf",
+      "https://www.vunesp.com.br/VNSP2404/",
   },
   {
     slug: "enem",

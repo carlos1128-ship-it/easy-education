@@ -3,7 +3,8 @@ import type { FeatureKey } from "@/lib/plans";
 import { explainOfficialQuestions } from "@/lib/bank/ai";
 import { needsOfficialExplanation } from "@/lib/bank/explanation-quality";
 import { getPrisma } from "@/lib/prisma";
-import { getUsageSnapshot, PlanLimitError, withFeature } from "@/lib/usage";
+import { assertWithinSafetyCaps, requireTier } from "@/lib/usage";
+import { runWithAiCallContext } from "@/lib/ai-cost";
 
 export { EXPLANATION_UNAVAILABLE, needsOfficialExplanation } from "@/lib/bank/explanation-quality";
 
@@ -19,7 +20,7 @@ type ExplainableQuestion = {
   explanation: string | null;
 };
 
-/** Preenche explicações ausentes em lotes limitados, debitando questões e custo no teto do aluno. */
+/** Preenche explicações ausentes em lotes limitados, respeitando o teto de custo do aluno. */
 export async function ensureOfficialQuestionExplanations(input: {
   questionIds: string[];
   user: UserRef;
@@ -37,15 +38,15 @@ export async function ensureOfficialQuestionExplanations(input: {
   if (!missing.length) return generated;
 
   try {
-    const usage = await getUsageSnapshot(input.user);
-    const remaining = usage.features[input.feature].remaining;
-    const eligible = remaining === null ? missing : missing.slice(0, remaining ?? 0);
+    // A devolutiva faz parte da questão e não consome a cota de criação de quizzes.
+    const tier = await requireTier(input.user);
+    await assertWithinSafetyCaps(input.user, { tier });
+    const eligible = missing;
 
     for (let offset = 0; offset < eligible.length; offset += 5) {
       const batch = eligible.slice(offset, offset + 5);
-      const explanations = await withFeature(
-        input.user,
-        input.feature,
+      const explanations = await runWithAiCallContext(
+        { userId: input.user.id, plan: tier, feature: "official_explanation" },
         () => explainOfficialQuestions(batch.map((row) => ({
           text: [row.supportText?.trim(), row.statement.trim()].filter(Boolean).join("\n\n"),
           options: Array.isArray(row.options)
@@ -53,7 +54,6 @@ export async function ensureOfficialQuestionExplanations(input: {
             : [],
           correctLabel: row.correctLabel,
         }))),
-        { tier: usage.tier, amount: batch.length },
       );
 
       await Promise.all(batch.map(async (row, index) => {
@@ -67,9 +67,7 @@ export async function ensureOfficialQuestionExplanations(input: {
       }));
     }
   } catch (error) {
-    if (!(error instanceof PlanLimitError)) {
-      console.error("[bank.explanations]", error instanceof Error ? error.message : error);
-    }
+    console.error("[bank.explanations]", error instanceof Error ? error.message : error);
   }
 
   return generated;

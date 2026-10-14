@@ -2,7 +2,7 @@ import type Stripe from "stripe";
 import type { User } from "@supabase/supabase-js";
 import type { PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
-import { getPriceForPlan, getStripe, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
+import { checkoutBranding, getPriceForPlan, getStripe, PLANS, planFromPrice, type PlanId } from "@/lib/stripe";
 import { caktoApiRequest } from "@/lib/cakto";
 
 /** Status do Stripe que dão direito ao plano pago. `past_due`: o Stripe ainda está tentando cobrar de novo. */
@@ -94,7 +94,7 @@ export async function getAccessState(user: Pick<User, "id" | "email">): Promise<
 export async function getOrCreateStripeCustomer(user: Pick<User, "id" | "email" | "user_metadata">) {
   const prisma = getPrisma();
   const existing = await prisma.subscription.findUnique({ where: { userId: user.id } });
-  if (existing?.provider === "cakto") {
+  if (existing?.provider === "cakto" && subscriptionGivesAccess(existing.status) && (!existing.currentPeriodEnd || existing.currentPeriodEnd > new Date())) {
     throw new BillingError("Esta conta já possui uma assinatura Cakto.", 409);
   }
   if (existing?.stripeCustomerId) return existing.stripeCustomerId;
@@ -113,7 +113,7 @@ export async function getOrCreateStripeCustomer(user: Pick<User, "id" | "email" 
 
   const row = await prisma.subscription.upsert({
     where: { userId: user.id },
-    update: { stripeCustomerId: existing?.stripeCustomerId ?? customer.id },
+    update: { stripeCustomerId: customer.id, provider: "stripe" },
     create: { userId: user.id, stripeCustomerId: customer.id },
   });
   if (!row.stripeCustomerId) throw new BillingError("Não foi possível criar o cliente Stripe.", 503);
@@ -147,7 +147,7 @@ export async function syncSubscription(subscriptionOrId: string | Stripe.Subscri
     }
   }
   if (!row) return null;
-  if (row.provider === "cakto") return row;
+  if (row.provider === "cakto" && subscriptionGivesAccess(row.status) && (!row.currentPeriodEnd || row.currentPeriodEnd > new Date())) return row;
 
   // Assinatura antiga encerrada não pode sobrescrever uma nova que já está ativa.
   if (
@@ -164,6 +164,7 @@ export async function syncSubscription(subscriptionOrId: string | Stripe.Subscri
   return prisma.subscription.update({
     where: { id: row.id },
     data: {
+      provider: "stripe",
       stripeSubscriptionId: subscription.id,
       stripePriceId: item?.price.id ?? null,
       plan,
@@ -202,6 +203,7 @@ export async function createCheckoutSession(
     client_reference_id: user.id,
     line_items: [{ price: price.id, quantity: 1 }],
     locale: "pt-BR",
+    branding_settings: checkoutBranding(),
     allow_promotion_codes: true,
     billing_address_collection: "auto",
     customer_update: { name: "auto", address: "auto" },

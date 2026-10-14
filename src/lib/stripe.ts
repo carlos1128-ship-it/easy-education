@@ -44,7 +44,16 @@ function secretKey() {
 
 export function isStripeConfigured() {
   const key = secretKey();
-  return key.startsWith("sk_") || key.startsWith("rk_");
+  const mode = process.env.STRIPE_PAYMENTS_MODE === "live" ? "live" : "test";
+  return key.startsWith(`sk_${mode}_`) || key.startsWith(`rk_${mode}_`);
+}
+
+export function isStripeTestMode() { return process.env.STRIPE_PAYMENTS_MODE !== "live"; }
+
+/** Personalização do checkout hospedado, usando apenas a identidade da Easy Education. */
+export function checkoutBranding(): Stripe.Checkout.SessionCreateParams.BrandingSettings {
+  const base = process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://") ? process.env.NEXT_PUBLIC_APP_URL : "https://easy-education-tau.vercel.app";
+  return { display_name: "Easy Education", background_color: "#2563eb", button_color: "#102a56", border_style: "rounded", font_family: "inter", icon: { type: "url", url: new URL("/brand/icon-512.png", base).toString() } };
 }
 
 export function getStripe() {

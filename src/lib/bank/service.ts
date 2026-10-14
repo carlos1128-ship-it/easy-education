@@ -314,7 +314,7 @@ export function revealsAfterAnswer(kind: string) {
   return kind === "practice";
 }
 
-export async function answerQuestion(input: { userId: string; questionId: string; selected: string; timeMs: number; sessionId?: string; tier?: PlanTier | null }) {
+export async function answerQuestion(input: { userId: string; questionId: string; selected: string; timeMs: number; sessionId?: string; tier?: PlanTier | null; prepareExplanation?: (question: { id: string; explanation: string | null; correctLabel: string }) => Promise<string> }) {
   const prisma = getPrisma();
   const selected = input.selected.trim().toUpperCase();
   const found = await getQuestionForUser(input.userId, input.questionId);
@@ -335,6 +335,7 @@ export async function answerQuestion(input: { userId: string; questionId: string
     if (kind === "practice" && found.row.origin === ORIGIN.official && ultrasecretLocked(input.tier) && isUltrasecret(found.row, await topKeysForExam(found.row.exam.slug))) {
       throw new BankError("Questão ultrassecreta: faz parte do plano Completo.", 403);
     }
+    if (revealsAfterAnswer(kind) && input.prepareExplanation) found.row.explanation = await input.prepareExplanation(found.row);
     const existing = await prisma.bankAnswer.findUnique({ where: { sessionId_questionId: { sessionId: session.id, questionId: input.questionId } } });
     if (existing) {
       if (!revealsAfterAnswer(kind)) return { recorded: true as const, alreadyAnswered: true };
@@ -342,6 +343,7 @@ export async function answerQuestion(input: { userId: string; questionId: string
     }
   }
 
+  if (!input.sessionId && input.prepareExplanation) found.row.explanation = await input.prepareExplanation(found.row);
   const isCorrect = selected === found.row.correctLabel;
   const timeMs = Math.min(Math.max(0, Math.round(input.timeMs)), 60 * 60 * 1000);
   await prisma.bankAnswer.create({

@@ -4,6 +4,7 @@ import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
 import { getPrisma } from "@/lib/prisma";
 import { normalizeCorrectAnswer } from "@/lib/quiz-questions";
+import { requireQuizExplanation } from "@/lib/quiz-explanation";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -18,6 +19,10 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
     const question = quiz.questions.find((item) => item.id === body.questionId);
     if (!question) return NextResponse.json({ error: "Questao nao encontrada." }, { status: 404 });
+    const answer = normalizeCorrectAnswer(body.answer);
+    const allowed = Array.isArray(question.options) ? question.options.length : 0;
+    if (!/^[A-E]$/.test(answer) || answer.charCodeAt(0) - 65 >= allowed) return NextResponse.json({ error: "Alternativa inválida." }, { status: 400 });
+    question.explanation = await requireQuizExplanation(question, user);
     if (question.userAnswer !== null) {
       return NextResponse.json({
         error: "Resposta ja confirmada.",
@@ -26,7 +31,6 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         explanation: question.explanation,
       }, { status: 409 });
     }
-    const answer = normalizeCorrectAnswer(body.answer);
     const correctAnswer = normalizeCorrectAnswer(question.correctAnswer);
     const isCorrect = answer === correctAnswer;
 

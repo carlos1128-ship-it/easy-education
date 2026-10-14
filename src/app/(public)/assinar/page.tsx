@@ -6,7 +6,7 @@ import { SignOutLink } from "@/components/billing/sign-out-link";
 import { getAccessState, getSubscriptionForUser } from "@/lib/billing";
 import { getPrisma } from "@/lib/prisma";
 import { ensureProfileForUser } from "@/lib/profile";
-import { planFromParam } from "@/lib/stripe";
+import { isStripeTestMode, planFromParam } from "@/lib/stripe";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { OwlMascot } from "@/components/mascot/owl-mascot";
 
@@ -58,7 +58,7 @@ export default async function AssinarPage({ searchParams }: { searchParams: Prom
           </p>
         ) : null}
         <div className="mt-8">
-          <PlanPicker initialPlan={plan ?? "full"} provider={process.env.BILLING_PROVIDER?.trim().toLowerCase() === "cakto" ? "cakto" : "stripe"} />
+          <PlanPicker initialPlan={plan ?? "full"} testMode={isStripeTestMode()} />
         </div>
         <div className="mt-10">
           <h2 className="m-0 mb-3 text-lg font-bold text-ink">Compare os planos</h2>

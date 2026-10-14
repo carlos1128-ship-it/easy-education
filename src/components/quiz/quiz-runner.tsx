@@ -60,6 +60,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
     Object.fromEntries(questions.filter((item) => item.userAnswer).map((item) => [item.id, item.userAnswer as string])),
   );
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [activity, setActivity] = useState(0);
   const [sleepyAt, setSleepyAt] = useState(-1);
@@ -94,9 +95,9 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questionId: question.id, answer }),
       });
-      const data = response.status === 409 ? await response.json() as { userAnswer?: string } : null;
+      const data = await response.json() as { userAnswer?: string; explanation?: string; error?: string };
       if (!response.ok && response.status !== 409) {
-        toast.error("Não foi possível salvar a resposta. Tente de novo.");
+        toast.error(data.error ?? "Não foi possível salvar a resposta. Tente de novo.");
         return null;
       }
       const savedAnswer = response.status === 409 ? data?.userAnswer : answer;
@@ -105,6 +106,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
         return null;
       }
       setAnswers((current) => ({ ...current, [question.id]: savedAnswer }));
+      if (data.explanation) setExplanations((current) => ({ ...current, [question.id]: data.explanation! }));
       return savedAnswer === question.correctAnswer;
     } catch {
       toast.error("Sem conexão com o servidor. Verifique a internet e tente de novo.");
@@ -334,7 +336,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
                     )}
                     {confirmed === question.correctAnswer ? "Você acertou." : `Errou. Resposta correta: ${question.correctAnswer}`}
                   </p>
-                  <p className="mt-2 text-ink-muted"><ExplanationText text={question.explanation} videoId={videoId} /></p>
+                  <p className="mt-2 text-ink-muted"><ExplanationText text={explanations[question.id] ?? question.explanation} videoId={videoId} /></p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <NoteButton compact link={{ quizId, questionId: question.id, questionKind: "quiz" }} />
                     <ReportButton compact label="Avisar erro" questionId={question.id} endpoint={`/api/quiz/${quizId}/report`} extraBody={{ questionId: question.id }} />

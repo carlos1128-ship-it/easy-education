@@ -347,34 +347,39 @@ export function AttemptRunner({ initial }: { initial: AttemptView }) {
             <>
               <h2 className="text-xl font-semibold">Resultado</h2>
               <p className="my-3 text-3xl font-semibold">
-                {result.percentage === null
+                {view.mode === "self_review" ? "Treino salvo" : result.percentage === null
                   ? "Sem itens objetivos"
                   : `${result.percentage}%`}
               </p>
-              <p className={styles.muted}>
+              {view.mode === "self_review" ? (
+                <div className="space-y-3 text-sm text-ink-muted">
+                  <p>Seu cartão-resposta ficou salvo. Confira suas respostas na fonte oficial. Este treino não calcula nota nem acertos sem um gabarito revisado.</p>
+                  {view.keyUrl ? <a href={view.keyUrl} target="_blank" rel="noopener noreferrer" className={styles.button}><ExternalLink size={16} />Abrir gabarito oficial</a> : null}
+                </div>
+              ) : <p className={styles.muted}>
                 Percentual de acertos nos itens objetivos válidos. Não é nota
                 oficial
                 {view.institutionSlug === "enem"
                   ? " nem estimativa TRI do ENEM"
                   : " da instituição"}
                 . Anuladas e discursivas não entram nesse percentual.
-              </p>
+              </p>}
               <dl className="my-5 grid grid-cols-2 gap-3 text-sm">
                 {[
                   ["Acertos", result.correct],
                   ["Erros", result.wrong],
                   ["Em branco", result.unanswered],
                   ["Anuladas", result.annulled],
-                  ["Discursivas respondidas", result.pending],
-                ].map(([label, value]) => (
+                  [view.mode === "self_review" ? "Respostas para conferir" : "Discursivas respondidas", result.pending],
+                ].filter(([label]) => view.mode !== "self_review" || !["Acertos", "Erros", "Anuladas"].includes(String(label))).map(([label, value]) => (
                   <div key={label}>
                     <dt className={styles.muted}>{label}</dt>
                     <dd className="text-lg font-semibold">{value}</dd>
                   </div>
                 ))}
               </dl>
-              <h3 className="mb-3 font-medium">Por disciplina</h3>
-              {result.subjects.map((s) => (
+              {view.mode !== "self_review" ? <h3 className="mb-3 font-medium">Por disciplina</h3> : null}
+              {(view.mode === "self_review" ? [] : result.subjects).map((s) => (
                 <p
                   key={s.subject}
                   className="flex justify-between gap-3 border-b border-[var(--border)] py-2 text-sm"
@@ -388,7 +393,7 @@ export function AttemptRunner({ initial }: { initial: AttemptView }) {
               <p className="mt-4 text-xs text-[var(--ink-muted)]">
                 {view.isDemo
                   ? "Respostas do exemplo autoral"
-                  : "Gabarito revisado"}{" "}
+                  : view.mode === "self_review" ? "Conferência pela fonte oficial" : "Gabarito revisado"}{" "}
                 · versão {view.keyRevision}
               </p>
               {result.rows.map((row) => (
@@ -402,7 +407,7 @@ export function AttemptRunner({ initial }: { initial: AttemptView }) {
                           wrong: "Incorreta",
                           unanswered: "Em branco",
                           annulled: "Anulada",
-                          pending: "Discursiva: compare com o padrão",
+                          pending: view.mode === "self_review" ? "Confira no gabarito oficial" : "Discursiva: compare com o padrão",
                         } as Record<string, string>
                       )[row.status]
                     }
@@ -410,7 +415,7 @@ export function AttemptRunner({ initial }: { initial: AttemptView }) {
                   <p className="mt-2 whitespace-pre-wrap text-sm">
                     Sua resposta: {row.answer || "Não respondida"}
                   </p>
-                  {row.status !== "annulled" && (
+                  {row.status !== "annulled" && row.correct && (
                     <p className="mt-2 whitespace-pre-wrap text-sm">
                       {row.format === "written"
                         ? "Resposta esperada"

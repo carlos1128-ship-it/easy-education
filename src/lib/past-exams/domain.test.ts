@@ -38,6 +38,14 @@ const snapshot: ExamSnapshot = {
   allowPause: true,
   items: [item()],
 };
+
+describe("treino com gabarito em revisão", () => {
+  it("nunca conta uma resposta sem gabarito como erro nem inventa nota", () => {
+    const result = grade([{ ...item(), correct: "", explanation: "", explanationReviewed: false }], [{ number: 1, value: "B", reviewed: false }]);
+    expect(result.wrong).toBe(0); expect(result.correct).toBe(0);
+    expect(result.percentage).toBeNull(); expect(result.pending).toBe(1);
+  });
+});
 describe("licenciamento", () => {
   it("não considera disponibilidade pública uma licença", () =>
     expect(

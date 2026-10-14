@@ -1,9 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, HelpCircle, Library, ListChecks } from "lucide-react";
+import { ArrowRight, HelpCircle, Library } from "lucide-react";
 import { SubjectIcon } from "@/components/bank/subject-icon";
-import { ReadyQuizButton } from "@/components/quiz/ready-quiz-button";
 import { LockedNotice } from "@/components/plan/usage-hint";
-import { EmptyState } from "@/components/ui/empty-state";
 import { QuizCreateForm } from "@/components/quiz/quiz-create-form";
 import { getSubjectSummaries } from "@/lib/bank/tree";
 import { allowanceFor } from "@/lib/plans";
@@ -14,17 +12,11 @@ export default async function QuizzesPage() {
   const { user, access } = await getStudentOrRedirect();
   const aiLocked = allowanceFor(access.tier, "ai_quiz").kind === "locked";
   const prisma = getPrisma();
-  const [quizzes, files, bySubject, subjects, tree] = await Promise.all([
+  const [quizzes, files, tree] = await Promise.all([
     prisma.quiz.findMany({ where: { userId: user.id, difficulty: { not: "simulado" } }, orderBy: { createdAt: "desc" } }),
     prisma.uploadedFile.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, select: { id: true, name: true, processed: true } }),
-    prisma.bankQuestion.groupBy({ by: ["subjectId"], where: { isPublished: true, origin: "prova_oficial", subjectId: { not: null } }, _count: { _all: true } }),
-    prisma.bankSubject.findMany({ orderBy: { sortOrder: "asc" }, select: { id: true, slug: true, name: true } }),
     getSubjectSummaries(user.id),
   ]);
-  // Quizzes prontos: matérias com questões de provas suficientes (sem IA).
-  const readySubjects = subjects
-    .map((subject) => ({ ...subject, total: bySubject.find((row) => row.subjectId === subject.id)?._count._all ?? 0 }))
-    .filter((subject) => subject.total >= 30);
 
   return (
     <div className="mx-auto w-full max-w-[1680px] space-y-6">
@@ -40,7 +32,7 @@ export default async function QuizzesPage() {
               <h2 id="por-materia" className="m-0 flex items-center gap-2 text-xl font-bold text-ink">
                 <Library className="size-5 text-brand-strong" aria-hidden="true" /> Quiz por assunto
               </h2>
-              <p className="m-0 max-w-[760px] text-sm text-ink-muted">Escolha a matéria, a unidade e o assunto: o quiz abre na hora com questões que já caíram no ENEM, sem gastar IA.</p>
+              <p className="m-0 max-w-[760px] text-sm text-ink-muted">Escolha a matéria, a unidade e o assunto. O treino abre na hora.</p>
             </div>
             <Link href="/dashboard/materias" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-strong no-underline hover:underline">
               Ver todas <ArrowRight size={15} aria-hidden="true" />
@@ -74,32 +66,9 @@ export default async function QuizzesPage() {
         </div>
       )}
 
-      {readySubjects.length ? (
-        <section className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-card lg:p-6" aria-labelledby="quizzes-prontos">
-          <div className="flex flex-col gap-1">
-            <h2 id="quizzes-prontos" className="m-0 flex items-center gap-2 text-xl font-bold text-ink">
-              <ListChecks className="size-5 text-brand-strong" aria-hidden="true" /> Quizzes prontos
-            </h2>
-            <p className="m-0 max-w-[760px] text-sm text-ink-muted">10 questões que já caíram no ENEM, com o gabarito oficial. Cada quiz vem com questões diferentes.</p>
-          </div>
-          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {readySubjects.map((subject) => (
-              <li key={subject.slug} className="flex items-center gap-3 rounded-xl border border-border bg-background p-3.5">
-                <SubjectIcon slug={subject.slug} className="size-10" size={20} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-semibold text-ink">{subject.name}</span>
-                  <span className="text-xs text-ink-muted">{subject.total.toLocaleString("pt-BR")} questões</span>
-                </span>
-                <ReadyQuizButton subject={subject.name} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {quizzes.length === 0 ? (
-        <EmptyState icon={HelpCircle} owl="atenta" title="Você ainda não gerou nenhum quiz." description="Use a IA acima para criar questões e salvar seu progresso." />
-      ) : (
+      {quizzes.length > 0 ? (
+        <details className="rounded-2xl border border-border bg-surface p-5">
+          <summary className="cursor-pointer font-semibold text-ink">Histórico de quizzes</summary>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {quizzes.map((quiz) => (
             <Link
@@ -110,7 +79,7 @@ export default async function QuizzesPage() {
               <HelpCircle className="size-6 text-brand-strong" />
               <h2 className="mt-4 font-bold text-ink">{quiz.title}</h2>
               <p className="mt-1 text-sm text-ink-muted">
-                {quiz.subject} · {quiz.questionCount} questões
+                {quiz.subject}
               </p>
               <p className="mt-4 text-sm text-ink-muted">
                 {quiz.score === null ? "Não realizado" : `Score ${Math.round(quiz.score)}%`}
@@ -118,7 +87,8 @@ export default async function QuizzesPage() {
             </Link>
           ))}
         </div>
-      )}
+        </details>
+      ) : null}
     </div>
   );
 }

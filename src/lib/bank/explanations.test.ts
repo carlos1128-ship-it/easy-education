@@ -1,65 +1,29 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const mocks = vi.hoisted(() => ({
-  findMany: vi.fn(),
-  updateMany: vi.fn(),
-  getUsageSnapshot: vi.fn(),
-  withFeature: vi.fn(),
-  explainOfficialQuestions: vi.fn(),
-}));
-
-vi.mock("@/lib/prisma", () => ({
-  getPrisma: () => ({ bankQuestion: { findMany: mocks.findMany, updateMany: mocks.updateMany } }),
-}));
-vi.mock("@/lib/usage", () => ({
-  getUsageSnapshot: mocks.getUsageSnapshot,
-  withFeature: mocks.withFeature,
-  PlanLimitError: class PlanLimitError extends Error {},
-}));
+const mocks = vi.hoisted(() => ({ findMany: vi.fn(), updateMany: vi.fn(), requireTier: vi.fn(), assertWithinSafetyCaps: vi.fn(), explainOfficialQuestions: vi.fn() }));
+vi.mock("@/lib/prisma", () => ({ getPrisma: () => ({ bankQuestion: { findMany: mocks.findMany, updateMany: mocks.updateMany } }) }));
+vi.mock("@/lib/usage", () => ({ requireTier: mocks.requireTier, assertWithinSafetyCaps: mocks.assertWithinSafetyCaps }));
 vi.mock("@/lib/bank/ai", () => ({ explainOfficialQuestions: mocks.explainOfficialQuestions }));
-
+vi.mock("@/lib/ai-cost", () => ({ runWithAiCallContext: (_context: unknown, run: () => Promise<unknown>) => run() }));
 import { ensureOfficialQuestionExplanations } from "@/lib/bank/explanations";
-
-const rows = ["q1", "q2", "q3"].map((id) => ({
-  id,
-  supportText: "Contexto da questão.",
-  statement: "Qual alternativa apresenta a conclusão correta?",
-  options: ["A) Primeiro", "B) Segundo", "C) Terceiro", "D) Quarto"],
-  correctLabel: "B",
-  explanation: null,
-}));
-
-describe("ensureOfficialQuestionExplanations", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.findMany.mockResolvedValue(rows);
-    mocks.updateMany.mockResolvedValue({ count: 1 });
-    mocks.withFeature.mockImplementation(async (_user, _feature, run) => run());
-    mocks.explainOfficialQuestions.mockResolvedValue([
-      "A alternativa B é a correta porque os dados do enunciado confirmam essa relação. As demais opções contradizem a evidência apresentada.",
-    ]);
+const explanation = "O resultado decorre da relação entre os dados apresentados no enunciado. As demais alternativas contradizem essa relação.";
+const rows = ["q1", "q2", "q3"].map((id) => ({ id, supportText: "Contexto.", statement: "Qual conclusão?", options: [{ label: "A", text: "Primeiro" }, { label: "B", text: "Segundo" }], correctLabel: "B", explanation: null }));
+describe("explicações obrigatórias de questões oficiais", () => {
+  beforeEach(() => { vi.clearAllMocks(); mocks.findMany.mockResolvedValue(rows); mocks.requireTier.mockResolvedValue("basic"); mocks.assertWithinSafetyCaps.mockResolvedValue(undefined); mocks.updateMany.mockResolvedValue({ count: 1 }); mocks.explainOfficialQuestions.mockResolvedValue(rows.map(() => explanation)); });
+  it("prepara a devolutiva de todas as questões sem gastar a cota de criação", async () => {
+    const generated = await ensureOfficialQuestionExplanations({ questionIds: rows.map((r) => r.id), user: { id: "student" }, feature: "ai_quiz" });
+    expect(generated.size).toBe(3);
+    expect(mocks.assertWithinSafetyCaps).toHaveBeenCalledWith({ id: "student" }, { tier: "basic" });
+    expect(mocks.updateMany).toHaveBeenCalledTimes(3);
+    expect(mocks.explainOfficialQuestions.mock.calls[0][0][0].options).toEqual(["A) Primeiro", "B) Segundo"]);
   });
-
-  it("não chama a IA quando a cota diária do recurso acabou", async () => {
-    mocks.getUsageSnapshot.mockResolvedValue({ tier: "basic", features: { ai_quiz: { remaining: 0 } } });
-
-    const generated = await ensureOfficialQuestionExplanations({ questionIds: ["q1"], user: { id: "user-1" }, feature: "ai_quiz" });
-
-    expect(generated.size).toBe(0);
-    expect(mocks.withFeature).not.toHaveBeenCalled();
+  it("não grava substitutos quando a geração falha", async () => {
+    mocks.explainOfficialQuestions.mockRejectedValue(new Error("temporariamente indisponível"));
+    const generated = await ensureOfficialQuestionExplanations({ questionIds: ["q1"], user: { id: "student" }, feature: "ai_quiz" });
+    expect(generated.size).toBe(0); expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+  it("reutiliza explicações existentes sem nova chamada", async () => {
+    mocks.findMany.mockResolvedValue(rows.map((r) => ({ ...r, explanation })));
+    await ensureOfficialQuestionExplanations({ questionIds: ["q1"], user: { id: "student" }, feature: "ai_quiz" });
     expect(mocks.explainOfficialQuestions).not.toHaveBeenCalled();
-  });
-
-  it("limita a geração ao saldo e reserva os usos antes de chamar a IA", async () => {
-    mocks.getUsageSnapshot.mockResolvedValue({ tier: "basic", features: { ai_quiz: { remaining: 1 } } });
-
-    const generated = await ensureOfficialQuestionExplanations({ questionIds: ["q1", "q2", "q3"], user: { id: "user-1" }, feature: "ai_quiz" });
-
-    expect(generated.size).toBe(1);
-    expect(mocks.withFeature).toHaveBeenCalledTimes(1);
-    expect(mocks.withFeature.mock.calls[0][3]).toEqual({ tier: "basic", amount: 1 });
-    expect(mocks.explainOfficialQuestions).toHaveBeenCalledTimes(1);
-    expect(mocks.explainOfficialQuestions.mock.calls[0][0]).toHaveLength(1);
-    expect(mocks.updateMany).toHaveBeenCalledTimes(1);
   });
 });

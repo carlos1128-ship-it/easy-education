@@ -109,6 +109,7 @@ model ExamAttempt {
   keyId String @map("key_id")
   requestId String @map("request_id")
   status String @default("active")
+  mode String @default("graded")
   version Int @default(0)
   elapsedSeconds Int @default(0) @map("elapsed_seconds")
   activeSince DateTime? @default(now()) @map("active_since")
@@ -177,8 +178,23 @@ model Profile {
   studyBlockRuns  StudyBlockRun[]
   notes           Note[]
   daySummaries    DaySummary[]
+  parentPaymentRequests ParentPaymentRequest[]
 
   @@map("profiles")
+}
+
+model ParentPaymentRequest {
+  id String @id @default(uuid())
+  userId String @map("user_id")
+  tokenHash String @unique @map("token_hash")
+  plan String
+  expiresAt DateTime @map("expires_at")
+  completedAt DateTime? @map("completed_at")
+  stripeSessionId String? @unique @map("stripe_session_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  @@index([userId, createdAt])
+  @@map("parent_payment_requests")
 }
 
 model StudyPlan {

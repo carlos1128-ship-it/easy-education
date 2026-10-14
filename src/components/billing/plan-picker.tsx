@@ -9,11 +9,12 @@ import { PAYMENT_METHODS, type PaymentMethodId } from "@/lib/payment-methods";
 import { planHighlights, pricePerDayLabel } from "@/lib/plan-comparison";
 import { PLANS, type PlanTier } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+import { ParentShareButton } from "@/components/billing/parent-share-button";
 
 const METHOD_ICON: Record<PaymentMethodId, typeof CreditCard> = { card: CreditCard, pix_automatico: QrCode };
 
 /** Escolha do plano com pagamento imediato e garantia após o primeiro pagamento. */
-export function PlanPicker({ initialPlan, provider = "stripe" }: { initialPlan: PlanTier; provider?: "stripe" | "cakto" }) {
+export function PlanPicker({ initialPlan, provider = "stripe", testMode = true }: { initialPlan: PlanTier; provider?: "stripe" | "cakto"; testMode?: boolean }) {
   const [selected, setSelected] = useState<PlanTier>(initialPlan);
   const [method, setMethod] = useState<PaymentMethodId>("card");
   const [loading, setLoading] = useState(false);
@@ -39,6 +40,7 @@ export function PlanPicker({ initialPlan, provider = "stripe" }: { initialPlan: 
 
   return (
     <div className="flex flex-col gap-6">
+      {testMode ? <p role="status" className="rounded-xl border border-warning/30 bg-warning-tint px-4 py-3 text-sm text-ink">Stripe em modo de teste. Nenhum valor real será cobrado.</p> : null}
       <div role="radiogroup" aria-label="Planos" className="grid gap-4 md:grid-cols-2">
         {(["basic", "full"] as const).map((tier) => {
           const plan = p[tier];
@@ -154,6 +156,7 @@ export function PlanPicker({ initialPlan, provider = "stripe" }: { initialPlan: 
         Pagamento seguro {provider === "cakto" ? "Cakto" : "Stripe"}. {p.guarantee}
       </p>
       {provider === "cakto" ? <p className="m-0 text-center text-xs text-ink-muted">O checkout Cakto informa a taxa de serviço e o valor total antes da confirmação.</p> : null}
+      <ParentShareButton plan={selected} />
     </div>
   );
 }

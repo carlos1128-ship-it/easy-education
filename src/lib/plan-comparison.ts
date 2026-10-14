@@ -41,7 +41,7 @@ function levelRow(id: string, label: string, feature: FeatureKey): ComparisonRow
 
 export function comparisonRows(): ComparisonRow[] {
   return [
-    everyone("simulados", "Simulados com provas anteriores do ENEM (para quem estuda para o ENEM)"),
+    everyone("simulados", "Simulados e provas anteriores"),
     everyone("performance", "Desempenho e estatísticas"),
     everyone("review", "Revisão das questões que você errou nos simulados"),
     levelRow("chat", "Chat com IA", "chat_message"),

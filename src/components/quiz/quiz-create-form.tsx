@@ -26,8 +26,8 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
   const [difficulty, setDifficulty] = useState("medio");
   const [fileId, setFileId] = useState("none");
   const [subjects, setSubjects] = useState(["Matematica"]);
-  // Padrão: questões prontas (provas anteriores, sem IA). A IA entra se o aluno escolher ou se a matéria não tiver banco.
-  const [source, setSource] = useState<"ia" | "provas">("provas");
+  // A criação começa com IA; o aluno também pode selecionar questões de provas anteriores.
+  const [source, setSource] = useState<"ia" | "provas">("ia");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,13 +89,13 @@ export function QuizCreateForm({ files = [] }: { files?: FileOption[] }) {
         </div>
         <div className="space-y-1.5">
           <Label>Questões</Label>
-          <Select value={source} onValueChange={(value) => value && setSource(value as "ia" | "provas")}>
+          <Select value={source} onValueChange={(value) => { if (value === "ia" || value === "provas") { setSource(value); if (value === "provas") setFileId("none"); } }}>
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="provas">Prontas, de provas anteriores</SelectItem>
-              <SelectItem value="ia">Criadas pela IA no seu estilo</SelectItem>
+              <SelectItem value="provas">De provas anteriores</SelectItem>
+              <SelectItem value="ia">Criadas por IA</SelectItem>
             </SelectContent>
           </Select>
         </div>

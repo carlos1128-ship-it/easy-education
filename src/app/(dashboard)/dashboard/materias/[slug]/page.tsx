@@ -38,9 +38,6 @@ export default async function MateriaPage({ params }: { params: Promise<{ slug: 
         <SubjectIcon slug={subject.slug} className="size-14" size={28} />
         <div className="min-w-0">
           <h1 className="m-0 text-2xl font-extrabold tracking-tight text-ink">{subject.name}</h1>
-          <p className="m-0 mt-0.5 text-sm text-ink-muted">
-            {units.length} {units.length === 1 ? "unidade" : "unidades"} · {units.reduce((sum, unit) => sum + unit.questions, 0).toLocaleString("pt-BR")} questões de provas oficiais
-          </p>
         </div>
       </header>
 
@@ -70,8 +67,7 @@ export default async function MateriaPage({ params }: { params: Promise<{ slug: 
                       <div className="min-w-0 flex-1">
                         <p className="m-0 text-[15px] font-medium text-ink">{topic.name}</p>
                         <p className="m-0 text-xs text-ink-muted">
-                          {topic.questions ? `${topic.questions} ${topic.questions === 1 ? "questão" : "questões"}` : "Questões em preparação"}
-                          {topic.answered ? ` · você respondeu ${Math.min(topic.answered, topic.questions)} (${progressPct(topic.correct, topic.answered)}% de acerto)` : ""}
+                          {topic.answered ? `${progressPct(topic.correct, topic.answered)}% de acerto` : ""}
                         </p>
                       </div>
                       {ready ? (
@@ -79,7 +75,7 @@ export default async function MateriaPage({ params }: { params: Promise<{ slug: 
                           body={{ kind: "past", exam: topic.examSlug as string, subject: subject.slug, topic: topic.id }}
                           className="min-h-9 flex-none bg-brand-tint px-4 text-brand-strong hover:bg-brand-soft"
                         >
-                          {topic.answered ? "Continuar" : "Praticar"}
+                          Praticar
                         </StartSessionButton>
                       ) : (
                         <span className="flex-none rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-ink-muted">Em breve</span>

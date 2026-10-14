@@ -2,7 +2,7 @@ export const EXPLANATION_UNAVAILABLE = "A resolução comentada ainda não está
 
 export function needsOfficialExplanation(explanation: string | null | undefined, correctLabel: string) {
   const value = explanation?.trim() ?? "";
-  if (!value) return true;
+  if (value.length < 30 || value === EXPLANATION_UNAVAILABLE) return true;
   return new RegExp(`^gabarito oficial da prova:\\s*alternativa ${correctLabel}\\.?$`, "i").test(value);
 }
 
