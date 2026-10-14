@@ -100,7 +100,11 @@ async function recordSegment(run: StudyBlockRun, minutes: number) {
 export async function syncRun(run: StudyBlockRun, now: Date = new Date()): Promise<StudyBlockRun> {
   if (run.status === "concluido") return run;
   const running = segmentMinutes(run.timerStartedAt, now);
-  const by = blockCompletion({ plannedMinutes: run.plannedMinutes, studiedMinutes: run.studiedMinutes + running, activityDone: await isActivityDone(run) });
+  // Todas as etapas do roteiro feitas (evento real ou marcadas pelo aluno), não só a atividade.
+  const steps = buildRoadmap({ type: run.type, subject: run.subject, topic: run.topic, plannedMinutes: run.plannedMinutes });
+  const manual = new Set(parseManualChecks(run.manualChecks, steps.length));
+  const stepsDone = roadmapChecks(steps, await runEvents(run, now)).every((auto, index) => auto || manual.has(index));
+  const by = blockCompletion({ plannedMinutes: run.plannedMinutes, studiedMinutes: run.studiedMinutes + running, stepsDone });
   if (!by) return run;
   // Só conclui uma vez, mesmo com duas abas consultando ao mesmo tempo.
   const updated = await getPrisma().studyBlockRun.updateMany({

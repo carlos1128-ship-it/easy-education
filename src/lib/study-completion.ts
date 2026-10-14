@@ -2,7 +2,9 @@
  * O que é "concluído" no plano de estudos. É a ÚNICA regra: o bloco (botão Iniciar/Continuar), o roteiro
  * e a trilha (dia concluído = nível) leem daqui.
  *
- * Bloco concluído = a atividade do bloco terminou OU os minutos planejados do bloco foram cumpridos.
+ * Bloco concluído = TODAS as etapas do roteiro feitas (pelo evento real ou marcadas pelo aluno) OU os minutos
+ * planejados do bloco cumpridos. Terminar só a atividade (quiz, simulado, deck, redação) marca a etapa dela,
+ * não o bloco inteiro: antes, um quiz respondido em 1 minuto fechava um bloco de 1 hora com todas as etapas.
  *  - estudo: quiz respondido até o fim (ou a sessão de provas anteriores terminada);
  *  - simulado: simulado respondido até o fim;
  *  - revisão: todos os cartões do deck revisados depois do início do bloco;
@@ -28,9 +30,9 @@ export function blockKey(block: { subject: string; topic?: string | null; type: 
   return [slugify(block.subject) || "geral", slugify(block.topic ?? "").slice(0, 80), block.type].join("|");
 }
 
-/** Bloco concluído? Atividade terminada vence; senão, os minutos registrados precisam cobrir o planejado. */
-export function blockCompletion(input: { plannedMinutes: number; studiedMinutes: number; activityDone: boolean }): CompletedBy | null {
-  if (input.activityDone) return "atividade";
+/** Bloco concluído? Todas as etapas feitas vence; senão, os minutos registrados precisam cobrir o planejado. */
+export function blockCompletion(input: { plannedMinutes: number; studiedMinutes: number; stepsDone: boolean }): CompletedBy | null {
+  if (input.stepsDone) return "atividade";
   if (input.plannedMinutes > 0 && input.studiedMinutes >= input.plannedMinutes) return "tempo";
   return null;
 }

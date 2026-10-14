@@ -5,12 +5,12 @@ import { buildRoadmap, roadmapChecks } from "@/lib/study-roadmap";
 const none = { minutes: 0, quiz: 0, simulado: 0, essay: 0, cards: 0 };
 
 describe("bloco concluído", () => {
-  it("atividade terminada conclui, mesmo com pouco tempo", () => {
-    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 5, activityDone: true })).toBe("atividade");
+  it("todas as etapas feitas concluem, mesmo com pouco tempo", () => {
+    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 5, stepsDone: true })).toBe("atividade");
   });
-  it("minutos planejados cumpridos concluem sem a atividade", () => {
-    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 60, activityDone: false })).toBe("tempo");
-    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 59, activityDone: false })).toBeNull();
+  it("minutos planejados cumpridos concluem sem as etapas", () => {
+    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 60, stepsDone: false })).toBe("tempo");
+    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 59, stepsDone: false })).toBeNull();
   });
   it("estado do bloco: sem registro é pendente", () => {
     expect(blockStatus(null)).toBe("pendente");
@@ -83,6 +83,11 @@ describe("roteiro com checks automáticos", () => {
     expect(roadmapChecks(steps, { ...base, noteWritten: true })[3]).toBe(true);
     expect(roadmapChecks(steps, { ...base, minutes: 60 })[3]).toBe(false);
     expect(roadmapChecks(steps, { ...base, minutes: 60, activityDone: true })[3]).toBe(true);
+  });
+  it("quiz terminado em 1 minuto marca só a prática (e o aquecimento sem revisão), não o bloco inteiro", () => {
+    const checks = roadmapChecks(steps, { ...base, minutes: 1, activityDone: true, reviewsDue: 0 });
+    expect(checks).toEqual([true, false, true, false]);
+    expect(blockCompletion({ plannedMinutes: 60, studiedMinutes: 1, stepsDone: checks.every(Boolean) })).toBeNull();
   });
   it("bloco concluído marca tudo", () => {
     expect(roadmapChecks(steps, { ...base, completed: true })).toEqual([true, true, true, true]);
