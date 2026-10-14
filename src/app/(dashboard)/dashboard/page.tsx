@@ -12,6 +12,8 @@ import { StudySessionButton } from "@/components/study-plan/study-session-button
 import { LevelCard } from "@/components/gamification/level-card";
 import { MenuIcon } from "@/components/layout/menu-icon";
 import { getGamification } from "@/lib/gamification";
+import { getNextTopics } from "@/lib/bank/peer-stats";
+import { StartSessionButton } from "@/components/bank/start-session-button";
 import { blockKey, blockStatus } from "@/lib/study-completion";
 import { getTodayRuns } from "@/lib/study-runs";
 import { startOfToday, startOfWindow } from "@/lib/study-stats";
@@ -80,7 +82,7 @@ export default async function DashboardPage() {
   const todayBlocks = getTodayPlanBlocks(plan);
   const tomorrowBlocks = getTomorrowPlanBlocks(plan);
   const todayRuns = todayBlocks.length ? await getTodayRuns(user.id) : new Map();
-  const gamification = await getGamification(user.id);
+  const [gamification, nextTopics] = await Promise.all([getGamification(user.id), getNextTopics(user.id)]);
   const goalMinutes = profile?.dailyMinutes ?? 60;
   const dailyProgress = Math.min(100, Math.round((todayMinutes / Math.max(goalMinutes, 1)) * 100));
   const weeklyGoalMinutes = goalMinutes * 7;
@@ -284,6 +286,38 @@ export default async function DashboardPage() {
       ) : null}
 
       <LevelCard stats={gamification} />
+
+      {/* A seguir: os assuntos de prova em que o aluno mais erra, com treino de 10 questões só daquele assunto. */}
+      {nextTopics.length ? (
+        <section className={cn(card, "flex flex-col gap-3 p-4 lg:p-6")} aria-label="A seguir">
+          <div>
+            <h2 className={h2}>A seguir</h2>
+            <p className="m-0 mt-1 text-sm text-ink-muted">Os assuntos em que você mais errou nas provas anteriores. Um treino curto em cada um rende mais que estudar tudo de novo.</p>
+          </div>
+          <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-3">
+            {nextTopics.map((item) => (
+              <li key={`${item.examSlug}-${item.subjectSlug}-${item.topicId ?? "materia"}`} className="flex flex-col gap-3 rounded-xl border border-border border-b-4 bg-surface p-4">
+                <div className="min-w-0">
+                  <p className="m-0 text-xs font-semibold uppercase tracking-wide text-brand-strong">{item.topic ? item.subject : item.examSlug.toUpperCase()}</p>
+                  <p className="m-0 mt-1 line-clamp-2 text-[15px] font-bold text-ink" title={item.topic ?? item.subject}>{item.topic ?? item.subject}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-track" aria-hidden="true">
+                    <div className="h-full rounded-full bg-danger" style={{ width: `${Math.max(4, item.accuracy)}%` }} />
+                  </div>
+                  <span className="whitespace-nowrap text-xs font-medium text-ink-muted">{item.accuracy}% de acerto em {item.answered}</span>
+                </div>
+                <StartSessionButton
+                  body={{ kind: "past", exam: item.examSlug, subject: item.subjectSlug, ...(item.topicId ? { topic: item.topicId } : {}) }}
+                  className="bg-brand-tint text-brand-strong hover:bg-brand-soft"
+                >
+                  {item.topic ? "Treinar este assunto" : "Treinar esta matéria"}
+                </StartSessionButton>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Provas anteriores: o ícone da prova chama para as questões que já caíram. */}
       <Link

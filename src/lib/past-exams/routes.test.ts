@@ -1,0 +1,24 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+const state=vi.hoisted(()=>({user:null as null|{id:string;email:string},paid:true,admin:false,save:vi.fn(),start:vi.fn()}));
+vi.mock("@/lib/auth",()=>({requireUser:async()=>state.user?{user:state.user,response:null}:{user:null,response:Response.json({error:"Sessão inválida"},{status:401})}}));
+vi.mock("@/lib/admin",()=>({requireAdminApi:async()=>state.admin?{user:state.user,response:null}:{user:null,response:Response.json({error:"Não encontrado"},{status:404})},isAdminEmail:()=>state.admin}));
+vi.mock("@/lib/usage",()=>({requireTier:async()=>{if(!state.paid)throw new Error("Pagamento necessário");return "full";}}));
+vi.mock("@/lib/api-error",()=>({apiErrorResponse:()=>Response.json({error:"Pagamento necessário"},{status:402})}));
+vi.mock("@/lib/past-exams/service",()=>({startAttempt:state.start,updateAttempt:state.save,getAttempt:vi.fn(),saveDraft:vi.fn(),publishExam:vi.fn()}));
+import { POST as start } from "@/app/api/past-exams/attempts/route";
+import { PATCH as update } from "@/app/api/past-exams/attempts/[id]/route";
+import { POST as manage } from "@/app/api/internal/past-exams/route";
+import { POST as upload } from "@/app/api/internal/past-exams/documents/route";
+import { POST as importFile } from "@/app/api/internal/past-exams/import/route";
+const id="00000000-0000-4000-8000-000000000001";
+const req=(body:unknown,origin="https://example.org")=>new Request("https://example.org/api/past-exams/attempts",{method:"POST",headers:{"Content-Type":"application/json",origin},body:JSON.stringify(body)});
+beforeEach(()=>{state.user=null;state.admin=false;state.paid=true;state.start.mockReset();state.save.mockReset();});
+describe("fronteiras HTTP de provas",()=>{
+  it("exige autenticação para iniciar",async()=>expect((await start(req({}))).status).toBe(401));
+  it("exige autenticação para salvar",async()=>expect((await update(req({}),{params:Promise.resolve({id})})).status).toBe(401));
+  it("exige assinatura ativa",async()=>{state.user={id,email:"qa@example.com"};state.paid=false;expect((await start(req({examId:id,requestId:id}))).status).toBe(402);expect(state.start).not.toHaveBeenCalled();});
+  it("usa ID autenticado, não um ID enviado pelo cliente",async()=>{state.user={id:"owner",email:"qa@example.com"};state.start.mockResolvedValue({id});expect((await start(req({examId:id,requestId:id,userId:"victim"}))).status).toBe(200);expect(state.start).toHaveBeenCalledWith(id,"owner",id);});
+  it("recusa origem diferente",async()=>{state.user={id,email:"qa@example.com"};expect((await start(req({examId:id,requestId:id},"https://evil.example"))).status).toBe(403);});
+  it("valida tamanho e formato de respostas",async()=>{state.user={id,email:"qa@example.com"};expect((await update(req({version:0,action:"save",answers:[{number:1,value:"x".repeat(16001),reviewed:false}]}),{params:Promise.resolve({id})})).status).toBe(400);expect(state.save).not.toHaveBeenCalled();});
+  it.each([manage,upload,importFile])("impede aluno de administrar, importar ou enviar PDF",async(handler)=>{state.user={id,email:"qa@example.com"};expect((await handler(req({}))).status).toBe(404);});
+});

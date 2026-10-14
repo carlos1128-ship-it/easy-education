@@ -17,7 +17,7 @@ const schema = z.discriminatedUnion("kind", [
   }),
   z.object({ kind: z.literal("diagnostic"), exam: z.string().max(40).default("enem") }),
   // Provas anteriores: treino de 10 questões (exame e matéria) ou a prova completa de uma edição.
-  z.object({ kind: z.literal("past"), exam: z.string().max(40), subject: z.string().max(80).optional(), year: z.number().int().min(1990).max(2100).optional(), edition: z.string().max(40).default("") }),
+  z.object({ kind: z.literal("past"), exam: z.string().max(40), subject: z.string().max(80).optional(), topic: z.string().uuid().optional(), year: z.number().int().min(1990).max(2100).optional(), edition: z.string().max(40).default("") }),
 ]);
 
 /** Cria um simulado de provas anteriores do ENEM (1º dia, 2º dia ou completo) ou o diagnóstico. Sem IA, sem custo. */
@@ -54,8 +54,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ sessionId: session.id, total: ids.length });
       }
       const subject = payload.subject ? await getPrisma().bankSubject.findUnique({ where: { slug: payload.subject }, select: { name: true } }) : null;
-      const ids = await pickPracticeQuestions(user.id, payload.exam, subject ? (payload.subject ?? null) : null);
-      const session = await createSession({ userId: user.id, kind: "practice", title: `${exam.short} · ${subject?.name ?? "Todas as matérias"}`, questionIds: ids, examSlug: payload.exam });
+      const topic = payload.topic ? await getPrisma().bankTopic.findUnique({ where: { id: payload.topic }, select: { id: true, name: true } }) : null;
+      const ids = await pickPracticeQuestions(user.id, payload.exam, subject ? (payload.subject ?? null) : null, undefined, topic?.id ?? null);
+      const label = topic ? `${subject?.name ? `${subject.name}: ` : ""}${topic.name}` : (subject?.name ?? "Todas as matérias");
+      const session = await createSession({ userId: user.id, kind: "practice", title: `${exam.short} · ${label}`, questionIds: ids, examSlug: payload.exam });
       return NextResponse.json({ sessionId: session.id, total: ids.length });
     }
 

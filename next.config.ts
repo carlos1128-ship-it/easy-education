@@ -28,6 +28,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   outputFileTracingIncludes: {
     "/api/files/[id]/process": ["./node_modules/@napi-rs/canvas*/**/*"],
+    "/api/internal/past-exams/import": ["./node_modules/pdf-parse/dist/**/*", "./node_modules/@napi-rs/canvas*/**/*"],
+    "/api/internal/past-exams/documents": ["./node_modules/pdf-parse/dist/**/*", "./node_modules/@napi-rs/canvas*/**/*"],
   },
   serverExternalPackages: ["@napi-rs/canvas"],
   turbopack: {

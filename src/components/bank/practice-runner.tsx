@@ -10,11 +10,10 @@ import { ExplanationText } from "@/components/quiz/explanation-text";
 import { OwlMascot, usePreloadOwls, type OwlMood } from "@/components/mascot/owl-mascot";
 import { readApiJson } from "@/lib/client-response";
 import type { ClientQuestion, Reveal } from "@/lib/bank/service";
-import { playSound, primeSounds } from "@/lib/sounds";
 import { XP_RULES } from "@/lib/xp";
 import { cn } from "@/lib/utils";
 
-type Answer = { selected: string; isCorrect: boolean; reveal: Reveal };
+type Answer = { selected: string; isCorrect: boolean; reveal: Reveal; peerCorrectPct?: number | null };
 
 type Props = {
   sessionId: string;
@@ -80,13 +79,11 @@ export function PracticeRunner({ sessionId, title, examName, questions, initialA
   useEffect(() => {
     if (!done || finished.current || !answeredList.length) return;
     finished.current = true;
-    playSound("concluido");
     void fetch(`/api/bank/sessions/${sessionId}/finish`, { method: "POST" }).catch(() => undefined);
   }, [done, answeredList.length, sessionId]);
 
   async function confirm() {
     if (!question || !choice || busy || answer) return;
-    primeSounds();
     setBusy(true);
     try {
       const response = await fetch("/api/bank/answers", {
@@ -94,11 +91,18 @@ export function PracticeRunner({ sessionId, title, examName, questions, initialA
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questionId: question.id, sessionId, selected: choice, timeMs: shownAt.current ? Date.now() - shownAt.current : 0 }),
       });
-      const data = await readApiJson<{ isCorrect?: boolean; correctLabel?: string; explanation?: string | null; reviewStatus?: string }>(response, "Não foi possível salvar a resposta.");
+      const data = await readApiJson<{ isCorrect?: boolean; correctLabel?: string; explanation?: string | null; reviewStatus?: string; peerCorrectPct?: number | null }>(response, "Não foi possível salvar a resposta.");
       if (!response.ok || !data.correctLabel) throw new Error(data.error ?? "Não foi possível salvar a resposta.");
       const isCorrect = Boolean(data.isCorrect);
-      playSound(isCorrect ? "acerto" : "erro");
-      setAnswers((current) => ({ ...current, [question.id]: { selected: choice, isCorrect, reveal: { correctLabel: data.correctLabel as string, explanation: data.explanation ?? null, reviewStatus: data.reviewStatus ?? "nao_revisada" } } }));
+      setAnswers((current) => ({
+        ...current,
+        [question.id]: {
+          selected: choice,
+          isCorrect,
+          reveal: { correctLabel: data.correctLabel as string, explanation: data.explanation ?? null, reviewStatus: data.reviewStatus ?? "nao_revisada" },
+          peerCorrectPct: typeof data.peerCorrectPct === "number" ? data.peerCorrectPct : null,
+        },
+      }));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar a resposta.");
     } finally {
@@ -278,12 +282,15 @@ function Footer({ answer, choice, busy, onConfirm, onNext, isLast, streak }: { a
                 {answer.isCorrect ? `Boa! +${XP_RULES.correct} XP` : "Oops"}
               </p>
               {!answer.isCorrect ? <p className="m-0 text-sm font-medium text-ink">Resposta certa: alternativa {answer.reveal.correctLabel}. Ela volta na sua revisão.</p> : null}
+              {typeof answer.peerCorrectPct === "number" ?<p className="m-0 text-sm text-ink-muted">{answer.peerCorrectPct}% dos alunos acertaram esta questão.</p> : null}
               {answer.reveal.explanation ? (
                 <details className="mt-1 text-sm text-ink">
                   <summary className="cursor-pointer font-semibold text-brand-strong">Ver resolução</summary>
                   <div className="mt-2 max-h-48 overflow-y-auto pr-2"><ExplanationText text={answer.reveal.explanation} /></div>
                 </details>
-              ) : null}
+              ) : (
+                <p className="m-0 text-sm text-ink-muted">A resolução comentada ainda não está disponível para esta questão.</p>
+              )}
             </div>
           </div>
         ) : (

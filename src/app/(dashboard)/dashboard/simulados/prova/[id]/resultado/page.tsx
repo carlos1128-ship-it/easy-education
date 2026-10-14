@@ -6,7 +6,9 @@ import { QuestionTools } from "@/components/bank/question-tools";
 import { ENEM_AREAS } from "@/lib/bank/constants";
 import { ESTIMATE_DISCLAIMER } from "@/lib/bank/estimate";
 import { getBookmarkedIds, getSessionForUser, computeResult } from "@/lib/bank/service";
+import { needsOfficialExplanation } from "@/lib/bank/explanation-quality";
 import { sourceLabel } from "@/lib/bank/labels";
+import { getQuestionPeerStats, getSessionPercentile } from "@/lib/bank/peer-stats";
 import { sessionHref, SIMULADOS_HREF } from "@/lib/bank/paths";
 import { getStudentOrRedirect } from "@/lib/server-user";
 import { cn } from "@/lib/utils";
@@ -37,7 +39,12 @@ export default async function ResultadoPage({ params }: { params: Promise<{ id: 
 
   const durationSec = Math.max(1, Math.round((session.finishedAt.getTime() - session.startedAt.getTime()) / 1000));
   const result = computeResult(questions, session.answers, durationSec);
-  const bookmarked = await getBookmarkedIds(user.id, questions.map((question) => question.id));
+  const questionIds = questions.map((question) => question.id);
+  const [bookmarked, ranking, peers] = await Promise.all([
+    getBookmarkedIds(user.id, questionIds),
+    getSessionPercentile({ userId: user.id, kind: session.kind, examId: session.examId, title: session.title, accuracy: result.accuracy }),
+    getQuestionPeerStats(questionIds, user.id),
+  ]);
   const answerBy = new Map(result.items.map((item) => [item.questionId, item]));
   const showEstimate = session.kind !== "practice" && result.overallEstimate && session.exam?.slug === "enem";
   // Matérias só aparecem para as questões já classificadas; as demais contam na área.
@@ -67,6 +74,16 @@ export default async function ResultadoPage({ params }: { params: Promise<{ id: 
           <p className="m-0 mt-1 text-[13px] font-medium text-ink-muted">de tempo total</p>
         </div>
       </section>
+
+      {ranking ? (
+        <section className="flex items-center gap-4 rounded-2xl border-2 border-brand/40 bg-brand-tint p-5">
+          <p className="m-0 text-[32px] font-extrabold leading-none text-brand-strong">{ranking.percentile}%</p>
+          <p className="m-0 text-[15px] text-ink">
+            Você foi melhor que <strong>{ranking.percentile}%</strong> dos alunos que fizeram {session.kind === "simulado" ? "esta prova" : "este tipo de treino"} na Easy Education
+            <span className="text-ink-muted"> ({ranking.compared} resultados comparados).</span>
+          </p>
+        </section>
+      ) : null}
 
       {showEstimate && result.overallEstimate ? (
         <section className="rounded-2xl border border-border bg-surface p-5 shadow-card">
@@ -120,6 +137,7 @@ export default async function ResultadoPage({ params }: { params: Promise<{ id: 
         <h2 className="m-0 text-lg font-bold text-ink">Questão por questão</h2>
         {questions.map((question, position) => {
           const item = answerBy.get(question.id);
+          const peer = peers.get(question.id);
           const options = Array.isArray(question.options) ? (question.options as Array<{ label: string; text: string }>) : [];
           return (
             <details key={question.id} className="group rounded-2xl border border-border bg-surface p-4 shadow-card">
@@ -141,12 +159,17 @@ export default async function ResultadoPage({ params }: { params: Promise<{ id: 
                     </li>
                   ))}
                 </ol>
-                {question.explanation ? (
+                {peer ? (
+                  <p className="m-0 text-sm text-ink-muted">
+                    <strong className="text-ink">{peer.correctPct}%</strong> dos alunos acertaram esta questão ({peer.answers} respostas).
+                  </p>
+                ) : null}
+                {!needsOfficialExplanation(question.explanation, question.correctLabel) ? (
                   <div>
                     <p className="m-0 text-[13px] font-semibold uppercase tracking-wide text-ink-muted">Resolução comentada</p>
                     <p className="m-0 mt-1 whitespace-pre-line text-ink">{question.explanation}</p>
                   </div>
-                ) : null}
+                ) : <p className="m-0 text-sm text-ink-muted">A resolução comentada ainda não está disponível para esta questão.</p>}
                 <QuestionTools questionId={question.id} bookmarked={bookmarked.has(question.id)} />
               </div>
             </details>

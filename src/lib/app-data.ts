@@ -1,4 +1,4 @@
-import { BookOpen, CalendarCheck, CreditCard, FileEdit, PenTool, Settings, Sparkles, Target, Upload, type LucideIcon } from "lucide-react";
+import { BookOpen, CalendarCheck, CreditCard, FileEdit, Library, Settings, Sparkles, Target, Upload, type LucideIcon } from "lucide-react";
 import type { MenuIconName } from "@/components/layout/menu-icon";
 
 type NavItem = {
@@ -15,6 +15,7 @@ export const navItems: NavItem[] = [
   { href: "/dashboard/chat", label: "Chat IA", icon: "chat", group: "Menu Principal", accent: "#06B6D4" },
   { href: "/dashboard/arquivos", label: "Arquivos", icon: "arquivos", group: "Menu Principal" },
   { href: "/dashboard/quizzes", label: "Quizzes", icon: "quizzes", group: "Menu Principal" },
+  { href: "/dashboard/materias", label: "Matérias", icon: Library, group: "Menu Principal" },
   { href: "/dashboard/flashcards", label: "Flashcards", icon: "flashcards", group: "Menu Principal" },
   { href: "/dashboard/plano", label: "Plano de estudo", icon: "plano", group: "Meus Estudos" },
   { href: "/dashboard/redacao", label: "Redação", icon: "redacao", group: "Meus Estudos" },

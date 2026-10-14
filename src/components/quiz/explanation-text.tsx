@@ -8,6 +8,9 @@ function toSeconds(value: string) {
 
 /** Explicação da questão; se o material for um vídeo, cada "MM:SS" abre o YouTube naquele minuto. */
 export function ExplanationText({ text, videoId }: { text: string; videoId?: string | null }) {
+  if (/^gabarito oficial da prova:\s*alternativa [A-E]\.?$/i.test(text.trim())) {
+    return <>A resolução comentada ainda não está disponível para esta questão.</>;
+  }
   if (!videoId) return <>{text}</>;
   const parts = text.split(TIMESTAMP);
   return (

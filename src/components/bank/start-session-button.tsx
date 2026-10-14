@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 type Body =
   | { kind: "enem"; day: "dia1" | "dia2" | "completo"; language?: "ingles" | "espanhol" }
   | { kind: "diagnostic"; exam: string }
-  | { kind: "past"; exam: string; subject?: string; year?: number; edition?: string };
+  | { kind: "past"; exam: string; subject?: string; topic?: string; year?: number; edition?: string };
 
 /** Cria a sessão (simulado ou diagnóstico) e abre. Sem IA e sem custo. */
 export function StartSessionButton({ body, children, className, disabled, busyLabel = "Preparando..." }: { body: Body; children: React.ReactNode; className?: string; disabled?: boolean; busyLabel?: string }) {

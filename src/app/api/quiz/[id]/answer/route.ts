@@ -19,16 +19,31 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const question = quiz.questions.find((item) => item.id === body.questionId);
     if (!question) return NextResponse.json({ error: "Questao nao encontrada." }, { status: 404 });
     if (question.userAnswer !== null) {
-      return NextResponse.json({ error: "Resposta ja confirmada." }, { status: 409 });
+      return NextResponse.json({
+        error: "Resposta ja confirmada.",
+        userAnswer: question.userAnswer,
+        correct: normalizeCorrectAnswer(question.userAnswer) === normalizeCorrectAnswer(question.correctAnswer),
+        explanation: question.explanation,
+      }, { status: 409 });
     }
     const answer = normalizeCorrectAnswer(body.answer);
     const correctAnswer = normalizeCorrectAnswer(question.correctAnswer);
     const isCorrect = answer === correctAnswer;
 
-    await prisma.quizQuestion.update({
-      where: { id: body.questionId },
+    const saved = await prisma.quizQuestion.updateMany({
+      where: { id: body.questionId, userAnswer: null },
       data: { userAnswer: answer, isCorrect },
     });
+    if (!saved.count) {
+      const latest = await prisma.quizQuestion.findUnique({ where: { id: body.questionId } });
+      if (!latest?.userAnswer) return NextResponse.json({ error: "Resposta ja confirmada." }, { status: 409 });
+      return NextResponse.json({
+        error: "Resposta ja confirmada.",
+        userAnswer: latest.userAnswer,
+        correct: normalizeCorrectAnswer(latest.userAnswer) === normalizeCorrectAnswer(latest.correctAnswer),
+        explanation: latest.explanation,
+      }, { status: 409 });
+    }
 
     const updatedQuestions = await prisma.quizQuestion.findMany({ where: { quizId: id } });
     const answered = updatedQuestions.filter((item) => item.userAnswer !== null);

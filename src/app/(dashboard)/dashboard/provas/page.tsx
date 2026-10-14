@@ -47,6 +47,11 @@ export default async function ProvasPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6">
+      <nav className="flex flex-wrap gap-4 border-b border-border pb-4 text-sm font-medium" aria-label="Tipos de treino">
+        <span aria-current="page">Treino por questões</span>
+        <Link href="/dashboard/provas/cadernos" className="text-brand">Cadernos completos</Link>
+        <Link href="/dashboard/provas/historico" className="text-ink-muted">Histórico de provas</Link>
+      </nav>
       {/* A coruja escolar apresenta as provas anteriores. */}
       <section className="relative overflow-hidden rounded-3xl border border-border bg-hero-panel p-5 shadow-card lg:p-8">
         <div className="pointer-events-none absolute -right-16 -top-24 size-72 rounded-full bg-brand/10 blur-3xl" aria-hidden="true" />

@@ -109,6 +109,22 @@ async function main() {
           data.explanation = undefined;
           break;
         }
+      } else if (finding.tipo === "outro" && !TYPO_FIXES[short]) {
+        // Rodada 3: "outro" sem troca exata conhecida (erro de digitação, trecho corrompido): reescreve a explicação se o
+        // revisor trouxe texto limpo; senão a questão sai, porque o defeito está no enunciado ou nas alternativas.
+        const match = suggestion.match(/^reescrever explica[cç][aã]o:\s*([\s\S]{40,})$/i);
+        if (match && !BAD_SUGGESTION.test(match[1])) {
+          data.explanation = match[1].trim().replace(/^["“']|["”']$/g, "");
+          stats.explanation += 1;
+          console.log(`explicação ${short} (outro)`);
+        } else {
+          console.log(`remover  ${short} outro sem texto novo`);
+          stats.copies += await dropUnansweredCopies(row.question, apply);
+          if (apply) await prisma.sharedQuestion.delete({ where: { id } });
+          stats.removed += 1;
+          data.explanation = undefined;
+          break;
+        }
       } else if (finding.tipo === "outro" && TYPO_FIXES[short]) {
         let question = data.question ?? row.question;
         let options: unknown = data.options ?? row.options;

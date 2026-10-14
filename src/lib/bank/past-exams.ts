@@ -93,10 +93,18 @@ export async function getExamDetail(userId: string, examSlug: PastExamSlug) {
 }
 
 /** Treino: `count` questões do exame (e da matéria), preferindo as que o aluno ainda não respondeu. */
-export async function pickPracticeQuestions(userId: string, examSlug: PastExamSlug, subjectSlug: string | null, count = PRACTICE_SIZE) {
+export async function pickPracticeQuestions(userId: string, examSlug: PastExamSlug, subjectSlug: string | null, count = PRACTICE_SIZE, topicId: string | null = null) {
   const prisma = getPrisma();
   const rows = await prisma.bankQuestion.findMany({
-    where: { AND: [visibleWhere(userId), { origin: ORIGIN.official, exam: { slug: examSlug } }, subjectSlug ? { subject: { slug: subjectSlug } } : {}] },
+    where: {
+      AND: [
+        visibleWhere(userId),
+        { origin: ORIGIN.official, exam: { slug: examSlug } },
+        subjectSlug ? { subject: { slug: subjectSlug } } : {},
+        // Treino de um assunto só (vem do card "A seguir" do Início).
+        topicId ? { topicId } : {},
+      ],
+    },
     select: { id: true, area: true, subject: { select: { slug: true } } },
     take: 5000,
   });

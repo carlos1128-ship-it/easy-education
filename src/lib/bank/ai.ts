@@ -1,6 +1,7 @@
 import { Type, type Schema } from "@google/genai";
 import { DIFFICULTIES, OPTION_LABELS, SEED_SUBJECTS, type Difficulty } from "@/lib/bank/constants";
 import type { BankOption } from "@/lib/bank/import";
+import { normalizeOfficialExplanation } from "@/lib/bank/explanation-quality";
 import { generateJSON } from "@/lib/gemini";
 
 /** Questão como a IA enxerga: sem o gabarito, para ela resolver "às cegas". */
@@ -117,7 +118,7 @@ Retorne um array JSON com exatamente ${items.length} objetos, na mesma ordem, ca
     items: { type: Type.OBJECT, properties: { explanation: { type: Type.STRING } }, required: ["explanation"] },
   };
   const result = await generateJSON<Array<{ explanation?: string }>>(prompt, { schema, thinkingBudget: 2048, temperature: 0.2, attemptTimeoutMs: 90_000 });
-  return items.map((_, index) => result[index]?.explanation?.trim() || null);
+  return items.map((_, index) => normalizeOfficialExplanation(result[index]?.explanation));
 }
 
 export type GeneratedQuestion = {

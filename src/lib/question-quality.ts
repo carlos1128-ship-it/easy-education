@@ -18,7 +18,7 @@ const solveSchema: Schema = {
   type: Type.ARRAY,
   items: {
     type: Type.OBJECT,
-    properties: { n: { type: Type.INTEGER }, answer: { type: Type.STRING, enum: ["A", "B", "C", "D", "E"] } },
+    properties: { n: { type: Type.INTEGER }, answer: { type: Type.STRING, enum: ["A", "B", "C", "D", "E", "X"] } },
     required: ["n", "answer"],
   },
 };
@@ -60,11 +60,11 @@ export async function solveBlind(questions: Array<Pick<GeneratedQuizQuestion, "q
     .join("\n\n");
   const answers = await generateJSON<Array<{ n: number; answer: string }>>(
     `Resolva cada questão de múltipla escolha abaixo com cuidado e responda só a letra correta de cada uma.
-Se uma questão tiver mais de uma alternativa correta, nenhuma correta, dados que faltam ou erro de conteúdo, responda a letra que considera menos errada (ela será descartada se não bater).
+Antes de escolher, faça a conta ou o raciocínio completo e compare o resultado com CADA alternativa. Responda "X" (questão inválida, será descartada) se: nenhuma alternativa bater com o seu resultado; mais de uma alternativa estiver correta; o enunciado tiver dado faltando, impossível ou inventado (gráfico, tabela ou texto que não aparece); ou houver erro de conteúdo. Nunca escolha a alternativa "mais próxima" quando nenhuma está certa.
 
 ${listing}
 
-Responda um array JSON com { "n": número da questão, "answer": ${lettersFor(optionCount).map((letter) => `"${letter}"`).join(" | ")} } para cada questão.`,
+Responda um array JSON com { "n": número da questão, "answer": ${[...lettersFor(optionCount), "X"].map((letter) => `"${letter}"`).join(" | ")} } para cada questão.`,
     { schema: solveSchema, thinkingBudget: 1024, temperature: 0, ...((options.model ?? VERIFY_MODEL) ? { model: options.model ?? VERIFY_MODEL } : {}) },
   );
   return new Map(answers.map((item) => [item.n - 1, String(item.answer).trim().toUpperCase().charAt(0)]));

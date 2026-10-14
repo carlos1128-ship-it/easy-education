@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { ORIGIN, SEED_SUBJECTS } from "@/lib/bank/constants";
-import { explainOfficialQuestions } from "@/lib/bank/ai";
+import { ensureOfficialQuestionExplanations } from "@/lib/bank/explanations";
+import { EXPLANATION_UNAVAILABLE, needsOfficialExplanation } from "@/lib/bank/explanation-quality";
 import { pickPreferringUnseen } from "@/lib/bank/enem-simulado";
 import { sourceLabel } from "@/lib/bank/labels";
 import { parsePersonalization } from "@/lib/learner-profile";
@@ -83,7 +84,7 @@ export class NoBankQuestionsError extends Error {}
  * Cria o quiz com até `count` questões de provas das matérias pedidas (com o tema, se der). Lança
  * NoBankQuestionsError se não houver pelo menos 3 questões que sirvam.
  */
-export async function createQuizFromBank(input: { userId: string; subject: string; topic?: string | null; count: number; difficulty: string; title?: string }) {
+export async function createQuizFromBank(input: { userId: string; userEmail: string | null; subject: string; topic?: string | null; count: number; difficulty: string; title?: string }) {
   const prisma = getPrisma();
   const slugs = bankSubjectsFor(input.subject, input.topic);
   if (!slugs.length) throw new NoBankQuestionsError("Matéria sem questões de prova no banco.");
@@ -113,30 +114,11 @@ export async function createQuizFromBank(input: { userId: string; subject: strin
   const fresh = ranked.filter((row) => !seen.has(row.id));
   const chosen = [...fresh, ...ranked.filter((row) => seen.has(row.id))].slice(0, input.count);
 
-  // Questões oficiais sem comentário: a IA explica (uma chamada só) e a explicação fica guardada no banco.
-  const generated = new Map<string, string>();
-  const missing = chosen.filter((row) => !row.explanation?.trim());
-  if (missing.length) {
-    try {
-      const explained = await explainOfficialQuestions(
-        missing.map((row) => ({
-          text: quizTextFor(row),
-          options: (row.options as Array<{ label: string; text: string }>).map((option) => `${option.label}) ${option.text}`),
-          correctLabel: row.correctLabel,
-        })),
-      );
-      const saved: Array<Promise<unknown>> = [];
-      missing.forEach((row, index) => {
-        const text = explained[index];
-        if (!text) return;
-        generated.set(row.id, text);
-        saved.push(prisma.bankQuestion.update({ where: { id: row.id }, data: { explanation: text } }));
-      });
-      await Promise.allSettled(saved);
-    } catch (error) {
-      console.error("[quiz-fallback.explain]", error instanceof Error ? error.message : error);
-    }
-  }
+  const generated = await ensureOfficialQuestionExplanations({
+    questionIds: chosen.map((row) => row.id),
+    user: { id: input.userId, email: input.userEmail ?? undefined },
+    feature: input.difficulty === "simulado" ? "ai_simulado" : "ai_quiz",
+  });
 
   return prisma.quiz.create({
     data: {
@@ -152,7 +134,7 @@ export async function createQuizFromBank(input: { userId: string; subject: strin
             question: quizTextFor(row),
             options,
             correctAnswer: row.correctLabel,
-            explanation: row.explanation?.trim() || generated.get(row.id) || `Gabarito oficial da prova: alternativa ${row.correctLabel}.`,
+            explanation: generated.get(row.id) || (needsOfficialExplanation(row.explanation, row.correctLabel) ? EXPLANATION_UNAVAILABLE : row.explanation?.trim() ?? EXPLANATION_UNAVAILABLE),
             order,
           };
         }),

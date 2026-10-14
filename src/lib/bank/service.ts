@@ -19,6 +19,7 @@ import { nextSchedule, type ReviewGrade } from "@/lib/bank/spaced";
 import { isUltrasecret, topKeysForExam, ultrasecretLocked } from "@/lib/bank/ultrasecret";
 import type { PlanTier } from "@/lib/plans";
 import { getPrisma } from "@/lib/prisma";
+import { needsOfficialExplanation } from "@/lib/bank/explanation-quality";
 
 export class BankError extends Error {
   constructor(
@@ -195,7 +196,7 @@ export function toLockedClientQuestion(row: QuestionRow): ClientQuestion {
 }
 
 export function toReveal(row: Pick<QuestionRow, "correctLabel" | "explanation" | "reviewStatus">): Reveal {
-  return { correctLabel: row.correctLabel, explanation: row.explanation, reviewStatus: row.reviewStatus };
+  return { correctLabel: row.correctLabel, explanation: needsOfficialExplanation(row.explanation, row.correctLabel) ? null : row.explanation, reviewStatus: row.reviewStatus };
 }
 
 // ---------------------------------------------------------------------------------------------

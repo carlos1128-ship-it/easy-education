@@ -2,6 +2,139 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Cadernos completos: separados do modelo Exam legado (categorias do banco).
+model ExamInstitution {
+  id String @id @default(uuid())
+  slug String @unique
+  name String
+  archiveUrl String? @map("archive_url")
+  sourceNotes String? @map("source_notes")
+  exams PastExam[]
+  @@map("exam_institutions")
+}
+
+model PastExam {
+  id String @id @default(uuid())
+  institutionId String @map("institution_id")
+  title String
+  year Int
+  phase String
+  edition String
+  booklet String
+  day String @default("")
+  language String @default("")
+  questionCount Int @map("question_count")
+  firstNumber Int @default(1) @map("first_number")
+  durationMinutes Int @default(300) @map("duration_minutes")
+  allowPause Boolean @default(true) @map("allow_pause")
+  isDemo Boolean @default(false) @map("is_demo")
+  status String @default("draft")
+  version Int @default(0)
+  publishedKeyId String? @map("published_key_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  institution ExamInstitution @relation(fields: [institutionId], references: [id])
+  documents ExamDocument[]
+  questions ExamItem[]
+  keys ExamAnswerKey[]
+  attempts ExamAttempt[]
+  @@index([institutionId, year])
+  @@map("past_exams")
+}
+
+model ExamLicense {
+  id String @id @default(uuid())
+  evidence String @db.Text
+  recordedBy String @map("recorded_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  documents ExamDocument[]
+  @@map("exam_licenses")
+}
+
+model ExamDocument {
+  id String @id @default(uuid())
+  examId String @map("exam_id")
+  kind String
+  sourceUrl String @map("source_url")
+  rightsStatus String @default("pending") @map("rights_status")
+  commercialUseAllowed Boolean @default(false) @map("commercial_use_allowed")
+  reproductionAllowed Boolean @default(false) @map("reproduction_allowed")
+  derivativesAllowed Boolean @default(false) @map("derivatives_allowed")
+  licenseDocument String? @map("license_document")
+  attributionRequired String? @map("attribution_required")
+  verifiedAt DateTime? @map("verified_at")
+  licenseId String? @map("license_id")
+  storagePath String? @map("storage_path")
+  pageCount Int? @map("page_count")
+  exam PastExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  license ExamLicense? @relation(fields: [licenseId], references: [id])
+  @@unique([examId, kind])
+  @@map("exam_documents")
+}
+
+model ExamItem {
+  id String @id @default(uuid())
+  examId String @map("exam_id")
+  number Int
+  format String
+  subject String
+  topic String @default("")
+  regions Json
+  sourceUrl String @map("source_url")
+  exam PastExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  @@unique([examId, number])
+  @@map("exam_items")
+}
+
+model ExamAnswerKey {
+  id String @id @default(uuid())
+  examId String @map("exam_id")
+  revision Int
+  status String @default("draft")
+  snapshot Json
+  sourceUrl String @map("source_url")
+  reviewedBy String? @map("reviewed_by")
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  exam PastExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  attempts ExamAttempt[]
+  @@unique([examId, revision])
+  @@map("exam_answer_keys")
+}
+
+model ExamAttempt {
+  id String @id @default(uuid())
+  userId String @map("user_id")
+  examId String @map("exam_id")
+  keyId String @map("key_id")
+  requestId String @map("request_id")
+  status String @default("active")
+  version Int @default(0)
+  elapsedSeconds Int @default(0) @map("elapsed_seconds")
+  activeSince DateTime? @default(now()) @map("active_since")
+  startedAt DateTime @default(now()) @map("started_at")
+  finishedAt DateTime? @map("finished_at")
+  result Json?
+  exam PastExam @relation(fields: [examId], references: [id])
+  key ExamAnswerKey @relation(fields: [keyId], references: [id])
+  answers ExamStudentAnswer[]
+  @@unique([userId, requestId])
+  @@index([userId, startedAt])
+  @@map("exam_attempts")
+}
+
+model ExamStudentAnswer {
+  id String @id @default(uuid())
+  attemptId String @map("attempt_id")
+  number Int
+  value String @default("") @db.Text
+  reviewed Boolean @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  attempt ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  @@unique([attemptId, number])
+  @@map("exam_student_answers")
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
@@ -299,6 +432,50 @@ model Subscription {
   @@map("subscriptions")
 }
 
+/// Associa o token opaco de callback da Cakto a uma tentativa autenticada de checkout.
+model CaktoCheckoutAttempt {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  plan      String
+  offerId   String    @map("offer_id")
+  orderId   String?   @unique @map("order_id")
+  expiresAt DateTime  @map("expires_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("cakto_checkout_attempts")
+}
+
+/// Deduplicação idempotente de eventos da Cakto.
+model CaktoEvent {
+  id        String   @id
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("cakto_events")
+}
+
+/// Inbox duravel: confirma o recebimento antes de consultar a API do provedor.
+model CaktoWebhookDelivery {
+  id             String    @id
+  event          String
+  data           Json
+  callback       String?
+  subscriptionId String?   @map("subscription_id")
+  orderId        String?   @map("order_id")
+  attempts       Int       @default(0)
+  processedAt    DateTime? @map("processed_at")
+  nextAttemptAt  DateTime  @default(now()) @map("next_attempt_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([processedAt, nextAttemptAt])
+  @@index([callback])
+  @@map("cakto_webhook_deliveries")
+}
+
 /// Eventos do webhook já processados (o Stripe pode reenviar o mesmo evento).
 model StripeEvent {
   id        String   @id
@@ -338,23 +515,45 @@ model BankSubject {
   sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
 
+  units     BankUnit[]
   topics    BankTopic[]
   questions BankQuestion[]
 
   @@map("bank_subjects")
 }
 
-model BankTopic {
+/// Unidade de uma matéria (ex.: Bioquímica em Biologia). A árvore vem de src/lib/bank/taxonomy.ts.
+model BankUnit {
   id        String   @id @default(uuid())
   subjectId String   @map("subject_id")
   slug      String
   name      String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  subject BankSubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topics  BankTopic[]
+
+  @@unique([subjectId, slug])
+  @@map("bank_units")
+}
+
+model BankTopic {
+  id        String   @id @default(uuid())
+  subjectId String   @map("subject_id")
+  /// Unidade da árvore de conteúdo; vazio nos assuntos antigos, criados antes da árvore.
+  unitId    String?  @map("unit_id")
+  slug      String
+  name      String
+  sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
 
   subject   BankSubject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  unit      BankUnit?      @relation(fields: [unitId], references: [id], onDelete: SetNull)
   questions BankQuestion[]
 
   @@unique([subjectId, slug])
+  @@index([unitId])
   @@map("bank_topics")
 }
 
@@ -673,46 +872,4 @@ model AiQualityScore {
 
   @@index([scope, kind, createdAt])
   @@map("ai_quality_scores")
-}
-
-model CaktoCheckoutAttempt {
-  id        String    @id @default(uuid())
-  userId    String    @map("user_id")
-  plan      String
-  offerId   String    @map("offer_id")
-  orderId   String?   @unique @map("order_id")
-  expiresAt DateTime  @map("expires_at")
-  completedAt DateTime? @map("completed_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@map("cakto_checkout_attempts")
-}
-
-model CaktoEvent {
-  id        String   @id
-  type      String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("cakto_events")
-}
-
-
-model CaktoWebhookDelivery {
-  id             String    @id
-  event          String
-  data           Json
-  callback       String?
-  subscriptionId String?   @map("subscription_id")
-  orderId        String?   @map("order_id")
-  attempts       Int       @default(0)
-  processedAt    DateTime? @map("processed_at")
-  nextAttemptAt  DateTime  @default(now()) @map("next_attempt_at")
-  createdAt      DateTime  @default(now()) @map("created_at")
-
-  @@index([processedAt, nextAttemptAt])
-  @@index([callback])
-  @@map("cakto_webhook_deliveries")
 }

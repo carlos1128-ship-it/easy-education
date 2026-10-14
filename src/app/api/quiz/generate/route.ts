@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     const fromBank = () =>
       createQuizFromBank({
         userId: user.id,
+        userEmail: user.email ?? null,
         subject: payload.subject,
         topic: payload.topic,
         count: payload.questionCount,

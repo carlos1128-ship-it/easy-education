@@ -11,10 +11,9 @@ import { QuizFlashcardsOffer } from "@/components/quiz/quiz-flashcards-offer";
 import { NoteButton } from "@/components/notes/note-button";
 import { ReportButton } from "@/components/bank/question-tools";
 import { OwlMascot, usePreloadOwls, type OwlMood } from "@/components/mascot/owl-mascot";
-import { Check, Volume2, VolumeX, X, Zap } from "lucide-react";
+import { Check, X, Zap } from "lucide-react";
 import { XP_RULES } from "@/lib/xp";
 import { cn } from "@/lib/utils";
-import { playSound, primeSounds, useSoundsEnabled } from "@/lib/sounds";
 import type { QuizRunnerQuestion } from "@/lib/quiz-questions";
 
 type QuizRunnerProps = {
@@ -55,23 +54,6 @@ function resultMood(percent: number): { mood: OwlMood; message: string } {
   return { mood: "determinada", message: "Vamos revisar os erros e tentar de novo." };
 }
 
-function SoundToggle() {
-  const [enabled, setEnabled] = useSoundsEnabled();
-  const Icon = enabled ? Volume2 : VolumeX;
-  return (
-    <button
-      type="button"
-      onClick={() => setEnabled(!enabled)}
-      aria-pressed={enabled}
-      aria-label={enabled ? "Desativar sons" : "Ativar sons"}
-      title={enabled ? "Desativar sons" : "Ativar sons"}
-      className="grid size-9 flex-none place-items-center rounded-full border border-border text-ink-muted hover:bg-surface-muted hover:text-ink"
-    >
-      <Icon className="size-4" aria-hidden="true" />
-    </button>
-  );
-}
-
 export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId = null, timeLimit = null }: QuizRunnerProps) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(
@@ -102,7 +84,7 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
 
   const touch = () => setActivity((value) => value + 1);
 
-  /** Salva uma resposta. Já confirmada antes (409, ex.: outra aba) também conta como salva. */
+  /** Salva uma resposta e usa a alternativa persistida se outra aba confirmou primeiro. */
   async function confirmAnswer(question: QuizRunnerQuestion): Promise<boolean | null> {
     const answer = drafts[question.id];
     if (!answer || answers[question.id]) return null;
@@ -112,12 +94,18 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questionId: question.id, answer }),
       });
+      const data = response.status === 409 ? await response.json() as { userAnswer?: string } : null;
       if (!response.ok && response.status !== 409) {
         toast.error("Não foi possível salvar a resposta. Tente de novo.");
         return null;
       }
-      setAnswers((current) => ({ ...current, [question.id]: answer }));
-      return answer === question.correctAnswer;
+      const savedAnswer = response.status === 409 ? data?.userAnswer : answer;
+      if (!savedAnswer) {
+        toast.error("A resposta já foi confirmada em outra aba. Atualize a página para continuar.");
+        return null;
+      }
+      setAnswers((current) => ({ ...current, [question.id]: savedAnswer }));
+      return savedAnswer === question.correctAnswer;
     } catch {
       toast.error("Sem conexão com o servidor. Verifique a internet e tente de novo.");
       return null;
@@ -128,7 +116,6 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
   const missingOnPage = pageQuestions.filter((item) => !answers[item.id] && !drafts[item.id]);
 
   async function confirmPage() {
-    primeSounds();
     touch();
     // Simulado: só confirma a página com todas marcadas, e mostra qual falta (antes ficava travado sem aviso).
     if (missingOnPage.length) {
@@ -141,8 +128,6 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
     const results = (await Promise.all(pageQuestions.map((item) => confirmAnswer(item)))).filter((result): result is boolean => result !== null);
     setSaving(false);
     if (!results.length) return;
-    const correct = results.filter(Boolean).length;
-    void playSound(correct >= results.length - correct ? "acerto" : "erro");
   }
 
   function goToPage(start: number) {
@@ -153,10 +138,6 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
 
   function goNext() {
     touch();
-    if (isLastPage) {
-      primeSounds();
-      void playSound("concluido");
-    }
     setIndex((value) => value + pageSize);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -259,7 +240,6 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
               </span>
             ) : null}
           </div>
-          <SoundToggle />
         </div>
         {mode === "simulado" && questions.length > pageSize ? (
           <nav aria-label="Ir para a questão" className="hidden w-full rounded-2xl border border-border bg-surface p-3 lg:block">
@@ -334,7 +314,6 @@ export function QuizRunner({ quizId, questions, mode = "quiz", subject, videoId 
                       state={state}
                       disabled={Boolean(confirmed) || saving}
                       onClick={() => {
-                        primeSounds();
                         touch();
                         setDrafts((current) => ({ ...current, [question.id]: letter }));
                       }}
