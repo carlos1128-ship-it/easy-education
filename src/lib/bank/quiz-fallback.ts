@@ -84,7 +84,30 @@ export class NoBankQuestionsError extends Error {}
  * Cria o quiz com até `count` questões de provas das matérias pedidas (com o tema, se der). Lança
  * NoBankQuestionsError se não houver pelo menos 3 questões que sirvam.
  */
-export async function createQuizFromBank(input: { userId: string; userEmail: string | null; subject: string; topic?: string | null; count: number; difficulty: string; title?: string }) {
+/** Revezamento entre matérias: um simulado de "Matemática, História" não sai só de Matemática (que tem mais questões). */
+export function interleaveBySubject<T extends { subject: { slug: string } | null }>(rows: T[], count: number): T[] {
+  const groups = new Map<string, T[]>();
+  for (const row of rows) {
+    const key = row.subject?.slug ?? "";
+    groups.set(key, [...(groups.get(key) ?? []), row]);
+  }
+  if (groups.size <= 1) return rows.slice(0, count);
+  const lists = [...groups.values()];
+  const picked: T[] = [];
+  for (let round = 0; picked.length < count && lists.some((list) => list.length > round); round += 1) {
+    for (const list of lists) if (list[round] && picked.length < count) picked.push(list[round]);
+  }
+  return picked;
+}
+
+/**
+ * `deferExplanations`: cria o quiz na hora com as resoluções que já existem e devolve `fillExplanations`, que gera
+ * as que faltam (IA) e grava nas questões. A rota chama depois de responder (after), para o aluno não esperar.
+ */
+export async function createQuizFromBank(
+  input: { userId: string; userEmail: string | null; subject: string; topic?: string | null; count: number; difficulty: string; title?: string },
+  options: { deferExplanations?: boolean } = {},
+) {
   const prisma = getPrisma();
   const slugs = bankSubjectsFor(input.subject, input.topic);
   if (!slugs.length) throw new NoBankQuestionsError("Matéria sem questões de prova no banco.");
@@ -94,7 +117,7 @@ export async function createQuizFromBank(input: { userId: string; userEmail: str
 
   const rows = await prisma.bankQuestion.findMany({
     where: { isPublished: true, origin: ORIGIN.official, subject: { slug: { in: slugs } }, exam: { slug: { in: exams } } },
-    select: { id: true, supportText: true, statement: true, images: true, options: true, correctLabel: true, explanation: true, year: true, number: true, edition: true, variant: true, origin: true, exam: { select: { slug: true, name: true, styleLabel: true } } },
+    select: { id: true, supportText: true, statement: true, images: true, options: true, correctLabel: true, explanation: true, year: true, number: true, edition: true, variant: true, origin: true, subject: { select: { slug: true } }, exam: { select: { slug: true, name: true, styleLabel: true } } },
     take: 4000,
   });
   const usable = rows.filter(fitsQuizFormat);
@@ -112,15 +135,17 @@ export async function createQuizFromBank(input: { userId: string; userEmail: str
   const seen = new Set(pool.filter((row) => seenTexts.has(quizTextFor(row).slice(0, 120))).map((row) => row.id));
   const ranked = exams.flatMap((exam) => pickPreferringUnseen(pool.filter((row) => row.exam.slug === exam), seen, pool.length));
   const fresh = ranked.filter((row) => !seen.has(row.id));
-  const chosen = [...fresh, ...ranked.filter((row) => seen.has(row.id))].slice(0, input.count);
+  const chosen = interleaveBySubject([...fresh, ...ranked.filter((row) => seen.has(row.id))], input.count);
 
-  const generated = await ensureOfficialQuestionExplanations({
-    questionIds: chosen.map((row) => row.id),
-    user: { id: input.userId, email: input.userEmail ?? undefined },
-    feature: input.difficulty === "simulado" ? "ai_simulado" : "ai_quiz",
-  });
+  const explain = () =>
+    ensureOfficialQuestionExplanations({
+      questionIds: chosen.map((row) => row.id),
+      user: { id: input.userId, email: input.userEmail ?? undefined },
+      feature: input.difficulty === "simulado" ? "ai_simulado" : "ai_quiz",
+    });
+  const generated = options.deferExplanations ? new Map<string, string>() : await explain();
 
-  return prisma.quiz.create({
+  const quiz = await prisma.quiz.create({
     data: {
       userId: input.userId,
       title: input.title ?? input.topic ?? `Quiz de ${input.subject}`,
@@ -141,4 +166,19 @@ export async function createQuizFromBank(input: { userId: string; userEmail: str
       },
     },
   });
+
+  /** Gera as resoluções que faltavam e troca o aviso "indisponível" das questões deste quiz. */
+  async function fillExplanations() {
+    const missing = chosen.filter((row) => needsOfficialExplanation(row.explanation, row.correctLabel));
+    if (!missing.length) return;
+    const filled = await explain();
+    await Promise.all(
+      chosen.map((row, order) => {
+        const text = filled.get(row.id);
+        return text ? prisma.quizQuestion.updateMany({ where: { quizId: quiz.id, order }, data: { explanation: text } }) : null;
+      }),
+    );
+  }
+
+  return { quiz, fillExplanations };
 }

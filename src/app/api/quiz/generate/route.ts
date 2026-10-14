@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { apiErrorResponse } from "@/lib/api-error";
 import { requireUser } from "@/lib/auth";
@@ -33,16 +33,23 @@ export async function POST(request: Request) {
 
     const payload = quizGenerateSchema.parse(await request.json());
     const simulado = payload.difficulty === "simulado";
-    const fromBank = () =>
-      createQuizFromBank({
-        userId: user.id,
-        userEmail: user.email ?? null,
-        subject: payload.subject,
-        topic: payload.topic,
-        count: payload.questionCount,
-        difficulty: payload.difficulty,
-        title: simulado ? `Simulado de ${payload.subject}` : undefined,
-      });
+    // O quiz/simulado de provas sai na hora; as resoluções que faltam são geradas depois de responder.
+    const fromBank = async () => {
+      const { quiz, fillExplanations } = await createQuizFromBank(
+        {
+          userId: user.id,
+          userEmail: user.email ?? null,
+          subject: payload.subject,
+          topic: payload.topic,
+          count: payload.questionCount,
+          difficulty: payload.difficulty,
+          title: simulado ? `Simulado de ${payload.subject}` : undefined,
+        },
+        { deferExplanations: true },
+      );
+      after(() => fillExplanations().catch((error) => console.error("quiz.generate.explanations", error)));
+      return quiz;
+    };
 
     // Questões prontas (padrão do formulário): precisa de plano, mas não gasta o limite de IA. Matéria sem
     // questões no banco (ex.: Direito) segue para a IA.
