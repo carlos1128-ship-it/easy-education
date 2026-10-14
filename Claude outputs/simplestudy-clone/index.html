@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Study &amp; Revision Notes, Past Exam Papers, Quizzes &amp; Exam Prep | StudyHub</title>
+  <meta name="description" content="Personalised AI study platform: revision notes, past papers, quizzes and flashcards for major exams.">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo"><span class="logo-mark">S</span>StudyHub</a>
+
+    <nav class="nav-links" id="navLinks">
+      <div class="dropdown">
+        <button class="nav-link dd-btn" aria-expanded="false">Start Studying
+          <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+        <div class="dd-menu">
+          <a href="#exams">A-Level</a><a href="#exams">ENEM</a><a href="#exams">GCSE</a><a href="#exams">Junior Cert</a>
+          <a href="#exams">Leaving Cert</a><a href="#exams">NSC Matric</a><a href="#exams">Scottish Highers</a><a href="#exams">SSCE</a>
+        </div>
+      </div>
+      <a class="nav-link" href="#schools">Schools</a>
+      <a class="nav-link" href="#parents">Parents</a>
+      <a class="nav-link" href="#pricing">Pricing</a>
+    </nav>
+
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="searchInput" placeholder="Search anything" autocomplete="off">
+    </label>
+
+    <div class="dropdown lang">
+      <button class="nav-link dd-btn" aria-label="Select country">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg>
+        <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <div class="dd-menu right">
+        <a href="#">Ireland</a><a href="#">United Kingdom</a><a href="#">Brazil</a><a href="#">Australia</a><a href="#">South Africa</a><a href="#">New Zealand</a>
+      </div>
+    </div>
+
+    <a href="#" class="nav-link login" data-open-modal>Log in</a>
+    <a href="#" class="btn btn-primary btn-sm" data-open-modal>Sign up</a>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="pill">
+        <div class="avatars"><i style="--c:#f3b79b"></i><i style="--c:#f7c6d9"></i><i style="--c:#9bc4f3"></i></div>
+        <p><strong>Join 1M+ students</strong> on StudyHub and improve your grades in under 30 days!</p>
+      </div>
+      <h1>Personalised <span>AI Platform</span> For <em>Every Student</em></h1>
+      <p class="lead">Learn smarter with revision notes, past papers, quizzes, and expert insight tools for major academic exams. Join StudyHub to boost your grades today.</p>
+      <a href="#" class="btn btn-primary btn-lg" data-open-modal>Sign up for free</a>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-top"><b>StudyHub</b><span class="tab on">Study Mode</span><span class="tab">Create my own</span></div>
+      <div class="mock-body">
+        <div class="mock-side"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="mock-main">
+          <div class="mock-card">
+            <div class="badge">LEVEL 8</div>
+            <div><small>The Respiratory System</small><h4>Level : 8</h4><div class="bar"><u style="width:62%"></u></div></div>
+          </div>
+          <h5>The Respiratory System</h5>
+          <div class="lines"><i></i><i></i><i class="s"></i><i></i><i class="s"></i></div>
+          <div class="lungs"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED -->
+  <section class="featured">
+    <p class="eyebrow">FEATURED BY</p>
+    <div class="press">
+      <span class="serif">The Daily Ledger</span><span>siliconhub</span><span class="box">Business<br>Weekly</span><span class="serif b">The Coastal Star</span><span class="heavy">NDRC</span>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <h2>97% of our students report improved grades</h2>
+    <p>Whether you want an A+ or just less stress, we work with exam experts to help you study.</p>
+  </section>
+
+  <!-- EXAMS -->
+  <section id="exams" class="exams">
+    <h3>Select your exam</h3>
+    <div class="chips">
+      <button class="chip">A-Level</button><button class="chip">ENEM</button><button class="chip">GCSE</button><button class="chip">Junior Cert</button>
+      <button class="chip">Leaving Cert</button><button class="chip">NSC Matric</button><button class="chip">Scottish Highers</button><button class="chip">SSCE</button>
+    </div>
+  </section>
+
+  <!-- SUBJECTS -->
+  <section class="subjects">
+    <h2>Every subject, made simple.</h2>
+    <p>Get started with notes, essays, questions, and quizzes for over 48 subjects.</p>
+    <div class="subject-grid">
+      <a href="#" class="subj" style="--c:#2ca851">Maths</a><a href="#" class="subj" style="--c:#ef6f5e">English</a>
+      <a href="#" class="subj" style="--c:#ffc432">Irish</a><a href="#" class="subj" style="--c:#1cb0f6">Biology</a>
+      <a href="#" class="subj" style="--c:#3276fe">Physics</a><a href="#" class="subj" style="--c:#fe2c55">French</a>
+      <a href="#" class="subj" style="--c:#2ca851">Chemistry</a><a href="#" class="subj" style="--c:#ffc432">History</a>
+      <a href="#" class="subj" style="--c:#1cb0f6">Geography</a><a href="#" class="subj" style="--c:#ef6f5e">Economics</a>
+      <a href="#" class="subj" style="--c:#3276fe">Music</a><a href="#" class="subj" style="--c:#2ca851">Business</a>
+    </div>
+    <a href="#" class="btn btn-primary btn-lg" data-open-modal>Choose your subjects</a>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <article class="feature">
+      <div class="f-text">
+        <h3>Exam-Focused Quiz</h3>
+        <p>Fun and easy study practice based on state exams. Try multiple choice questions for every topic, and track your progress.</p>
+        <ul class="ticks"><li>Grading and progress tracking for every topic.</li><li>The best way to revise for class tests.</li></ul>
+        <a href="#" class="btn btn-primary" data-open-modal>Try Quizzes</a>
+      </div>
+      <div class="f-vis quiz">
+        <div class="q"><b>Which organ exchanges oxygen with the blood?</b>
+          <button>Heart</button><button class="ok">Lungs</button><button>Liver</button><button>Kidneys</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="feature rev">
+      <div class="f-text">
+        <h3>A+ Revision Notes</h3>
+        <p>Beautiful, concise, and carefully curated notes. Divided by topic, highlighted, and structured for easy recall in your exams.</p>
+        <ul class="ticks"><li><b>Expert-Reviewed Notes</b> Well-structured and expert-reviewed notes, carefully categorized for easy learning and quick reference.</li>
+          <li><b>Sample essays from A+ students</b> A collection of outstanding essays showcasing top-tier writing and critical thinking.</li>
+          <li><b>Experiment Notes and Cheat Sheets</b> Concise experiment write-ups, handy cheat sheets, and essential study resources.</li></ul>
+      </div>
+      <div class="f-vis notes">
+        <h4>Gas Exchange</h4>
+        <i></i><i></i><i class="s"></i><i></i><i class="s"></i>
+        <span class="hl">Alveoli have thin walls &amp; a rich blood supply</span>
+        <i></i><i class="s"></i>
+      </div>
+    </article>
+
+    <article class="feature">
+      <div class="f-text">
+        <h3>Track Study Progress</h3>
+        <p>Set your goals, hardest subjects, and more. You can then track your progress in every subject to make sure you get your course.</p>
+        <ul class="ticks"><li>CAO points calculator and grade tracker.</li><li>Stay exam-focused with questions by topic.</li></ul>
+        <a href="#" class="btn btn-primary" data-open-modal>Start Studying</a>
+      </div>
+      <div class="f-vis progress">
+        <div class="row"><span>Biology</span><div class="bar"><u style="width:82%"></u></div><em>82%</em></div>
+        <div class="row"><span>Maths</span><div class="bar"><u style="width:64%"></u></div><em>64%</em></div>
+        <div class="row"><span>English</span><div class="bar"><u style="width:91%"></u></div><em>91%</em></div>
+        <div class="row"><span>History</span><div class="bar"><u style="width:47%"></u></div><em>47%</em></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="reviews">
+    <h2>Happy students. Better results. It's that simple.</h2>
+    <p>Everyone learns differently. We understand that. Our expert team works 24/7 to keep students happy and learning.</p>
+    <a href="#" class="btn btn-primary btn-lg" data-open-modal>Join Your Classmates</a>
+    <div class="rating"><b>5.0</b><span class="stars">★★★★★</span><small>Google Reviews</small></div>
+    <div class="video-row">
+      <div class="video"><span>▶</span></div><div class="video"><span>▶</span></div><div class="video"><span>▶</span></div>
+      <div class="video"><span>▶</span></div><div class="video"><span>▶</span></div><div class="video"><span>▶</span></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="pricing" class="cta">
+    <h2>Join 500,000+ students studying with us.</h2>
+    <p>Select your subjects, and get access to A+ resources today.</p>
+    <a href="#" class="btn btn-white btn-lg" data-open-modal>Signup</a>
+  </section>
+
+  <!-- SEO LINKS -->
+  <section class="seo">
+    <div class="seo-col"><h4>A-Levels</h4><a href="#">A-Level Subjects</a><a href="#">A-Level AQA Timetable 2026</a><a href="#">A-Level Edexcel Timetable 2026</a><a href="#">A-Level OCR Timetable 2026</a></div>
+    <div class="seo-col"><h4>GCSE</h4><a href="#">GCSE Subjects</a><a href="#">GCSE AQA Timetable 2026</a><a href="#">GCSE Edexcel Timetable 2026</a><a href="#">GCSE OCR Timetable 2026</a></div>
+    <div class="seo-wide">
+      <h3>Every subject, made simple.</h3>
+      <div class="seo-grid" id="seoGrid"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a href="#" class="logo"><span class="logo-mark">S</span>StudyHub</a>
+      <p>StudyHub helps you get better results without the stress. Try it for free today.</p>
+      <label>Select a country
+        <select><option>Ireland</option><option>United Kingdom</option><option>Brazil</option><option>Australia</option><option>South Africa</option><option>New Zealand</option></select>
+      </label>
+    </div>
+    <div><h5>Product</h5><a href="#">Ambassadors Program</a><a href="#">Pricing</a><a href="#">Tutoring</a><a href="#">H1 Guides</a><a href="#">For Parents</a><a href="#">For Schools</a></div>
+    <div><h5>Company</h5><a href="#">About Us</a><a href="#">Partners</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">FAQ</a><a href="#">Contact</a></div>
+    <div><h5>Social</h5><a href="#">Facebook</a><a href="#">X</a><a href="#">Instagram</a><a href="#">TikTok</a><a href="#">YouTube</a><a href="#">LinkedIn</a></div>
+  </div>
+  <div class="foot-legal">
+    <p>StudyHub Demo Ltd · Example address, 123 Sample Street · hello@example.com</p>
+    <p>© 2026 StudyHub (demo recreation). All rights reserved. · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Site Map</a></p>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button class="close" id="closeModal" aria-label="Close">×</button>
+    <div class="modal-art"><div class="owl"><i></i><i></i></div></div>
+    <div class="modal-body">
+      <h2 id="mTitle">Start studying smarter</h2>
+      <p>Get notes, quizzes, flashcards, past papers and more with a free account.</p>
+      <a href="#" class="btn btn-primary btn-block">Start for free</a>
+      <small>Already have an account? <a href="#">Log in</a></small>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

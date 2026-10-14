@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espaço do aluno | StudyHub</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <script defer src="dashboard.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <a class="brand" href="index.html"><span class="mark">S</span>StudyHub</a>
+    <nav>
+      <a class="item on" href="#"><i style="--c:#4da3ff">🎓</i>Espaço do aluno</a>
+      <a class="item" href="#"><i style="--c:#3b8dff">📄</i>Resumos</a>
+      <a class="item" href="#"><i style="--c:#4da3ff">🧩</i>Quizzes</a>
+      <a class="item" href="#"><i style="--c:#ffc432">📒</i>Banco de questões</a>
+      <a class="item" href="#"><i style="--c:#2ca851">🃏</i>Flashcards</a>
+      <a class="item" href="#"><i style="--c:#3b8dff">✨</i>StudyHubIA</a>
+      <a class="item" href="#"><i style="--c:#5b6cff">A+</i>Provas anteriores</a>
+      <a class="item" href="#"><i style="--c:#ffc432">🗂️</i>Criar</a>
+      <a class="item" href="#"><i style="--c:#3b8dff">📝</i>Lição de casa</a>
+      <a class="item" href="#"><i style="--c:#7aa7ff">👥</i>Amigos</a>
+      <a class="item" href="#"><i style="--c:#3b8dff">⚙️</i>Configurações</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <!-- TOP STATS -->
+    <div class="topbar">
+      <span class="stat fire">🔥 <b>0</b></span>
+      <span class="stat heart">❤️ <b>5</b></span>
+      <span class="stat bolt">⚡ <b>0</b></span>
+      <a href="#" class="btn-premium">SEJA PREMIUM 🚀</a>
+    </div>
+
+    <div class="cols">
+      <!-- CENTER -->
+      <section class="center">
+        <div class="card profile">
+          <div class="row">
+            <div class="avatar">🙂</div>
+            <div class="who"><b>Fak</b><small>@fak1603314</small></div>
+            <button class="pill" id="updateBtn">Atualizar</button>
+            <button class="round" id="themeBtn" aria-label="Alternar tema">☀</button>
+          </div>
+          <div class="row sub">
+            <a href="#">👤 Adicionar amigos</a>
+            <a href="#" class="done">◔ 20% concluído ›</a>
+          </div>
+        </div>
+
+        <a href="#" class="start-bar"><span>🔖 Comece a estudar</span><span class="xp">⚡ 10 XP</span></a>
+
+        <h3 class="sec"><span>📊</span>Estatísticas <button class="sel">Essa semana ⌄</button></h3>
+        <div class="stats-box">
+          <div class="ghost"><i></i><i></i><i></i><i></i></div>
+          <div class="empty">
+            <div class="ico">📈</div>
+            <b>Acompanhe seu progresso</b>
+            <small>Comece a estudar para ver seu progresso.</small>
+            <a href="#" class="btn-sm">Comece a estudar</a>
+          </div>
+        </div>
+
+        <h3 class="sec"><span>💡</span>Recomendações</h3>
+        <div class="reco" id="reco">
+          <article class="rc"><div class="tags"><em>Interpretação de texto</em><u>12 tópicos</u></div><b>Análise Discursiva</b><p>A seguir: Estratégias de resolução</p><div class="prog"><div class="bar"><s style="width:3%"></s></div><span>0%</span></div></article>
+          <article class="rc"><div class="tags"><em>Interpretação de texto</em><u>8 tópicos</u></div><b>Morfologia</b><p>A seguir: Classes Gramaticais: Morfol...</p><div class="prog"><div class="bar"><s style="width:3%"></s></div><span>0%</span></div></article>
+          <article class="rc"><div class="tags"><em>Matemática</em><u>10 tópicos</u></div><b>Funções</b><p>A seguir: Função afim</p><div class="prog"><div class="bar"><s style="width:3%"></s></div><span>0%</span></div></article>
+        </div>
+
+        <h3 class="sec"><span>☰</span>Minhas matérias</h3>
+        <div class="subjects">
+          <a class="sj" href="#"><i style="--c:#ffd1e8">🧮</i>Matemática</a>
+          <a class="sj" href="#"><i style="--c:#ffd1e8">📚</i>Interpretação de texto</a>
+          <a class="sj" href="#"><i style="--c:#ffd1e8">🌿</i>Biologia</a>
+          <a class="sj" href="#"><i style="--c:#ffd1e8">🏛️</i>História</a>
+          <a class="sj" href="#"><i style="--c:#e3d1ff">⚗️</i>Química</a>
+          <a class="sj" href="#"><i style="--c:#e3d1ff">✍️</i>Redação</a>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <aside class="right">
+        <div class="card premium">
+          <span class="tag">PREMIUM 🚀</span>
+          <h2>Você está a um passo de terminar seu <em>ENEM</em></h2>
+          <div class="plan">
+            <small>Anual</small>
+            <div class="price"><b>R$12.49</b> <s>R$25.00</s></div>
+            <small>por mês, cobrado anualmente</small>
+            <div class="mascot"></div>
+          </div>
+          <a href="#" class="btn-buy">FINALIZAR COMPRA</a>
+        </div>
+
+        <div class="card goal">
+          <div class="gh"><h3>Progresso</h3><a href="#">EDITAR META</a></div>
+          <div class="daily"><div class="chest"></div><div class="dm"><span>Meta diária</span><div class="bar"><s style="width:0"></s></div></div><em>0/20 XP</em></div>
+          <div class="chart" id="chart"></div>
+        </div>
+
+        <div class="card invite">
+          <div><h4>Traga seus amigos!</h4><p>Convide amigos para estudar juntos e competir.</p><a href="#">CONVIDE AGORA</a></div>
+          <div class="crew">🦊🐘🐕</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</body>
+</html>
